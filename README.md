@@ -2,52 +2,51 @@
 
 ### Team K : 
 
-	* Jonathan Borne
-	* Antoine Duquennoy
-	* Thomas Duverney
-	* Maxime Isnel
+* Jonathan Borne
+* Antoine Duquennoy
+* Thomas Duverney
+* Maxime Isnel
 
 ## Planning
 
-	* Etape 1: Installation, prise en main, compréhension (2 jours)
-	* Etape 2: Entrées/Sorties (2 jours)
-	* Etape 3: Multithreading (2 à 3 jours)
-	* Etape 4: Mémoire virtuelle (3 jours)
-	* Documentation (1 jours) Vendredi 22 Décembre
-	* Etape 5: Gestionnaire de fichiers (4 jours) en parallèle avec étape 6
-	* Etape 6: Réseaux des Machines (4 jours) en parallèle avec étape 5
+* Etape 1: Installation, prise en main, compréhension (2 jours)
+* Etape 2: Entrées/Sorties (2 jours)
+* Etape 3: Multithreading (2 à 3 jours)
+* Etape 4: Mémoire virtuelle (3 jours)
+* Documentation (1 jours) Vendredi 22 Décembre
+* Etape 5: Gestionnaire de fichiers (4 jours) en parallèle avec étape 6
+* Etape 6: Réseaux des Machines (4 jours) en parallèle avec étape 5
 
-	### Fin
-	* Finir développement manquant (petites fonctionnalités) (~2 jours)
-	* Préparer soutenance (__Pas de code__) (1 jours)
-	* Dernier jour: __Soutenance__
+* Finir développement manquant (petites fonctionnalités) (~2 jours)
+* Préparer soutenance (**Pas de code**) (1 jours)
+* Dernier jour: **Soutenance**
 
 ## Etapes
 
-	* Etape 1 : Mise en place
-		Installer NachOS, comprendre comment il marche. Comprendre comment executer programme utilisateur. Définir différence entre Noyau et Utilisateur.
-	* Etape 2 : Entrées/Sorties
-		Implémenter les entrées clavier et les sorties a l'écran. _Quatre_ fonctions à implémenter: __PutChar__, __GetChar__, __PutString__, __GetString__. Pour cela il faut avoir bien compris les __appels système__ de NachOS.
-	* Etape 3 : Multithreading
-		Permettre à l'utilisateur de faire des programmes multithreadés. Pour ce faire il faut bien comprendre l'_adressage d'un processus_ dans NachOS pour le partager entre les threads. 
-		_BONUS_: l'utilisateur doit pouvoir faire de la synchronisation (Mutex?)
-	* Etape 4 : Mémoire Virtuelle
-		Pouvoir lancer plusieurs processus, implémentation appel système fork(). 
-		_BONUS_: implémenter un petit shell 
-	* Etape 5 : Systèmes de fichiers
-		Implémenter un système de fichiers qui se rapproche de ce qu'on connait: Hierarchie des dossiers, Dossier courant, Fichiers dans dossier.
-		Possibilité d'ouvrir plusieurs dossiers.
-	* Etape 6 : Réseaux des machines
-		Pouvoir lancer plusieurs machines et établir un lien de communication entre elles. Implémenter aussi un protocole pour que deux machines puissent communiquer.
-		_BONUS_: implémenter un un serveur FTP (transferts de fichiers) ou migration de processus 
+* Etape 1 : Mise en place
+	Installer NachOS, comprendre comment il marche. Comprendre comment executer programme utilisateur. Définir différence entre Noyau et Utilisateur.
+* Etape 2 : Entrées/Sorties
+	Implémenter les entrées clavier et les sorties a l'écran. *Quatre* fonctions à implémenter: **PutChar**, **GetChar**, **PutString**, **GetString**. Pour cela il faut avoir bien compris les **appels système** de NachOS.
+* Etape 3 : Multithreading
+	Permettre à l'utilisateur de faire des programmes multithreadés. Pour ce faire il faut bien comprendre l'*adressage d'un processus* dans NachOS pour le partager entre les threads. 
+	*BONUS*: l'utilisateur doit pouvoir faire de la synchronisation (Mutex?)
+* Etape 4 : Mémoire Virtuelle
+	Pouvoir lancer plusieurs processus, implémentation appel système fork(). 
+	*BONUS*: implémenter un petit shell 
+* Etape 5 : Systèmes de fichiers
+	Implémenter un système de fichiers qui se rapproche de ce qu'on connait: Hierarchie des dossiers, Dossier courant, Fichiers dans dossier.
+	Possibilité d'ouvrir plusieurs dossiers.
+* Etape 6 : Réseaux des machines
+	Pouvoir lancer plusieurs machines et établir un lien de communication entre elles. Implémenter aussi un protocole pour que deux machines puissent communiquer.
+	*BONUS*: implémenter un un serveur FTP (transferts de fichiers) ou migration de processus 
 
 
 ## Les Conventions
 
-	* Langue : Anglais
-	* Tabulation : 4 spaces
-	* Variable : commence par une minuscule
-	* Types : commence par une majuscule
+* Langue : Anglais
+* Tabulation : 4 spaces
+* Variable : commence par une minuscule
+* Types : commence par une majuscule
 
 ## Comment on utilise Git ?
 
