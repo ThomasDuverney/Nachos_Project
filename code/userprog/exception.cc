@@ -73,9 +73,10 @@ static void UpdatePC (){
 //----------------------------------------------------------------------
 
 void ExceptionHandler (ExceptionType which){
-    int type, reg4;
+    int type, reg4, reg0;
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
+    reg0 = machine->ReadRegister (0);
 
     if (which == SyscallException) {
         switch (type) {
@@ -92,6 +93,9 @@ void ExceptionHandler (ExceptionType which){
                 char buf [MAX_STRING_SIZE];
                 copyStringFromMachine(reg4, buf, MAX_STRING_SIZE);
                 synchconsole->SynchPutString(buf);
+                break;
+            case SC_Exit:
+                DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
