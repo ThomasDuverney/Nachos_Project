@@ -1,16 +1,17 @@
-// progtest.cc 
+// progtest.cc
 //      Test routines for demonstrating that Nachos can load
-//      a user program and execute it.  
+//      a user program and execute it.
 //
 //      Also, routines for testing the Console hardware device.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
 #include "system.h"
 #include "console.h"
+#include "synchconsole.h"
 #include "addrspace.h"
 #include "synch.h"
 
@@ -87,9 +88,24 @@ ConsoleTest (char *in, char *out)
       {
 	  readAvail->P ();	// wait for character to arrive
 	  ch = console->GetChar ();
-	  console->PutChar (ch);	// echo it!
-	  writeDone->P ();	// wait for write to finish
-	  if (ch == 'q')
-	      return;		// if q, quit
-      }
+      printf("ch=%c EOF=%d 04=%d\n", ch, ch==EOF, ch==04);
+      if (ch == EOF || ch == 04)
+	      return;		// if EOF or 04, quit
+      console->PutChar ('<');
+      writeDone->P();
+
+      console->PutChar (ch);	// echo it!
+      writeDone->P ();
+
+      console->PutChar ('>');
+      writeDone->P();
+  }
+}
+
+void SynchConsoleTest (char *in, char *out){
+    char ch;
+    SynchConsole *synchconsole = new SynchConsole(in, out);
+    while ((ch = synchconsole->SynchGetChar()) != EOF)
+        synchconsole->SynchPutChar(ch);
+    fprintf(stderr, "Solaris: EOF detected in SynchConsole!\n");
 }
