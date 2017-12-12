@@ -32,12 +32,25 @@ char SynchConsole::SynchGetChar() {
 }
 
 void SynchConsole::SynchPutString(const char s[]) {
-    // for(const char &c : s)
-    //     SynchPutChar(c);
+    int i=0;
+    while(s[i] != '\0'){
+        SynchPutChar(s[i++]);
+    }
+
 }
 
 void SynchConsole::SynchGetString(char *s, int n) {
     int i;
-    for(i=0; i<n; i++)
-        s[i] = SynchGetChar();
+    char c;
+    for(i=0; i<(n-1); i++){
+        c = SynchGetChar();
+        if (c == EOF || c == 04 || c == '\n'){
+            s[i] = '\0';
+            return;
+        }
+        s[i] = c;
+    }
+    if (i == (n-1)){
+        s[i] = '\0';
+    }
 }
