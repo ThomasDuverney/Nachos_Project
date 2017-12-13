@@ -73,9 +73,10 @@ static void UpdatePC (){
 //----------------------------------------------------------------------
 
 void ExceptionHandler (ExceptionType which){
-    int type, reg4;
+    int type, reg4, reg5;
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
+    reg5 = machine->ReadRegister (5);
     char c;
 
 
@@ -89,23 +90,23 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "PutChar, initiated by user program.\n");
                 synchconsole->SynchPutChar((char)reg4);
                 break;
-            case SC_SynchPutString:
+            case SC_PutString:
                 DEBUG('a', "SynchPutString, initiated by user program.\n");
                 char buf [MAX_STRING_SIZE];
                 copyStringFromMachine(reg4, buf, MAX_STRING_SIZE);
                 synchconsole->SynchPutString(buf);
                 break;
-            case SC_SynchGetChar:
+            case SC_GetChar:
                 DEBUG('a', "GetChar, initiated by user program.\n");
                 c = synchconsole->SynchGetChar();
-                if(c != EOF){
-                  machine->WriteRegister(2, (int)c);
-                }
+                machine->WriteRegister(2, (int)c);
                 break;
-            case SC_SynchGetString:
+            case SC_GetString:
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
+
+                // reg4 = adresse du tableau de la string (memoire virtuelle)
+                // reg5 = taille max 
                 synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
-                machine->WriteRegister(2, reg4);
                 break;
             case SC_Exit:
                 // la valeur de retour du main ou exit est dans le registre 4

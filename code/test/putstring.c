@@ -2,6 +2,6 @@
 
 int main() {
     char s[] = {"ABCDEFGHIJKLMNOPQ"};
-    SynchPutString(s);
+    PutString(s);
     Halt();
 }
