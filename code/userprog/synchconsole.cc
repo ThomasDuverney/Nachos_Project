@@ -21,8 +21,8 @@ SynchConsole::~SynchConsole() {
     delete readAvail;
 }
 
-void SynchConsole::SynchPutChar(const char ch) {
-    console->PutChar(ch);
+void SynchConsole::SynchPutChar(const char c) {
+    console->PutChar(c);
     writeDone->P();
 }
 

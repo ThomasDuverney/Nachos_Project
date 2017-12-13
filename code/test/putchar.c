@@ -6,7 +6,7 @@ int print(char c, int n) {
         PutChar(c+i);
     }
     PutChar('\n');
-    return (3);
+    return (4);
 }
 
 int main() {

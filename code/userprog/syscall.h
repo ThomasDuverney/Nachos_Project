@@ -31,6 +31,7 @@
 #define SC_Yield	10
 #define SC_PutChar  11
 #define SC_SynchPutString 12
+#define SC_SynchGetChar 13
 
 #ifdef IN_USER_MODE
 
@@ -131,14 +132,19 @@ void Fork (void (*func) ());
 void Yield ();
 
 /*
-* Ecrit un charactère
+* Ecrit un caractère
 */
 void PutChar(char c);
 
 /*
-* Ecrit une chaine de charactères
+* Ecrit une chaine de caractères
 */
 void SynchPutString(const char s[]);
+
+/*
+* Lit un caractère
+*/
+char SynchGetChar();
 
 #endif // IN_USER_MODE
 

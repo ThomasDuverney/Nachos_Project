@@ -24,7 +24,7 @@
 	.ent	__start
 __start:
 	jal	main
-	move	$4,$0
+	move	$4,$2
 	jal	Exit	 /* if we return from main, exit(0) */
 	.end __start
 
@@ -144,6 +144,14 @@ SynchPutString:
 	syscall
 	j	$31
 	.end SynchPutString
+
+    .globl SynchGetChar
+	.ent    SynchGetChar
+SynchGetChar:
+	addiu $2,$0,SC_SynchGetChar
+	syscall
+	j	$31
+	.end SynchGetChar
 
 /* dummy function to keep gcc happy */
         .globl  __main

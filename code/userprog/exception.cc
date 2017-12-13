@@ -73,10 +73,10 @@ static void UpdatePC (){
 //----------------------------------------------------------------------
 
 void ExceptionHandler (ExceptionType which){
-    int type, reg4, reg0;
+    int type, reg4;
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
-    reg0 = machine->ReadRegister (0);
+    //reg29 = machine->ReadRegister (29);
 
     if (which == SyscallException) {
         switch (type) {
@@ -86,7 +86,7 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_PutChar:
                 DEBUG('a', "PutChar, initiated by user program.\n");
-                synchconsole->SynchPutChar(reg4);
+                synchconsole->SynchPutChar((char)reg4);
                 break;
             case SC_SynchPutString:
                 DEBUG('a', "PutChar, initiated by user program.\n");
@@ -94,7 +94,16 @@ void ExceptionHandler (ExceptionType which){
                 copyStringFromMachine(reg4, buf, MAX_STRING_SIZE);
                 synchconsole->SynchPutString(buf);
                 break;
+            case SC_SynchGetChar:
+                DEBUG('a', "GetChar, initiated by user program.\n");
+                machine->WriteRegister(2, (int)synchconsole->SynchGetChar());
+                break;
             case SC_Exit:
+                // int buf2;
+                // for (int i=0; i<20; i++){
+                //     machine->ReadMem(reg29-(i*4), 4, &buf2);
+                //     printf("reg29:%d stackI:%d Value:|%d|\n", reg29, i, buf2);
+                // }
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             default:
