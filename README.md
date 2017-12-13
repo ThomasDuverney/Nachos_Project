@@ -7,6 +7,11 @@
 * Thomas Duverney
 * Maxime Isnel
 
+## Question a Vincent
+
+* Est ce que ce qu'il faut flusher l'entrée standard à la fin d'un processus
+* Gestion concurrente dans le SynchGetString (Mutex?)
+
 ## Planning
 
 * Etape 1: Installation, prise en main, compréhension (2 jours)
