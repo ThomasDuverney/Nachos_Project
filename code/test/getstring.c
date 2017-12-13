@@ -2,14 +2,14 @@
 
 int main(){
 
-	char s[1000];
+	char s[20];
 
 	// bloquant
-	GetString(s, 1000);
+	GetString(s, 20);
 
-	PutString("Bonjour");
+
 	PutString(s);
-
+	PutString("\n");
 
 	return 0;
 }

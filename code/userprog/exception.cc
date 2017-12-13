@@ -108,8 +108,19 @@ void ExceptionHandler (ExceptionType which){
                 // reg5 = taille max 
                 synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
                 break;
+            case SC_PutInt:
+                DEBUG('a', "SynchPutInt, initiated by user program.\n");
+                synchconsole->SynchPutInt(reg4);
+                break;
+            case SC_GetInt:
+                DEBUG('a', "SynchGetInt, initiated by user program.\n");
+                int val;
+                synchconsole->SynchGetInt(&val);
+                machine->WriteMem(reg4, 4, val);
+                break;
             case SC_Exit:
                 // la valeur de retour du main ou exit est dans le registre 4
+                //synchconsole->Flush(); Appophinai
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             default:

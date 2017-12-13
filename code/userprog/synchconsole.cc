@@ -36,7 +36,6 @@ void SynchConsole::SynchPutString(const char s[]) {
     while(s[i] != '\0'){
         SynchPutChar(s[i++]);
     }
-
 }
 
 void SynchConsole::SynchGetString(char *s, int n) {
@@ -44,6 +43,7 @@ void SynchConsole::SynchGetString(char *s, int n) {
     char c;
     for(i=0; i<(n-1); i++){
         c = SynchGetChar();
+
         if (c == EOF || c == 04 || c == '\n'){
             s[i] = '\0';
             return;
@@ -53,4 +53,21 @@ void SynchConsole::SynchGetString(char *s, int n) {
     if (i == (n-1)){
         s[i] = '\0';
     }
+}
+
+void SynchConsole::SynchPutInt(int n){
+    char str [MAX_STRING_SIZE];
+    sprintf(str, "%d", n);
+    SynchPutString(str);
+}
+
+void SynchConsole::SynchGetInt(int *n){
+    char str [MAX_STRING_SIZE];
+    SynchGetString(str, MAX_STRING_SIZE);
+    sscanf(str, "%d", n);
+}
+
+void SynchConsole::Flush(){
+    char c;
+    while((c = SynchGetChar()) != EOF && c != 04 && c != '\n');
 }
