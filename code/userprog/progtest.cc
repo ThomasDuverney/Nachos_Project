@@ -79,7 +79,7 @@ void
 ConsoleTest (char *in, char *out)
 {
     char ch;
-
+    //ERREUR ICI A CORRIGER (1er char diparait)
     console = new Console (in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore ("read avail", 0);
     writeDone = new Semaphore ("write done", 0);
@@ -88,7 +88,6 @@ ConsoleTest (char *in, char *out)
       {
 	  readAvail->P ();	// wait for character to arrive
 	  ch = console->GetChar ();
-      printf("ch=%c EOF=%d 04=%d\n", ch, ch==EOF, ch==04);
       if (ch == EOF || ch == 04)
 	      return;		// if EOF or 04, quit
       console->PutChar ('<');

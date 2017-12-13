@@ -32,6 +32,7 @@
 #define SC_PutChar  11
 #define SC_SynchPutString 12
 #define SC_SynchGetChar 13
+#define SC_SynchGetString 14
 
 #ifdef IN_USER_MODE
 
@@ -145,6 +146,11 @@ void SynchPutString(const char s[]);
 * Lit un caractère
 */
 char SynchGetChar();
+
+/*
+* Lit une chaine de caractères
+*/
+void SynchGetString(char *s, int n);
 
 #endif // IN_USER_MODE
 

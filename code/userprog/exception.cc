@@ -77,7 +77,7 @@ void ExceptionHandler (ExceptionType which){
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
     char c;
-    //reg29 = machine->ReadRegister (29);
+
 
     if (which == SyscallException) {
         switch (type) {
@@ -90,7 +90,7 @@ void ExceptionHandler (ExceptionType which){
                 synchconsole->SynchPutChar((char)reg4);
                 break;
             case SC_SynchPutString:
-                DEBUG('a', "PutChar, initiated by user program.\n");
+                DEBUG('a', "SynchPutString, initiated by user program.\n");
                 char buf [MAX_STRING_SIZE];
                 copyStringFromMachine(reg4, buf, MAX_STRING_SIZE);
                 synchconsole->SynchPutString(buf);
@@ -101,6 +101,11 @@ void ExceptionHandler (ExceptionType which){
                 if(c != EOF){
                   machine->WriteRegister(2, (int)c);
                 }
+                break;
+            case SC_SynchGetString:
+                DEBUG('a', "SynchGetString, initiated by user program.\n");
+                synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
+                machine->WriteRegister(2, reg4);
                 break;
             case SC_Exit:
                 // la valeur de retour du main ou exit est dans le registre 4
