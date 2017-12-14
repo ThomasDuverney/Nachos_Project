@@ -24,6 +24,7 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
+#include "userthread.h"
 
 void copyStringFromMachine(int from, char *to, unsigned size){
     unsigned int i=0;
@@ -119,11 +120,11 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadCreate:
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
-
+                machine->WriteRegister(2, do_UserThreadCreate(reg4, reg5));
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExit, initiated by user program.\n");
-
+                do_UserThreadExit();
                 break;
             case SC_Exit:
                 // la valeur de retour du main ou exit est dans le registre 4
