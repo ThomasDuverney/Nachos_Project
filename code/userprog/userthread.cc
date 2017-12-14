@@ -10,7 +10,6 @@ static void StartUserThread(int f){
     machine->WriteRegister (NextPCReg, f+4);
     machine->WriteRegister (4, machine->ReadRegister(HiReg));
     machine->Run();
-    printf("startuserthread not implemented yet\n");
 }
 
 int do_UserThreadCreate(int f, int arg){
@@ -18,6 +17,7 @@ int do_UserThreadCreate(int f, int arg){
     if((t = new Thread ("User_Thread")) == NULL) {return -1;}
     machine->WriteRegister(HiReg, arg);
     t->Fork(StartUserThread,f);
+    currentThread->Yield();
     return 0;
 }
 
