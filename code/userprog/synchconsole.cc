@@ -1,7 +1,6 @@
 #include "copyright.h"
 #include "system.h"
 #include "synchconsole.h"
-#include "synch.h"
 
 static Semaphore *readAvail;
 static Semaphore *writeDone;
@@ -12,6 +11,8 @@ static void WriteDone(int arg) { writeDone->V(); }
 SynchConsole::SynchConsole(char *readFile, char *writeFile) {
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
+    read = new Semaphore("read", 1);
+    write = new Semaphore("write", 1);
     console = new Console(readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
@@ -19,16 +20,22 @@ SynchConsole::~SynchConsole() {
     delete console;
     delete writeDone;
     delete readAvail;
+    delete read;
+    delete write;
 }
 
 void SynchConsole::SynchPutChar(const char c) {
+    write->P();
     console->PutChar(c);
     writeDone->P();
+    write->V();
 }
 
 char SynchConsole::SynchGetChar() {
+    read->P();
     readAvail->P();
     return console->GetChar();
+    read->V();
 }
 
 void SynchConsole::SynchPutString(const char s[]) {

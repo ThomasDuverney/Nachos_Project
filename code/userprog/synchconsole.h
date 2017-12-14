@@ -4,6 +4,7 @@
 #include "copyright.h"
 #include "utility.h"
 #include "console.h"
+#include "synch.h"
 
 class SynchConsole {
     public:
@@ -26,6 +27,8 @@ class SynchConsole {
         void Flush();
     private:
         Console *console;
+        Semaphore *read;
+        Semaphore *write;
 };
 
 #endif // SYNCHCONSOLE_H
