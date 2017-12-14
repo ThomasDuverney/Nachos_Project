@@ -9,7 +9,7 @@ static void StartUserThread(int f){
     machine->WriteRegister (PCReg, f);
     machine->WriteRegister (NextPCReg, f+4);
     machine->WriteRegister (4, machine->ReadRegister(HiReg));
-
+    machine->Run();
     printf("startuserthread not implemented yet\n");
 }
 
