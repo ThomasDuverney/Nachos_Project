@@ -103,9 +103,8 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_GetString:
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
-
                 // reg4 = adresse du tableau de la string (memoire virtuelle)
-                // reg5 = taille max 
+                // reg5 = taille max
                 synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
                 break;
             case SC_PutInt:
@@ -117,6 +116,14 @@ void ExceptionHandler (ExceptionType which){
                 int val;
                 synchconsole->SynchGetInt(&val);
                 machine->WriteMem(reg4, 4, val);
+                break;
+            case SC_UserThreadCreate:
+                DEBUG('a', "UserThreadCreate, initiated by user program.\n");
+
+                break;
+            case SC_UserThreadExit:
+                DEBUG('a', "UserThreadExit, initiated by user program.\n");
+
                 break;
             case SC_Exit:
                 // la valeur de retour du main ou exit est dans le registre 4
