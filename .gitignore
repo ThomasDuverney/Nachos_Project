@@ -2,3 +2,15 @@ code/build/*
 code/bin/coff2noff
 code/bin/*.o
 code/bin/.*.d
+
+# Gnu global
+GPATH
+GRTAGS
+GSYMS
+GTAGS
+# Emacs
+*.c~
+\#*
+*.cc~
+*.h~
+.*
