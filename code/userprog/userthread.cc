@@ -15,6 +15,9 @@ static void StartUserThread(int f){
 int do_UserThreadCreate(int f, int arg){
     Thread *t;
     if((t = new Thread ("User_Thread")) == NULL) {return -1;}
+    // MAUVAISE IDEE: dans cette solution on stocke les arguments de la fonction f dans HIGHREG
+    // Quand on donne la main avec yield, on ne garatit pas que le prochain thread que le scheduler 
+    // va choisir sera celui qu'on vient de créer -> Highreg peut être écrasé et on perdra les paramètres.
     machine->WriteRegister(HiReg, arg);
     t->Fork(StartUserThread,f);
     currentThread->Yield();
