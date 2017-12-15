@@ -47,7 +47,8 @@
 
 ## Les Conventions
 
-* Langue : Anglais
+* Langue du code : Anglais
+* Langue des commentaire : Pseudo Français
 * Tabulation : 4 spaces
 * Variable : commence par une minuscule
 * Types : commence par une majuscule
