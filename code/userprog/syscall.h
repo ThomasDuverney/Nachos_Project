@@ -35,6 +35,8 @@
 #define SC_GetString 	14
 #define SC_PutInt   	15
 #define SC_GetInt   	16
+#define SC_UserThreadCreate 17
+#define SC_UserThreadExit   18
 
 #ifdef IN_USER_MODE
 
@@ -135,34 +137,51 @@ void Fork (void (*func) ());
 void Yield ();
 
 /*
-* Ecrit un caractère
-*/
+ * Ecrit un caractère
+ */
 void PutChar(char c);
 
 /*
-* Ecrit une chaine de caractères
-*/
+ * Ecrit une chaine de caractères
+ */
 void PutString(const char s[]);
 
 /*
-* Lit un caractère
-*/
+ * Lit un caractère
+ */
 char GetChar();
 
 /*
-* Lit une chaine de caractères
-*/
+ * Lit une chaine de caractères
+ */
 void GetString(char *s, int n);
 
 /*
-* Ecrit un int
-*/
+ * Ecrit un int
+ */
 void PutInt(int n);
 
 /*
-* Lit un int
-*/
+ * Lit un int
+ */
 void GetInt(int *n);
+
+/*
+ * Crée un nouveau thread utilisateur.
+ * Prends en paramètres:
+ *  - un pointeur f vers la fonction à executer par le thread.
+ *  - un pointeur vers les arguments de la fonction f.
+ */
+int UserThreadCreate(void f(void* arg), void* arg);
+
+/*
+ * void UserThreadExit()
+ * Sémantique:
+ *   Termine le threadUser courant.
+ * Post-condition:
+ *   L'espace mémoire du threadUser est libéré (zeroed ?).
+ */
+void UserThreadExit();
 
 #endif // IN_USER_MODE
 
