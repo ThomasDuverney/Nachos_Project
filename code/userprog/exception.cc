@@ -131,6 +131,13 @@ void ExceptionHandler (ExceptionType which){
                 //synchconsole->Flush(); Appophinai
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
+            case SC_UserThreadCreate:
+                DEBUG('a', "UserThreadcreate, initiated by user program.\n");
+                machine->WriteRegister(2, do_UserThreadCreate(reg4, reg5));
+                break;
+            case SC_UserThreadExit:
+                DEBUG('a', "UserThreadExi, initiated by user program.\n");
+
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);
