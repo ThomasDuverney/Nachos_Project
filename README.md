@@ -7,9 +7,9 @@
 * Thomas Duverney
 * Maxime Isnel
 
-## Question a Vincent
+## Questions à Vincent
 
-* Est ce que ce qu'il faut flusher l'entrée standard à la fin d'un processus
+* Est-ce qu'il faut flusher l'entrée standard à la fin d'un processus
 * Gestion concurrente dans le SynchGetString (Mutex?)
 
 ## Planning
@@ -28,9 +28,9 @@
 ## Etapes
 
 * Etape 1 : Mise en place
-	* Installer NachOS, comprendre comment il marche. Comprendre comment executer programme utilisateur. Définir différence entre Noyau et Utilisateur.
+	* Installer NachOS, comprendre comment il marche. Comprendre comment éxécuter un programme utilisateur. Définir la différence entre Noyau et Utilisateur.
 * Etape 2 : Entrées/Sorties
-	* Implémenter les entrées clavier et les sorties a l'écran. **Quatre** fonctions à implémenter: **PutChar**, **GetChar**, **PutString**, **GetString**. Pour cela il faut avoir bien compris les **appels système** de NachOS.
+	* Implémenter les entrées clavier et les sorties à l'écran. **Quatre** fonctions à implémenter: **PutChar**, **GetChar**, **PutString**, **GetString**. Pour cela il faut avoir bien compris les **appels système** de NachOS.
 * Etape 3 : Multithreading
 	* Permettre à l'utilisateur de faire des programmes multithreadés. Pour ce faire il faut bien comprendre l'*adressage d'un processus* dans NachOS pour le partager entre les threads. 
 	* *BONUS*: l'utilisateur doit pouvoir faire de la synchronisation (Mutex?)
@@ -50,8 +50,8 @@
 * Langue du code : Anglais
 * Langue des commentaire : Pseudo Français
 * Tabulation : 4 spaces
-* Variable : commence par une minuscule
-* Types : commence par une majuscule
+* Variables : commencent par une minuscule
+* Types : commencent par une majuscule
 
 ## Comment on utilise Git ?
 
@@ -89,7 +89,7 @@ coco
 caca
 >>>>>>> branch_Thread:Thread.cc
 ```
-Lorsque vous avez résolu les conflits d'un fichier vous pouvez l'ajouter :
+Lorsque vous avez résolus les conflits d'un fichier vous pouvez l'ajouter :
 ```
 git add <FILE>
 ```
