@@ -34,6 +34,22 @@ extern Timer *timer;		// the hardware alarm clock
 #include "machine.h"
 #include "synchconsole.h"
 extern Machine *machine;	// user program memory and registers
+/*
+  semExitprocess:
+  Structure de synchronisation pour la fermeture d'un processus (cas momno-processus),
+  On veut qu'un processus attende que tous ses threads aient fini avant de terminer.
+  La sémaphore est initialisée à 0. Quand un thread est crée, on décrémente la sémaphore.
+  Quand un thread se termine on incrémente la sémaphore.
+  Le processus père attends que la sémaphore soit positive ou nulle (tous les threads on terminé)
+  avant de quitter.
+ */
+extern Semaphore *semExitProcess;
+/* /!\ Remarque: la variable globale nbThreadProcess n'est accédée et modifiée que par le noyau,
+   qui pour l'instant est considéré comme mono-thread.
+   Dans ces conditions l'accès à cette variable n'a pas besoin d'être protégé par un
+   verrou.
+ */
+extern int nbThreadProcess; // Nombre de threads actifs du processus courant.
 extern SynchConsole *synchconsole;
 #endif
 

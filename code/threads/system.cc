@@ -30,6 +30,13 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
+Semaphore *semExitProcess;
+/* /!\ Remarque: la variable globale nbThreadProcess n'est accédée et modifiée que par le noyau,
+   qui pour l'instant est considéré comme mono-thread.
+   Dans ces conditions l'accès à cette variable n'a pas besoin d'être protégé par un
+   verrou.
+*/
+int nbThreadProcess;
 #endif
 
 #ifdef NETWORK
@@ -86,6 +93,7 @@ Initialize (int argc, char **argv)
     bool debugUserProg = FALSE;	// single step user program
     char* in = NULL;
     char* out = NULL;
+
 #endif
 #ifdef FILESYS_NEEDED
     bool format = FALSE;	// format disk
@@ -165,6 +173,8 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
+    semExitProcess = new Semaphore("sem_Exit", 1);
+    nbThreadProcess = 0;
 #endif
 
 #ifdef FILESYS
@@ -195,6 +205,7 @@ Cleanup ()
 #ifdef USER_PROGRAM
     delete synchconsole;
     delete machine;
+    delete semExitProcess;
 #endif
 
 #ifdef FILESYS_NEEDED

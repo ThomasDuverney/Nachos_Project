@@ -120,24 +120,51 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadCreate:
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
-                machine->WriteRegister(2, do_UserThreadCreate(reg4, reg5));
+                int threadId;
+                threadId = do_UserThreadCreate(reg4, reg5);
+                if(threadId != -1){
+                    /* Si le thread a bien été crée */
+                    nbThreadProcess++; // Incrémente le nombre de threads actifs dans le processus parent */
+                    if(nbThreadProcess == 1) {
+                        /*
+                          Le premier thread actif décrémente la semaphore binaire semExitprocess (-> 0).
+                          On garantit ainsi que le processus père ne puisse pas appeler la fonction halt()
+                          tant qu'un thread est actif.
+                         */
+                        semExitProcess->P();
+                    }
+                }
+                machine->WriteRegister(2,threadId);
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExit, initiated by user program.\n");
+                nbThreadProcess--;
+                if(nbThreadProcess == 0){
+                    /*
+                      Quand le dernier thread actif termine il incrémente la sémaphore binaire
+                      semExitprocess (-> 1).
+                     */
+                    semExitProcess->V();
+                }
                 do_UserThreadExit();
                 break;
             case SC_Exit:
-                // la valeur de retour du main ou exit est dans le registre 4
-                //synchconsole->Flush(); Appophinai
+                /*
+                  La valeur de retour du main ou exit est dans le registre 4
+                  Remarque: synchconsole->Flush(); Pour des raisons de sécurité on flush la
+                  la sortie standard??
+                */
                 DEBUG('a', "Exit, initiated by user program.\n");
+                /*
+                  La sémaphore semExitprocess empêche un processus d'appeler la fonction
+                  Exit avant que ses sous-threads aient terminé.
+                  /!\ Remarque: On suppose que notre système possède toujours un unique processus actif.
+                  Pour l'instant l'appel à Exit() entraîne un appel Halt(), qui éteint par la même occasion
+                  la machine. Quand nous considèrerons plusieurs processus, la fermeture d'un processus
+                  devra pas é teindre la machine.
+                */
+                semExitProcess->P();
                 break;
-            case SC_UserThreadCreate:
-                DEBUG('a', "UserThreadcreate, initiated by user program.\n");
-                machine->WriteRegister(2, do_UserThreadCreate(reg4, reg5));
-                break;
-            case SC_UserThreadExit:
-                DEBUG('a', "UserThreadExi, initiated by user program.\n");
-
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

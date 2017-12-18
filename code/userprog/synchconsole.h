@@ -27,8 +27,9 @@ class SynchConsole {
         void Flush();
     private:
         Console *console;
-        Semaphore *read;
-        Semaphore *write;
+        /* Stuctures de synchronisations pour les appels read() et write() */
+        Semaphore *semRead;
+        Semaphore *semWrite;
 };
 
 #endif // SYNCHCONSOLE_H

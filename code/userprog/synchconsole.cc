@@ -11,8 +11,8 @@ static void WriteDone(int arg) { writeDone->V(); }
 SynchConsole::SynchConsole(char *readFile, char *writeFile) {
     readAvail = new Semaphore("read avail", 0);
     writeDone = new Semaphore("write done", 0);
-    read = new Semaphore("read", 1);
-    write = new Semaphore("write", 1);
+    semRead = new Semaphore("read", 1);
+    semWrite = new Semaphore("write", 1);
     console = new Console(readFile, writeFile, ReadAvail, WriteDone, 0);
 }
 
@@ -20,22 +20,22 @@ SynchConsole::~SynchConsole() {
     delete console;
     delete writeDone;
     delete readAvail;
-    delete read;
-    delete write;
+    delete semRead;
+    delete semWrite;
 }
 
 void SynchConsole::SynchPutChar(const char c) {
-    write->P();
+    semWrite->P();
     console->PutChar(c);
     writeDone->P();
-    write->V();
+    semWrite->V();
 }
 
 char SynchConsole::SynchGetChar() {
-    read->P();
+    semRead->P();
     readAvail->P();
     return console->GetChar();
-    read->V();
+    semRead->V();
 }
 
 void SynchConsole::SynchPutString(const char s[]) {
