@@ -34,6 +34,7 @@
 * Etape 3 : Multithreading
 	* Permettre à l'utilisateur de faire des programmes multithreadés. Pour ce faire il faut bien comprendre l'*adressage d'un processus* dans NachOS pour le partager entre les threads. 
 	* *BONUS*: l'utilisateur doit pouvoir faire de la synchronisation (Mutex?)
+	* *BONUS*: Faire en sorte que le nouveau Thread lancé n'est pas obligé d'appeler UserThreadExit (Avec l'adresse de la fonction)
 * Etape 4 : Mémoire Virtuelle
 	* Pouvoir lancer plusieurs processus, implémentation appel système fork(). 
 	* *BONUS*: implémenter un petit shell 
