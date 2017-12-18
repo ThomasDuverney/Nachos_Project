@@ -129,7 +129,8 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExi, initiated by user program.\n");
-
+                do_UserThreadExit();
+                break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

@@ -42,6 +42,8 @@ extern  int do_UserThreadCreate(int f, int arg){
 }
 
 // /!\ : TODO -> libération de l'espace mémoire
-void do_UserThreadExit(){
+extern void do_UserThreadExit(){
+  printf("User_thread_exit \n");
   currentThread->Finish();
+
 }
