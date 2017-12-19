@@ -21,17 +21,16 @@
 //      memory, and jump to it.
 //----------------------------------------------------------------------
 
-void
-StartProcess (char *filename)
-{
+void StartProcess (char *filename){
+
     OpenFile *executable = fileSystem->Open (filename);
     AddrSpace *space;
 
-    if (executable == NULL)
-      {
-	  printf ("Unable to open file %s\n", filename);
-	  return;
-      }
+    if (executable == NULL){
+        printf ("Unable to open file %s\n", filename);
+       return;
+    }
+
     space = new AddrSpace (executable);
     currentThread->space = space;
 
@@ -58,14 +57,11 @@ static Semaphore *writeDone;
 //      Wake up the thread that requested the I/O.
 //----------------------------------------------------------------------
 
-static void
-ReadAvail (int arg)
-{
+static void ReadAvail (int arg){
     readAvail->V ();
 }
-static void
-WriteDone (int arg)
-{
+
+static void WriteDone (int arg){
     writeDone->V ();
 }
 
@@ -75,30 +71,28 @@ WriteDone (int arg)
 //      the output.  Stop when the user types a 'q'.
 //----------------------------------------------------------------------
 
-void
-ConsoleTest (char *in, char *out)
-{
+void ConsoleTest (char *in, char *out){
     char ch;
     //ERREUR ICI A CORRIGER (1er char diparait)
     console = new Console (in, out, ReadAvail, WriteDone, 0);
     readAvail = new Semaphore ("read avail", 0);
     writeDone = new Semaphore ("write done", 0);
 
-    for (;;)
-      {
-	  readAvail->P ();	// wait for character to arrive
-	  ch = console->GetChar ();
-      if (ch == EOF || ch == 04)
-	      return;		// if EOF or 04, quit
-      console->PutChar ('<');
-      writeDone->P();
+    for (;;){
 
-      console->PutChar (ch);	// echo it!
-      writeDone->P ();
+        readAvail->P ();	// wait for character to arrive
+        ch = console->GetChar ();
+        if (ch == EOF || ch == 04)
+          return;		// if EOF or 04, quit
+        console->PutChar ('<');
+        writeDone->P();
 
-      console->PutChar ('>');
-      writeDone->P();
-  }
+        console->PutChar (ch);	// echo it!
+        writeDone->P ();
+
+        console->PutChar ('>');
+        writeDone->P();
+    }
 }
 
 void SynchConsoleTest (char *in, char *out){
