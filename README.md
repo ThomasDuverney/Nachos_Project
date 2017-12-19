@@ -11,6 +11,27 @@
 
 * Est-ce qu'il faut flusher l'entrée standard à la fin d'un processus
 * Gestion concurrente dans le SynchGetString (Mutex?)
+* Pourquoi la fonction que exécute le thread n'est pas capable de recuperer les variables définies en local pour les passages en paramètre de fonction?
+
+```
+void printInt(void * test){
+	int i = 27;
+	PutInt(i);
+	UserThreadExit();
+}
+
+int main(){
+
+	int i = 200;
+
+	PutInt(i);
+	PutChar('\n');
+
+	UserThreadCreate(printInt, (void *) i);
+
+	return 0;
+}
+```
 
 ## Planning
 
