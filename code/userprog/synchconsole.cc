@@ -59,6 +59,11 @@ void SynchConsole::SynchGetString(char *s, int n) {
     }
     if (i == (n-1)){
         s[i] = '\0';
+        /*
+         Va Flush l'entrée standard si on essaye de dépasser (Sécurité)
+         Ne marche surrement pas avec un fichier en entrée
+        */
+        Flush();
     }
 }
 
