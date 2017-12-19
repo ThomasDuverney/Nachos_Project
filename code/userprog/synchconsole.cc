@@ -34,8 +34,10 @@ void SynchConsole::SynchPutChar(const char c) {
 char SynchConsole::SynchGetChar() {
     semRead->P();
     readAvail->P();
-    return console->GetChar();
+    char c = console->GetChar();
     semRead->V();
+    return c;
+
 }
 
 void SynchConsole::SynchPutString(const char s[]) {
