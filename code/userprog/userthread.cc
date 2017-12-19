@@ -9,6 +9,8 @@
 static void StartUserThread(int threadParams){
   UserThreadParams *userThreadParams = (UserThreadParams*) threadParams;
 
+  currentThread->space->InitRegisters();
+  currentThread->space->RestoreState();
   // Sauvegarde de l'ancienne valeur de PC pour le retour de la fonction.
   machine->WriteRegister (PrevPCReg, machine->ReadRegister (PCReg));
   //Place dans PC la prochaine instruction à éxecuter -> f
@@ -37,7 +39,8 @@ extern  int do_UserThreadCreate(int f, int arg){
   threadParams->arg = arg;
 
   t->Fork(StartUserThread,(int) threadParams);
-  currentThread->Yield();
+  // /*\ Peut etre utile si jamais on est en thread noyau 
+  //currentThread->Yield();
 
   return (int) t;
 }
