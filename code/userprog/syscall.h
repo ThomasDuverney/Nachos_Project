@@ -149,7 +149,7 @@ void PutChar(char c);
  * Spécifications:
  *   Prends en paramètre un pointeur de caractère s.
  * Sémantique:
- *   Ecrit la chaîne de caractères lue à l'adresse s sur la sortie standard.
+ *   Ecrit la chaîne de caractères lue à l'adresse s, sur la sortie standard.
  *   La lecture s'arrête quand on rencontre le caractère '\0.
  */
 void PutString(const char *s);
