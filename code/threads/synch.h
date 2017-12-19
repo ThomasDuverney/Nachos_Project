@@ -86,6 +86,8 @@ class Lock
     // Condition variable ops below.
 
   private:
+    int value;
+    List * queue;
     const char *name;		// for debugging
     // plus some other stuff you'll need to define
 };
@@ -142,6 +144,7 @@ class Condition
     // these operations
 
   private:
+    List * queue;
     const char *name;
     // plus some other stuff you'll need to define
 };
