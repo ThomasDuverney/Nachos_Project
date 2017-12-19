@@ -30,7 +30,8 @@ int main(){
 	UserThreadCreate(printInt, (void *) i);
 
 	return 0;
-}
+
+} // affiche 200 puis un truc aléatoire
 ```
 
 ## Planning
