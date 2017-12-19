@@ -137,32 +137,60 @@ void Fork (void (*func) ());
 void Yield ();
 
 /*
- * Ecrit un caractère
+ * PutChar:
+ * Spécifications:
+ *   Prends en paramètre un caractère c.
+ * Sémantique:
+ *   Ecrit le caractère c sur la sortie standard.
  */
 void PutChar(char c);
 
-/*
- * Ecrit une chaine de caractères
+/* PutString:
+ * Spécifications:
+ *   Prends en paramètre un pointeur de caractère s.
+ * Sémantique:
+ *   Ecrit la chaîne de caractères lue à l'adresse s, sur la sortie standard.
+ *   La lecture s'arrête quand on rencontre le caractère '\0.
  */
-void PutString(const char s[]);
+void PutString(const char *s);
 
 /*
- * Lit un caractère
+ * GetChar:
+ * Sémantique:
+ *   Lit un caractère depuis l'entrée standard.
  */
 char GetChar();
 
 /*
- * Lit une chaine de caractères
+ * GetString:
+ * Spécifications:
+ *   Prends en paramètre un pointeur de caractère s et un entier n.
+ * Sémantique:
+ *   Lit une chaine de caractères de longueur maximale égale à n depuis l'entrée standard et
+ *   l'ecrit à l'adresse de s.
+ * Pré-condition:
+ *   L'adresse s fournie en paramètre pointe une zone mémoire suffisament large pour stocker
+ *   n caractères.
  */
 void GetString(char *s, int n);
 
 /*
- * Ecrit un int
+ * PutInt:
+ * Spécifications:
+ *   Prends en paramètres un entier n.
+ * Sémantique:
+ *   Ecrit l'entier n sur la sortie standard.
  */
 void PutInt(int n);
 
 /*
- * Lit un int
+ * GetInt:
+ * Spécifications:
+ *   Prends en paramètres un pointeur d'entier n.
+ * Sémantique:
+ *   Lit un entier depuis l'entrée standard et l'écrit à l'adresse n.
+ * Pré-condition:
+ *   n doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
  */
 void GetInt(int *n);
 
