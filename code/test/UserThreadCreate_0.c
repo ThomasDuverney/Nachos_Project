@@ -1,13 +1,13 @@
 #include "syscall.h"
 
-#define NB 10
+#define NB 5
 
 /*
  * Creation de plusieurs threads utilisateur qui affichent un entier.
  */
 void g(void *arg) {
 	int n = *(int*) arg;
-	//PutString("Je suis le thread num ");
+	PutString("Je suis le thread num ");
 	PutInt(n);
 	PutChar('\n');
 	UserThreadExit();
