@@ -1,6 +1,6 @@
 #include "syscall.h"
 /*
-  Ecriture d'un caractère sur la sortie standart.
+  Ecriture d'un caractère sur la sortie standard.
  */
 int main() {
     PutChar('a');

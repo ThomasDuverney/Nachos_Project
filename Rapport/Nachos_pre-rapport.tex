@@ -1,0 +1,240 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.6in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{amsmath, amsthm}
+\usepackage{textcomp}
+\usepackage{marvosym}
+\usepackage{wasysym}
+\usepackage{amssymb}
+\usepackage[frenchb]{babel}
+\usepackage{color}
+\usepackage{listings}
+\lstset{
+  %frame=tb,
+  language=Bash,
+  aboveskip=2mm,
+  belowskip=2mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\footnotesize\color{gray},
+  %keywordstyle=\color{blue},
+  %commentstyle=\color{dkgreen},
+  %stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+         
+% Pour XeTeX
+\XeTeXdefaultencoding utf-8
+\usepackage{fontspec}
+
+\newenvironment{absolutelynopagebreak}
+  {\par\nobreak\vfil\penalty0\vfilneg
+   \vtop\bgroup}
+  {\par\xdef\tpd{\the\prevdepth}\egroup
+   \prevdepth=\tpd}
+
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\tolerance=1000
+\setcounter{secnumdepth}{2}
+\author{Borne, Duquennoy, Duverney, Isnel}
+\date{}
+\title{Nachos Pré-rapport}
+
+\begin{document}
+\maketitle
+\section{Consignes}
+Un rapport de 8 à 12 pages maximum dont l'objectif est de nous convaincre d'acheter votre nachos. Ce rapport sera structuré en 5 parties :
+une (courte) partie présentant rapidement les fonctionnalités intéressante/importante de votre noyau (ce qui vous démarque de vos concurrents, ce qu'on peut faire avec votre logiciel, ...).
+
+Une partie "spécifications" listant ce qui est disponible pour les programmes utilisateurs.
+Il faut mettre ici le genre d'information que vous trouvez dans les pages man.
+On doit donc trouver tous les appels systèmes implémentés avec leur prototype, la description des arguments,
+la description du fonctionnement (fonctionnalités utilisateurs, pas implémentation) de l'appel système,
+de la valeur de retour éventuelle, la signalisation des erreurs, ...
+Si vous avez également une bibliothèque utilisateur, vous devez décrire ses fonctions de la même manière que les appels systèmes.
+
+Une partie "tests utilisateurs" décrivant les programmes de test que vous avez réalisés, ce qu'ils montrent, ...
+
+Une partie "implémentation" qui explique les points importants de votre implémentation. C'est donc la seule partie qui parle du détail du code que vous avez écrit. Expliquez vos choix d'implémentation.
+une partie plus "scolaire" où vous décrivez l'organisation de votre travail (planning, ...), commentaires constructifs sur le déroulement du projet, ...
+
+Les 3 premières parties s'adressent à un utilisateur de votre système. La 4ième partie s'adresse à un développeur qui voudrait continuer à développer votre système. Si vous avez bien travaillé sur les spécifications comme demandé, ces parties techniques seront faciles à écrire.
+
+
+
+
+
+
+
+
+
+\section{Spécification}
+\subsection{Entrées Sorties}
+
+\subsubsection{\texttt{void PutChar(char c)}}
+\begin{itemize}
+\item[-] Spécifications: Prends en paramètre un caractère c.
+\item[-] Sémantique: Écrit le caractère c sur la sortie standard.
+\end{itemize}
+
+\subsubsection{\texttt{void PutString(const char *s);}}
+\begin{itemize}
+\item[-] Spécifications: Prends en paramètre un pointeur de caractère \texttt{s}.
+\item[-] Sémantique:
+  Écrit la chaîne de caractères lue à l'adresse \texttt{s}, sur la sortie standard.
+  La lecture s'arrête quand on rencontre le caractère '\\0'.
+\end{itemize}
+
+\subsubsection{\texttt{char GetChar()}}
+\begin{itemize}
+\item[-] Sémantique: Lit un caractère depuis l'entrée standard.
+\item[-] Valeur de retour: Retourne le caractère lu.
+\end{itemize}
+
+\subsubsection{\texttt{void GetString(char *s, int n)}}
+\begin{itemize}
+\item[-] Spécifications:Prends en paramètre un pointeur de caractère \texttt{s} et un entier \texttt{n}.
+\item[-] Sémantique:
+  Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
+  l'écrit à l'adresse de \texttt{s}.
+\item[-] Pré-Conditions:
+  L'adresse \texttt{s} fournie en paramètre pointe une zone mémoire suffisamment large pour stocker
+  \texttt{n} caractères.
+\end{itemize}
+
+\subsubsection{void PutInt(int n)}
+\begin{itemize}
+\item[-] Spécifications: Prends en paramètres un entier \texttt{n}.
+\item[-] Sémantique: Écrit l'entier \texttt{n} sur la sortie standard.
+\end{itemize}
+
+\subsubsection{\texttt{void GetInt(int *n)}}
+\begin{itemize}
+\item[-] Spécifications: Prends en paramètres un pointeur d'entier \texttt{n}.
+\item[-] Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse \texttt{n}.
+\item[-] Pré-Conditions:
+  \texttt{n} doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
+\end{itemize}
+
+
+
+
+
+\subsection{Threads}
+
+\subsubsection{\texttt{int UserThreadCreate(void f(void* arg), void* arg)}}
+\begin{itemize}
+\item[-] Spécifications: Prends en paramètres un pointeur de fonction \texttt{f} de valeur de retour
+  void et un pointeur \texttt{arg}.
+\item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction f(arg).
+\item[-] Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
+  pile du thread à créer, dans le cas contraire le système s'arrête avec le message:
+  La création du thread a échoué.
+\item[-] Post-Conditions: 
+\item[-] Valeur de retour: retourne l'identficateur du thread crée. -1 si une erreur s'est produite lors de
+  la création.
+\end{itemize}
+
+\subsubsection{\texttt{void UserThreadExit()}}
+\begin{itemize}
+\item[-] Sémantique: Termine le threadUser courant.
+\item[-] Post-Conditions: 
+\end{itemize}
+
+
+
+\section{Tests utilisateurs}
+
+
+
+\subsection{Entrées-Sorties}
+\begin{itemize}
+\item Putchar_0: Ecriture du caractère \texttt{'a'} sur la sortie standard.
+\item Putchar_1: Ecriture du caractère \texttt{'a'} et \texttt{'b'} sur la sortie standard.
+\item Putchar_2: Ecriture de multiples caractères sur la sortie standard.
+\item PutInt_0: Ecriture de l' entier 10 sur la sortie standard.
+\item PutInt_1: Ecriture de l'entier 0 et de l'entier 1 sur la sortie standard.
+\item GetInt_0: Lecture d'un entier depuis l'entrée standard.
+\item GetInt_PutInt_0:
+  Lecture d'un entier depuis l'entrée standard.
+  Ecriture de cet entier sur la sortie standard.
+\item GetString_0: Lecture d'une chaine de moins de 20 caractères depuis l'entrée standard, affichage
+  de cette chaîne sur la sortie standard.
+\item PutString_0: Affichage de la chaîne de caractère "ABCDEFGHIJklmnopqrstuvwxyz".
+\item PutString_1: Affichque de la chaîne "ABCDEFGH" et "ijklmnopqrstuvwxyz".
+\item PutString_3:   Affichage d'une chaine de taille suppérieure à la
+  constante MAX_STRING_SIZE(=100) définie dans system.h.
+\item UserThreadcreate_0: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
+  création.
+\item Userthreadcreate_1: Lancement de deux threads utilisateur. Le premier affiche \texttt{"X"} puis le caractère \texttt{'a'} passé en paramètre.
+  Le second afficher \texttt{"Y"} puis le caractère \texttt{'b'} passé en paramètre.
+\item Userthreadcreate_2: Lancement d'un nombre de thread trop important pour l'espace mémoire.
+  Le programme affiche l'identifiant des threads crées.
+\end{itemize}
+
+
+
+
+
+
+
+\section{Implémentation}
+\subsection{Passage de paramètres}
+Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
+Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables
+locales à la fonction.
+
+\subsection{Entrées Sorties}
+\subsubsection{GetString}
+Flush de la sortie standard.
+
+\subsection{Threads}
+\subsubsection{Espace mémoire et piles des threads}
+On appelle espace mémoire libre, l'espace mémoire situé après la section code et data.
+Cet espace contient, suite à la création du processus, une seule pile: celle du thread parent (main).
+On divise cet espaces en blocs de taille \texttt{stackSize} destinés à contenir les piles des sous threads du processus.
+Une bitmap mémorise l'état courant des blocs de piles libres. Lors de la création d'un thread, on cherche dans la bitmap le
+premier bloc libre, le premier indice de bloc libre trouvé devient l'indice du thread.
+Lorsque le thread quitte on libère l'espace de sa pile dans la mémoire (on met à jour la bitmap).
+Cette implémentation n'offre aucune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre
+chronologique de sa création mais la place de sa pile en mémoire.
+
+\subsubsection{Fermeture d'un processus et semExitProcess}
+Afin de garantir que les sous-threads d'un processus puissent mener leur exécutions à terme, on empêche
+le processus père d'appeler \texttt{SC\_EXIT} tant qu'un thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
+Lorsqu'un que le premier sous-thread d'un processus est crée, il verrouille semExitprocess, lorsque le dernier thread termine il relâche semexitprocess.
+On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelque-soit
+le nombre de thread ou processus actifs.
+
+
+
+
+
+
+
+\section{Organisation}
+Pour les premières étapes nous avons travaillé sur un ordinateur commun.
+Cette approche basée sur une communication constante et une implication de tous les membres du groupe
+nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
+nous avions tous une compréhension et vision homogène du fonctionnement de notre code. Nous
+avons adopté un point de vue critique vis à vis du code produit,
+n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
+avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
+tant sur les aspects techniques que dans nos rapport au travail en général.
+
+\end{document}
+

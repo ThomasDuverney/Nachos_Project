@@ -4,8 +4,9 @@
 
 /*
  * Programme de test créant un nombre de thread supérieur au nombre de thread possible.
- * Ici 7 Threads sont crées puis au huitième thread, il n'y a plus assez de place pour placer la stack
- * de ce thread en mémoire. La bitMap est pleine, la création de thread renvoi -1.
+ * Ici 7 Threads sont crées, puis au huitième thread, il n'y a plus assez de place pour placer la pile
+ * de ce thread en mémoire. La bitMap est pleine, la création du thread renvoie -1.
+ * Chaque thread affiche son identifiant.
  */
 
 void g(void *arg) {
