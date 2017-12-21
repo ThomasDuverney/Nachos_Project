@@ -58,7 +58,7 @@
 \maketitle
 \section{Consignes}
 Un rapport de 8 à 12 pages maximum dont l'objectif est de nous convaincre d'acheter votre nachos. Ce rapport sera structuré en 5 parties :
-une (courte) partie présentant rapidement les fonctionnalitésintéressante/importante de votre noyau (ce qui vous démarque de vos concurrents, ce qu'on peut faire avec votre logiciel, ...).
+une (courte) partie présentant rapidement les fonctionnalités intéressante/importante de votre noyau (ce qui vous démarque de vos concurrents, ce qu'on peut faire avec votre logiciel, ...).
 
 Une partie "spécifications" listant ce qui est disponible pour les programmes utilisateurs.
 Il faut mettre ici le genre d'information que vous trouvez dans les pages man.
@@ -87,46 +87,46 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 \subsubsection{\texttt{void PutChar(char c)}}
 \begin{itemize}
-\item[] Spécifications: Prends en paramètre un caractère c.
-\item[] Sémantique: Ecrit le caractère c sur la sortie standard.
+\item[-] Spécifications: Prends en paramètre un caractère c.
+\item[-] Sémantique: Écrit le caractère c sur la sortie standard.
 \end{itemize}
 
 \subsubsection{\texttt{void PutString(const char *s);}}
 \begin{itemize}
-\item[] Spécifications: Prends en paramètre un pointeur de caractère \texttt{s}.
-\item[] Sémantique:
-  Ecrit la chaîne de caractères lue à l'adresse \texttt{s}, sur la sortie standard.
+\item[-] Spécifications: Prends en paramètre un pointeur de caractère \texttt{s}.
+\item[-] Sémantique:
+  Écrit la chaîne de caractères lue à l'adresse \texttt{s}, sur la sortie standard.
   La lecture s'arrête quand on rencontre le caractère '\\0'.
 \end{itemize}
 
 \subsubsection{\texttt{char GetChar()}}
 \begin{itemize}
-\item[] Sémantique: Lit un caractère depuis l'entrée standard.
-\item[] Valeur de retour: Retourne le caractère lu.
+\item[-] Sémantique: Lit un caractère depuis l'entrée standard.
+\item[-] Valeur de retour: Retourne le caractère lu.
 \end{itemize}
 
 \subsubsection{\texttt{void GetString(char *s, int n)}}
 \begin{itemize}
-\item[] Spécifications:Prends en paramètre un pointeur de caractère \texttt{s} et un entier \texttt{n}.
-\item[] Sémantique:
-  Lit une chaine de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
+\item[-] Spécifications:Prends en paramètre un pointeur de caractère \texttt{s} et un entier \texttt{n}.
+\item[-] Sémantique:
+  Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
   l'écrit à l'adresse de \texttt{s}.
-\item[] Pré-Conditions:
-  L'adresse \texttt{s} fournie en paramètre pointe une zone mémoire suffisament large pour stocker
+\item[-] Pré-Conditions:
+  L'adresse \texttt{s} fournie en paramètre pointe une zone mémoire suffisamment large pour stocker
   \texttt{n} caractères.
 \end{itemize}
 
 \subsubsection{void PutInt(int n)}
 \begin{itemize}
-\item[] Spécifications: Prends en paramètres un entier \texttt{n}.
-\item[] Sémantique: Ecrit l'entier \texttt{n} sur la sortie standard.
+\item[-] Spécifications: Prends en paramètres un entier \texttt{n}.
+\item[-] Sémantique: Écrit l'entier \texttt{n} sur la sortie standard.
 \end{itemize}
 
 \subsubsection{\texttt{void GetInt(int *n)}}
 \begin{itemize}
-\item[] Spécifications: Prends en paramètres un pointeur d'entier \texttt{n}.
-\item[] Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse \texttt{n}.
-\item[] Pré-Conditions:
+\item[-] Spécifications: Prends en paramètres un pointeur d'entier \texttt{n}.
+\item[-] Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse \texttt{n}.
+\item[-] Pré-Conditions:
   \texttt{n} doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
 \end{itemize}
 
@@ -138,21 +138,21 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 \subsubsection{\texttt{int UserThreadCreate(void f(void* arg), void* arg)}}
 \begin{itemize}
-\item[] Spécifications: Prends en paramètres un pointeur de fonction \texttt{f} de valeur de retour
+\item[-] Spécifications: Prends en paramètres un pointeur de fonction \texttt{f} de valeur de retour
   void et un pointeur \texttt{arg}.
-\item[] Sémantique: Crée un nouveau thread utilisateur qui éxécute la fonction f(arg).
-\item[] Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
-  pile du thread à créer, dans le cas contraire le système s'arrete avec le message:
+\item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction f(arg).
+\item[-] Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
+  pile du thread à créer, dans le cas contraire le système s'arrête avec le message:
   La création du thread a échoué.
-\item[] Post-Conditions: 
-\item[] Valeur de retour: retourne l'identficateur du thread crée. -1 si une erreur s'est produite lors de
+\item[-] Post-Conditions: 
+\item[-] Valeur de retour: retourne l'identficateur du thread crée. -1 si une erreur s'est produite lors de
   la création.
 \end{itemize}
 
 \subsubsection{\texttt{void UserThreadExit()}}
 \begin{itemize}
-\item[] Sémantique: Termine le threadUser courant.
-\item[] Post-Conditions: 
+\item[-] Sémantique: Termine le threadUser courant.
+\item[-] Post-Conditions: 
 \end{itemize}
 
 
@@ -161,8 +161,30 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 
 
-
-
+\subsection{Entrées-Sorties}
+\begin{itemize}
+\item Putchar_0: Ecriture du caractère \texttt{'a'} sur la sortie standard.
+\item Putchar_1: Ecriture du caractère \texttt{'a'} et \texttt{'b'} sur la sortie standard.
+\item Putchar_2: Ecriture de multiples caractères sur la sortie standard.
+\item PutInt_0: Ecriture de l' entier 10 sur la sortie standard.
+\item PutInt_1: Ecriture de l'entier 0 et de l'entier 1 sur la sortie standard.
+\item GetInt_0: Lecture d'un entier depuis l'entrée standard.
+\item GetInt_PutInt_0:
+  Lecture d'un entier depuis l'entrée standard.
+  Ecriture de cet entier sur la sortie standard.
+\item GetString_0: Lecture d'une chaine de moins de 20 caractères depuis l'entrée standard, affichage
+  de cette chaîne sur la sortie standard.
+\item PutString_0: Affichage de la chaîne de caractère "ABCDEFGHIJklmnopqrstuvwxyz".
+\item PutString_1: Affichque de la chaîne "ABCDEFGH" et "ijklmnopqrstuvwxyz".
+\item PutString_3:   Affichage d'une chaine de taille suppérieure à la
+  constante MAX_STRING_SIZE(=100) définie dans system.h.
+\item UserThreadcreate_0: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
+  création.
+\item Userthreadcreate_1: Lancement de deux threads utilisateur. Le premier affiche \texttt{"X"} puis le caractère \texttt{'a'} passé en paramètre.
+  Le second afficher \texttt{"Y"} puis le caractère \texttt{'b'} passé en paramètre.
+\item Userthreadcreate_2: Lancement d'un nombre de thread trop important pour l'espace mémoire.
+  Le programme affiche l'identifiant des threads crées.
+\end{itemize}
 
 
 
@@ -172,8 +194,8 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 \section{Implémentation}
 \subsection{Passage de paramètres}
-Pour les fonctions ayant moins de quatres arguments, on suppose que les paramètres sont dans les registres 4 à 7.
-Aussi, la première chose à faire dans le code d' une fonction est de réccupérer et sauvegarde ces registres dans des variables
+Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
+Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables
 locales à la fonction.
 
 \subsection{Entrées Sorties}
@@ -188,18 +210,15 @@ On divise cet espaces en blocs de taille \texttt{stackSize} destinés à conteni
 Une bitmap mémorise l'état courant des blocs de piles libres. Lors de la création d'un thread, on cherche dans la bitmap le
 premier bloc libre, le premier indice de bloc libre trouvé devient l'indice du thread.
 Lorsque le thread quitte on libère l'espace de sa pile dans la mémoire (on met à jour la bitmap).
-Cette implémentation n'offre auccune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre
+Cette implémentation n'offre aucune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre
 chronologique de sa création mais la place de sa pile en mémoire.
 
 \subsubsection{Fermeture d'un processus et semExitProcess}
-Afin de garantir que les sous-threads d'un processus puissent mener leur executions à terme, on empêche
-le processus père d'appeller \texttt{SC\_EXIT} tant qu'un thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
-Lorsqu'un que le premier sous-thread d'un processus est crée, il vérouille semExitprocess, lorsque le dernier thread termine
-il relache semexitprocess.
-On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelquesoit
+Afin de garantir que les sous-threads d'un processus puissent mener leur exécutions à terme, on empêche
+le processus père d'appeler \texttt{SC\_EXIT} tant qu'un thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
+Lorsqu'un que le premier sous-thread d'un processus est crée, il verrouille semExitprocess, lorsque le dernier thread termine il relâche semexitprocess.
+On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelque-soit
 le nombre de thread ou processus actifs.
-
-
 
 
 
@@ -210,11 +229,11 @@ le nombre de thread ou processus actifs.
 \section{Organisation}
 Pour les premières étapes nous avons travaillé sur un ordinateur commun.
 Cette approche basée sur une communication constante et une implication de tous les membres du groupe
-nous a permi d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
+nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
 nous avions tous une compréhension et vision homogène du fonctionnement de notre code. Nous
 avons adopté un point de vue critique vis à vis du code produit,
 n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
-avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucunne difficultés de communication
+avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
 tant sur les aspects techniques que dans nos rapport au travail en général.
 
 \end{document}

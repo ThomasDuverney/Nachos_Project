@@ -3,7 +3,7 @@
 #define NB 5
 
 /*
- * Creation de plusieurs threads utilisateur qui affichent un entier.
+   Creation de plusieurs threads utilisateur qui affichent un entier.
  */
 void g(void *arg) {
 	int n = *(int*) arg;
