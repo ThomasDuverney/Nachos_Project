@@ -137,7 +137,7 @@ void Fork (void (*func) ());
 void Yield ();
 
 /*
- * PutChar:
+ * void PutChar(char c)
  * Spécifications:
  *   Prends en paramètre un caractère c.
  * Sémantique:
@@ -145,7 +145,7 @@ void Yield ();
  */
 void PutChar(char c);
 
-/* PutString:
+/* void PutString(const char *s)
  * Spécifications:
  *   Prends en paramètre un pointeur de caractère s.
  * Sémantique:
@@ -155,14 +155,14 @@ void PutChar(char c);
 void PutString(const char *s);
 
 /*
- * GetChar:
+ * char GetChar()
  * Sémantique:
  *   Lit un caractère depuis l'entrée standard.
  */
 char GetChar();
 
 /*
- * GetString:
+ * void GetString(char *s, int n)
  * Spécifications:
  *   Prends en paramètre un pointeur de caractère s et un entier n.
  * Sémantique:
@@ -175,7 +175,7 @@ char GetChar();
 void GetString(char *s, int n);
 
 /*
- * PutInt:
+ * void PutInt(int n)
  * Spécifications:
  *   Prends en paramètres un entier n.
  * Sémantique:
@@ -184,7 +184,7 @@ void GetString(char *s, int n);
 void PutInt(int n);
 
 /*
- * GetInt:
+ * void GetInt(int *n)
  * Spécifications:
  *   Prends en paramètres un pointeur d'entier n.
  * Sémantique:
@@ -195,10 +195,15 @@ void PutInt(int n);
 void GetInt(int *n);
 
 /*
- * Crée un nouveau thread utilisateur.
- * Prends en paramètres:
- *  - un pointeur f vers la fonction à executer par le thread.
- *  - un pointeur vers les arguments de la fonction f.
+ * int UserThreadCreate(void f(void* arg), void* arg)
+ * Spécifications: Prends en paramètres un pointeur de fonction f de valeur de retour
+ *   void et un pointeur arg.
+ * Sémantique: Crée un nouveau thread utilisateur qui éxécute la fonction f(arg).
+ * Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
+ *   pile du thread à créer, dans le cas contraire le système s'arrete avec le message:
+ *   La création du thread a échoué.
+ * Valeur de retour: retourne le champ Id du thread crée. -1 si une erreur s'est produite lors de
+ *   la création.
  */
 int UserThreadCreate(void f(void* arg), void* arg);
 
