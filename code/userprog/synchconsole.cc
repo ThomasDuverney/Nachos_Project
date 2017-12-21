@@ -34,27 +34,37 @@ void SynchConsole::SynchPutChar(const char c) {
 char SynchConsole::SynchGetChar() {
     semRead->P();
     readAvail->P();
+    char c = console->GetChar();
     semRead->V();
-    return console->GetChar();
+    return c;
 }
 
 void SynchConsole::SynchPutString(const char *s) {
+    semWrite->P();
     int i=0;
     while(s[i] != '\0'){
-        SynchPutChar(s[i++]);
+        console->PutChar(s[i++]);
+        writeDone->P();
     }
+    semWrite->V();
 }
 
 void SynchConsole::SynchGetString(char *s, int n) {
-    int i;
+    semRead->P();
+    int i = 0;
     char c;
-    for(i=0; i<(n-1); i++){
-        c = SynchGetChar();
+    bool sequenceEnd = false;
+
+    while(i<(n-1) && !sequenceEnd){
+        readAvail->P();
+        c = console->GetChar();
+
         if (c == EOF || c == 04 || c == '\n'){
             s[i] = '\0';
-            return;
+            sequenceEnd = true;
         }
         s[i] = c;
+        i++;
     }
     if (i == (n-1)){
         s[i] = '\0';
@@ -64,6 +74,7 @@ void SynchConsole::SynchGetString(char *s, int n) {
         */
         Flush();
     }
+    semRead->V();
 }
 
 void SynchConsole::SynchPutInt(int n){
