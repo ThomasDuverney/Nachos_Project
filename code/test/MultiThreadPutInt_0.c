@@ -3,9 +3,9 @@
 #define NB 5
 
 /*
- * Programme de test créant plusieurs threads executant getString puis PutString.
+ * Création de plusieurs threads exécutant putInt.
  * On vérifie le bon fonctionnement des structures de synchronisation par
- * l'utilisation concurente de synchconsole
+ * l'utilisation concurrente de synchconsole
  */
 
 void g(void *arg) {
