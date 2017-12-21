@@ -35,7 +35,7 @@ class AddrSpace
     void SaveState ();		// Save/restore address space-specific
     void RestoreState ();	// info on a context switch
 
-    BitMap *threadsStack;
+    BitMap *stackBitmap;
     unsigned int getNumPages(){
         return (numPages);
     }

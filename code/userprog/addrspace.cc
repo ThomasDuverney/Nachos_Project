@@ -124,9 +124,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
       // Nombre de piles que l'on peut stoquer dans l'espace disponible
       numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
       // Tableau des emplacement pour piles disponibles.
-      threadsStack = new BitMap(numStackPerAddrSpace);
+      stackBitmap = new BitMap(numStackPerAddrSpace);
       // Le main occupe le première emplacement de pile. 
-      threadsStack->Mark(0);
+      stackBitmap->Mark(0);
 }
 
 //----------------------------------------------------------------------

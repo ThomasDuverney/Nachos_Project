@@ -17,7 +17,7 @@
      maxAddr = (currentThread->space->getNumPages() * PageSize);
      /*
      Calcul du décalage du pointeur de pile du thread courant par rapport à l'adresse max.
-     On a getThreadID correspond à l'index dans threadsStack
+     On a getThreadID correspond à l'index dans stackBitmap
      */
      stackPtrOffset = (currentThread->getThreadID() * NumPagesPerStack * PageSize);
      machine->WriteRegister (StackReg, maxAddr - stackPtrOffset);
@@ -59,6 +59,6 @@ extern int do_UserThreadCreate(int f, int arg){
 }
 
 extern void do_UserThreadExit(){
-    currentThread->space->threadsStack->Clear(currentThread->getThreadID());
-    currentThread->Finish();
+  // Détruit le thread
+  currentThread->Finish();
 }

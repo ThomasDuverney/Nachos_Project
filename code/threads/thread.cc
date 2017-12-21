@@ -97,7 +97,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
 
     StackAllocate (func, arg);
 
-    #ifdef USER_PROGRAM
+#ifdef USER_PROGRAM
 
     // LB: The addrspace should be tramsitted here, instead of later in
     // StartProcess, so that the pageTable can be restored at
@@ -108,14 +108,17 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     this->space = currentThread->space;
 
     /*
-    On attribue au thread courant un identifiant correspondant à l'indice du début de la première
-    zone contigue d'adresses pouvant contenir la pile du thread -> l'indice dans la bitmap threadsStack retournée par find().
-    /!\ find retourne le premier indice libre dans la bitmap, on a pas de garantie que les pages soient libres -> on les allouées
-    à la pile du thread...
+      le premier indice de bloc libre trouvé dans la bitmap devient l'indice du thread.
+      Aussi l'indice d'un thread reflète la position de sa pile en mémoire.
     */
+#ifdef DEBUG
+    /*  Affiche l'état de la Bitmap */
+    this->space->stackBitmap->Print();
+#endif
 
-    this->threadID = this->space->threadsStack->Find();
-    #endif // USER_PROGRAM
+    this->threadID = this->space->stackBitmap->Find();
+
+#endif // USER_PROGRAM
 
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     scheduler->ReadyToRun (this);	// ReadyToRun assumes that interrupts
@@ -170,6 +173,11 @@ Thread::Finish ()
 {
     (void) interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
+
+#ifdef USER_PROGRAM
+    // Mise à jour de la bitmap (libération de la pile du thread)
+    this->space->stackBitmap->Clear(currentThread->getThreadID());
+#endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName ());
 
