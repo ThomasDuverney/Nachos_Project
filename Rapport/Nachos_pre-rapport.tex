@@ -82,8 +82,8 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 
 
-\section{Spécification}
-\subsection{Entrées Sorties}
+\section{Spécifications}
+\subsection{Entrées-Sorties}
 
 \subsubsection{\texttt{void PutChar(char c)}}
 \begin{itemize}
@@ -157,35 +157,60 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 
 
 
-\section{Tests utilisateurs}
-
-
+\section{Tests}
 
 \subsection{Entrées-Sorties}
 \begin{itemize}
-\item Putchar_0: Ecriture du caractère \texttt{'a'} sur la sortie standard.
-\item Putchar_1: Ecriture du caractère \texttt{'a'} et \texttt{'b'} sur la sortie standard.
-\item Putchar_2: Ecriture de multiples caractères sur la sortie standard.
-\item PutInt_0: Ecriture de l' entier 10 sur la sortie standard.
-\item PutInt_1: Ecriture de l'entier 0 et de l'entier 1 sur la sortie standard.
-\item GetInt_0: Lecture d'un entier depuis l'entrée standard.
-\item GetInt_PutInt_0:
+\item[-] \texttt{Putchar\_0}: Écriture du caractère \texttt{'a'} sur la sortie standard.
+\item[-] \texttt{Putchar\_1}: Écriture du caractère \texttt{'a'} et \texttt{'b'} sur la sortie standard.
+\item[-] \texttt{Putchar\_2}: Écriture de multiples caractères sur la sortie standard.
+\item[-] \texttt{PutInt\_0}: Écriture de l' entier \texttt{10} sur la sortie standard.
+\item[-] \texttt{PutInt\_1}: Écriture de l'entier \texttt{0} et de l'entier \texttt{1} sur la sortie standard.
+\item[-] \texttt{GetInt\_0}: Lecture d'un entier depuis l'entrée standard.
+\item[-] \texttt{GetInt\_PutInt\_0}:
   Lecture d'un entier depuis l'entrée standard.
-  Ecriture de cet entier sur la sortie standard.
-\item GetString_0: Lecture d'une chaine de moins de 20 caractères depuis l'entrée standard, affichage
-  de cette chaîne sur la sortie standard.
-\item PutString_0: Affichage de la chaîne de caractère "ABCDEFGHIJklmnopqrstuvwxyz".
-\item PutString_1: Affichque de la chaîne "ABCDEFGH" et "ijklmnopqrstuvwxyz".
-\item PutString_3:   Affichage d'une chaine de taille suppérieure à la
-  constante MAX_STRING_SIZE(=100) définie dans system.h.
-\item UserThreadcreate_0: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
-  création.
-\item Userthreadcreate_1: Lancement de deux threads utilisateur. Le premier affiche \texttt{"X"} puis le caractère \texttt{'a'} passé en paramètre.
-  Le second afficher \texttt{"Y"} puis le caractère \texttt{'b'} passé en paramètre.
-\item Userthreadcreate_2: Lancement d'un nombre de thread trop important pour l'espace mémoire.
-  Le programme affiche l'identifiant des threads crées.
+  Écriture de cet entier sur la sortie standard.
+\item[-] \texttt{GetString\_0}: Lecture d'une chaîne de moins de \texttt{20} caractères depuis l'entrée standard, affichage de cette chaîne sur la sortie standard.
+\item[-] \texttt{PutString\_0}: Affichage de la chaîne de caractère \texttt{"ABCDEFGHIJklmnopqrstuvwxyz"}.
+\item[-] \texttt{PutString\_1}: Affichage de la chaîne \texttt{"ABCDEFGH"} et \texttt{"ijklmnopqrstuvwxyz"}.
+\item[-] \texttt{PutString\_2}:   Affichage d'une chaîne de taille supérieure à la
+  constante \texttt{MAX\_STRING\_SIZE(=100)} définie dans \texttt{system.h}.
 \end{itemize}
 
+\subsection{UserThreads}
+Afin de vérifier le bon fonctionnement des structures de synchronisation des fonctions d'entrée-sorties,
+les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui permet de rendre aléatoire le comportement de l'ordonnanceur.
+
+\begin{itemize}
+\item[-] \texttt{UserThreadcreate\_0}: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
+  création.
+\item[-] \texttt{Userthreadcreate\_1}: Lancement de deux threads utilisateur. Le premier affiche \texttt{"X"} puis le caractère \texttt{'a'} passé en paramètre.
+  Le second afficher \texttt{"Y"} puis le caractère \texttt{'b'} passé en paramètre.
+\item[-] \texttt{Userthreadcreate\_2}: Lancement d'un nombre de thread trop important pour l'espace mémoire.
+  Le programme affiche l'identifiant des threads crées.
+\item[-] \texttt{MultiThreadGetString\_0}: Lance plusieurs threads exécutant la commande \texttt{GetString()}.
+\end{itemize}
+
+\subsection{Entrées-Sorties Multithread}
+ Avec les tests suivants, on vérifie le bon fonctionnement des structures de synchronisation par l'utilisation
+  concurrente de synchconsole.
+\begin{itemize}
+\item[-] \texttt{MultithreadGetChar\_0}: Création de plusieurs threads exécutant \texttt{GetChar}
+  puis \texttt{Putchar}.
+  Remarque:
+  A l'exécution, lorsqu'un thread s'exécute il se bloque sur l'instruction \texttt{GetChar()} et attends une
+  entrée utilisateur. L'utilisateur entre un caractère \texttt{'c'} et \texttt{'$\backslash$n'} pour terminer son entrée.
+  Suite à l'appel de \texttt{GetChar()}, le caractère \texttt{'$\backslash$n'} est toujours
+  présent dans l'entrée standard. Aussi, le thread suivant exécutant \texttt{GetChar()} récupère et
+  affiche \texttt{'$\backslash$n'}.
+\item[-] \texttt{MultithreadGetInt\_0}: Création de plusieurs threads exécutant \texttt{GetInt}
+  puis \texttt{PutInt} pour afficher l'entier saisi.
+\item[-] \texttt{MultithreadGetString\_0}: Création de plusieurs threads exécutant
+  \texttt{getString} puis \texttt{PutString}.
+\item[-] \texttt{MultithreadPutChar\_0}: Création de plusieurs threads exécutant \texttt{getString}
+  puis \texttt{PutString}.
+\item[-] \texttt{MultithreadPutString\_0}: Création de plusieurs threads exécutant \texttt{PutString}.
+\end{itemize}
 
 
 
@@ -195,30 +220,26 @@ Les 3 premières parties s'adressent à un utilisateur de votre système. La 4i�
 \section{Implémentation}
 \subsection{Passage de paramètres}
 Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
-Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables
-locales à la fonction.
+Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables locales à la fonction.
 
-\subsection{Entrées Sorties}
+\subsection{Entrées-Sorties}
 \subsubsection{GetString}
 Flush de la sortie standard.
 
 \subsection{Threads}
 \subsubsection{Espace mémoire et piles des threads}
-On appelle espace mémoire libre, l'espace mémoire situé après la section code et data.
+On appelle espace mémoire libre, l'espace mémoire situé après la section code et data d'un processus.
 Cet espace contient, suite à la création du processus, une seule pile: celle du thread parent (main).
-On divise cet espaces en blocs de taille \texttt{stackSize} destinés à contenir les piles des sous threads du processus.
-Une bitmap mémorise l'état courant des blocs de piles libres. Lors de la création d'un thread, on cherche dans la bitmap le
-premier bloc libre, le premier indice de bloc libre trouvé devient l'indice du thread.
-Lorsque le thread quitte on libère l'espace de sa pile dans la mémoire (on met à jour la bitmap).
-Cette implémentation n'offre aucune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre
-chronologique de sa création mais la place de sa pile en mémoire.
+On divise cet espace en blocs de pages, de taille \texttt{NumPagesPerStack}, destinés à contenir les piles des sous-threads du processus.
+Une bitmap \texttt{stackBitmap} mémorise l'état courant des blocs de piles libres. Lors de la création d'un thread, on cherche dans la bitmap le premier bloc libre, le premier indice de bloc libre trouvé devient l'identifiant du thread.
+Lorsque le thread quitte on libère l'espace de sa pile dans la mémoire (on met à jour \texttt{stackbitmap}).
+Cette implémentation n'offre aucune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre chronologique de sa création mais la place de sa pile en mémoire.
 
 \subsubsection{Fermeture d'un processus et semExitProcess}
 Afin de garantir que les sous-threads d'un processus puissent mener leur exécutions à terme, on empêche
-le processus père d'appeler \texttt{SC\_EXIT} tant qu'un thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
+le processus père d'appeler \texttt{SC\_EXIT} tant qu'un sous-thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
 Lorsqu'un que le premier sous-thread d'un processus est crée, il verrouille semExitprocess, lorsque le dernier thread termine il relâche semexitprocess.
-On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelque-soit
-le nombre de thread ou processus actifs.
+On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelque-soit le nombre de thread ou processus actifs.
 
 
 
