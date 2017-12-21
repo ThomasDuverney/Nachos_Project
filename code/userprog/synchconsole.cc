@@ -53,24 +53,24 @@ void SynchConsole::SynchGetString(char *s, int n) {
     semRead->P();
     int i = 0;
     char c;
-    bool sequenceEnd = false;
+    bool continuer = true;
 
-    while(i<(n-1) && !sequenceEnd){
+    while(i<n && continuer == true){
         readAvail->P();
         c = console->GetChar();
-
         if (c == EOF || c == 04 || c == '\n'){
             s[i] = '\0';
-            sequenceEnd = true;
+            /* On s'arrète quand on trouve un caractère de fin de séquence */
+            continuer = false;
         }
         s[i] = c;
         i++;
     }
-    if (i == (n-1)){
+    /* A la sortie on a soit i == n soit un caractère de fin de séquence a été lu */
+    if (i == n){
         s[i] = '\0';
         /*
-         Va Flush l'entrée standard si on essaye de dépasser (Sécurité)
-         Ne marche surrement pas avec un fichier en entrée
+         Flush l'entrée standard si la taille de la chaine en entrée dépasse n.
         */
         Flush();
     }
@@ -91,5 +91,10 @@ void SynchConsole::SynchGetInt(int *n){
 
 void SynchConsole::Flush(){
     char c;
-    while((c = SynchGetChar()) != EOF && c != 04 && c != '\n');
+    readAvail->P();
+    c = console->GetChar();
+    while(c != EOF && c != 04 && c != '\n') {
+        readAvail->P();
+        c = console->GetChar();
+    }
 }
