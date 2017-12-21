@@ -133,6 +133,13 @@ void ExceptionHandler (ExceptionType which){
                          */
                         semExitProcess->P();
                     }
+                 }else{
+                    /*Si il y'a eu une erreur dans la création du thread*/
+                    printf("Erreur lors de la création du thread \n");
+                    /* /!\ Attention ici, il y'a un seul process on peut se permettre d'éteindre la machine
+                       Dans le cas de multi-process, il faut uniquement terminer ce processus
+                     */
+                    interrupt->Halt();
                 }
                 machine->WriteRegister(2,threadId);
                 break;

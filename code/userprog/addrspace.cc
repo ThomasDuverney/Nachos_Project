@@ -1,9 +1,9 @@
-// addrspace.cc 
+// addrspace.cc
 //      Routines to manage address spaces (executing user programs).
 //
 //      In order to run a user program, you must:
 //
-//      1. link with the -N -T 0 option 
+//      1. link with the -N -T 0 option
 //      2. run coff2noff to convert the object file to Nachos format
 //              (Nachos object code format is essentially just a simpler
 //              version of the UNIX executable object code format)
@@ -12,7 +12,7 @@
 //              don't need to do this last step)
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
@@ -24,7 +24,7 @@
 
 //----------------------------------------------------------------------
 // SwapHeader
-//      Do little endian to big endian conversion on the bytes in the 
+//      Do little endian to big endian conversion on the bytes in the
 //      object file header, in case the file was generated on a little
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
@@ -53,7 +53,7 @@ SwapHeader (NoffHeader * noffH)
 //
 //      Assumes that the object code file is in NOFF format.
 //
-//      First, set up the translation from program memory to physical 
+//      First, set up the translation from program memory to physical
 //      memory.  For now, this is really simple (1:1), since we are
 //      only uniprogramming, and we have a single unsegmented page table
 //
@@ -63,7 +63,7 @@ SwapHeader (NoffHeader * noffH)
 AddrSpace::AddrSpace (OpenFile * executable)
 {
     NoffHeader noffH;
-    unsigned int i, size;
+    unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
 
     executable->ReadAt ((char *) &noffH, sizeof (noffH), 0);
     if ((noffH.noffMagic != NOFFMAGIC) &&
@@ -84,7 +84,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
-// first, set up the translation 
+// first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++)
       {
@@ -93,12 +93,12 @@ AddrSpace::AddrSpace (OpenFile * executable)
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
-	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on 
-	  // a separate page, we could set its 
+	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
+	  // a separate page, we could set its
 	  // pages to be read-only
       }
 
-// zero out the entire address space, to zero the unitialized data segment 
+// zero out the entire address space, to zero the unitialized data segment
 // and the stack segment
     bzero (machine->mainMemory, size);
 
@@ -119,7 +119,14 @@ AddrSpace::AddrSpace (OpenFile * executable)
 			       [noffH.initData.virtualAddr]),
 			      noffH.initData.size, noffH.initData.inFileAddr);
       }
-
+      // Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata
+      numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
+      // Nombre de piles que l'on peut stoquer dans l'espace disponible
+      numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
+      // Tableau des emplacement pour piles disponibles.
+      stackBitmap = new BitMap(numStackPerAddrSpace);
+      // Le main occupe le première emplacement de pile. 
+      stackBitmap->Mark(0);
 }
 
 //----------------------------------------------------------------------
@@ -163,9 +170,8 @@ AddrSpace::InitRegisters ()
     // Set the stack register to the end of the address space, where we
     // allocated the stack; but subtract off a bit, to make sure we don't
     // accidentally reference off the end!
-    machine->WriteRegister (StackReg, numPages * PageSize - 16);
-    DEBUG ('a', "Initializing stack register to %d\n",
-	   numPages * PageSize - 16);
+    machine->WriteRegister (StackReg, numPages * PageSize - MainGuardOffset);
+    DEBUG ('a', "Initializing stack register to %d\n", numPages * PageSize - MainGuardOffset);
 }
 
 //----------------------------------------------------------------------
