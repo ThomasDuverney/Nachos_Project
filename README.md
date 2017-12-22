@@ -9,30 +9,11 @@
 
 ## Questions à Vincent
 
-* Est-ce qu'il faut flusher l'entrée standard à la fin d'un processus
-* Gestion concurrente dans le SynchGetString (Mutex?)
-* Pourquoi la fonction que exécute le thread n'est pas capable de recuperer les variables définies en local pour les passages en paramètre de fonction?
+* Est-ce qu'il faut flsher l'entrée standard à la fin d'un processus?
+* Quand on aura plusieur process, Tid unique dans tout le systeme ?
+* Est ce qu'on mettrait pas une page vide entre deux pages allouées aux piles?
+* Est ce qu'il faut faire un allocateur memoire ?
 
-```
-void printInt(void * test){
-	int i = 27;
-	PutInt(i);
-	UserThreadExit();
-}
-
-int main(){
-
-	int i = 200;
-
-	PutInt(i);
-	PutChar('\n');
-
-	UserThreadCreate(printInt, (void *) i);
-
-	return 0;
-
-} // affiche 200 puis un truc aléatoire
-```
 
 ## Planning
 
