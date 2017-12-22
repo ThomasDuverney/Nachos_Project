@@ -50,6 +50,8 @@ extern Semaphore *semExitProcess;
    verrou.
  */
 extern int nbThreadProcess; // Nombre de threads actifs du processus courant.
+extern int threadCounter;
+
 extern SynchConsole *synchconsole;
 #endif
 

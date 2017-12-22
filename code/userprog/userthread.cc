@@ -19,7 +19,7 @@
      Calcul du décalage du pointeur de pile du thread courant par rapport à l'adresse max.
      On a getThreadID correspond à l'index dans stackBitmap
      */
-     stackPtrOffset = (currentThread->getThreadID() * NumPagesPerStack * PageSize);
+     stackPtrOffset = (currentThread->getStackBitmapIndex() * NumPagesPerStack * PageSize);
      machine->WriteRegister (StackReg, maxAddr - stackPtrOffset);
 
      // Sauvegarde de l'ancienne valeur de PC pour le retour de la fonction.
