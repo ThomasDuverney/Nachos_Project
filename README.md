@@ -9,10 +9,7 @@
 
 ## Questions à Vincent
 
-* Est-ce qu'il faut flsher l'entrée standard à la fin d'un processus?
-* Quand on aura plusieur process, Tid unique dans tout le systeme ?
-* Est ce qu'on mettrait pas une page vide entre deux pages allouées aux piles?
-* Est ce qu'il faut faire un allocateur memoire ?
+
 
 
 ## Planning
@@ -47,6 +44,15 @@
 * Etape 6 : Réseaux des machines
 	* Pouvoir lancer plusieurs machines et établir un lien de communication entre elles. Implémenter aussi un protocole pour que deux machines puissent communiquer.
 	* *BONUS*: implémenter un un serveur FTP (transferts de fichiers) ou migration de processus 
+
+
+## Les Extensions
+
+* Lock / Semaphore au niveau utilisateurs
+* Page interdite entre chaque allocation de pile
+* allocateur mémoire (on peut utiliser le même code que fait en TP de CSE)
+* Shell
+* Exit Automatique des threads
 
 
 ## Les Conventions
