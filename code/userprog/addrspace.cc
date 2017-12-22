@@ -22,6 +22,10 @@
 
 #include <strings.h>		/* for bzero */
 
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages);
+
+
+
 //----------------------------------------------------------------------
 // SwapHeader
 //      Do little endian to big endian conversion on the bytes in the
@@ -62,6 +66,7 @@ SwapHeader (NoffHeader * noffH)
 
 AddrSpace::AddrSpace (OpenFile * executable)
 {
+
     NoffHeader noffH;
     unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
 
@@ -98,6 +103,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
 	  // pages to be read-only
       }
 
+      machine->pageTable = pageTable;
+
 // zero out the entire address space, to zero the unitialized data segment
 // and the stack segment
     bzero (machine->mainMemory, size);
@@ -107,18 +114,27 @@ AddrSpace::AddrSpace (OpenFile * executable)
       {
 	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
 		 noffH.code.virtualAddr, noffH.code.size);
-	  executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-			      noffH.code.size, noffH.code.inFileAddr);
+
+    //// MODIFICATION ReadAtVirtual
+
+
+    ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+
+	  //executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
+		//	      noffH.code.size, noffH.code.inFileAddr);
       }
-    if (noffH.initData.size > 0)
-      {
-	  DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
-		 noffH.initData.virtualAddr, noffH.initData.size);
-	  executable->ReadAt (&
-			      (machine->mainMemory
-			       [noffH.initData.virtualAddr]),
-			      noffH.initData.size, noffH.initData.inFileAddr);
-      }
+    if (noffH.initData.size > 0){
+    DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
+    noffH.initData.virtualAddr, noffH.initData.size);
+    /*executable->ReadAt (&
+          (machine->mainMemory
+           [noffH.initData.virtualAddr]),
+          noffH.initData.size, noffH.initData.inFileAddr);*/
+        ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+    }
+
+      //// Allocation de(s) page(s) pour les threads 
+
       // Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata
       numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
       // Nombre de piles que l'on peut stoquer dans l'espace disponible
@@ -201,3 +217,50 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
+
+
+//----------------------------------------------------------------------
+// ReadAtVirtual
+//      Lit dans le disque physique numBytes à la bonne position,
+//      puis le stocke dans l'adresse virtuel grâce à la TLB,
+//
+//  "executable" -- objet openfile qui contient l'executable et permet
+//          d'utiliser ReadAt 
+//  "virtualaddr" -- adresse virtuelle
+// PAS FINI
+//----------------------------------------------------------------------
+
+
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages){
+    char buff[numBytes];
+    int nbRead;
+    int i;
+    unsigned int index_table;
+
+    ASSERT(numBytes > PageSize);
+
+
+    //  on rempli le buffer
+    nbRead = executable->ReadAt(buff, numBytes, position);
+
+
+    // on écrit dans le mémoire
+    for(i=0; i<nbRead; i++){
+        if(!machine->WriteMem(virtualaddr, 1, buff[i])){
+            DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+        }
+    }
+
+    // on récupère l'indice dans la table des pages
+    index_table = (unsigned) virtualaddr / PageSize;
+
+    ASSERT(numPages >= index_table);
+
+    // mise a jour des flags
+    pageTable[index_table].valid = FALSE;
+    pageTable[index_table].use = TRUE;
+    // Flag dirty mis à jour par machine->Translate
+
+
+}
+

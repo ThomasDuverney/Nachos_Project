@@ -1,14 +1,22 @@
 #include "syscall.h"
 
-void characterInterleaved(void *arg) {
-  PutChar('T');
-  PutChar(*(char *) arg);
+void characterInterleaved1(void *arg) {
+  int i;
+  for(i=0; i<5; i++){
+    PutString("Thread 1: ");
+    PutInt(i);
+    PutChar('\n');
+  }
   UserThreadExit();
 }
 
-void characterInterleaved1(void *arg) {
-  PutChar('R');
-  PutChar(*(char *) arg);
+void characterInterleaved2(void *arg) {
+  int i;
+  for(i=0; i<5; i++){
+    PutString("Thread 2: ");
+    PutInt(i);
+    PutChar('\n');
+  }
   UserThreadExit();
 }
 
@@ -16,8 +24,8 @@ void characterInterleaved1(void *arg) {
 int main(){
   char c1 = 'c';
   char c2 = 'z';
-  UserThreadCreate(characterInterleaved, (void *) &c1);
-  UserThreadCreate(characterInterleaved1, (void *) &c2);
+  UserThreadCreate(characterInterleaved1, (void *) &c1);
+  UserThreadCreate(characterInterleaved2, (void *) &c2);
 
   return 0;
 }
