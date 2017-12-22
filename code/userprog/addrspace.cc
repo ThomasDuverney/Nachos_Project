@@ -70,6 +70,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
 
     executable->ReadAt ((char *) &noffH, sizeof (noffH), 0);
+    // ReadAtVirtual(executable, (char *) &noff, sizeof(noff), 0, machine->pageTable, machine->pageTableSize);
     if ((noffH.noffMagic != NOFFMAGIC) &&
 	(WordToHost (noffH.noffMagic) == NOFFMAGIC))
 	SwapHeader (&noffH);
@@ -244,8 +245,13 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
     nbRead = executable->ReadAt(buff, numBytes, position);
 
 
+    index_table = (unsigned) virtualaddr / PageSize;
 
-    // on écrit dans le mémoire
+    ASSERT(numPages >= index_table);
+
+    // on écrit dans la mémoire
+    //// IL FAUT FAIRE UN DECALAGE DE L'ADRESSE VIRTUELLE
+    //// CAR ON ECRIT TOUJOURS AU MEME ENDROIT
     i = 0;
     while(i < nbRead){
         if(nbRead - i < 4 && nbRead - i >= 2 ){
@@ -254,24 +260,27 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
                 DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
             }
             i += 2;
+            virtualaddr = (int)(((char *)virtualaddr) + 2);
+
         } else if(nbRead - i < 2) {
             if(!machine->WriteMem(virtualaddr, 1, buff[i])){
                 DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
             }
             i += 1;
+            virtualaddr = virtualaddr << 1;
+            virtualaddr = (int)(((char *)virtualaddr) + 1);
         } else {
             if(!machine->WriteMem(virtualaddr, 4, buff[i])){
                 DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
             }
             i += 4;
+            virtualaddr = (int)(((char *)virtualaddr) + 4);
         }
 
     }
 
     // on récupère l'indice dans la table des pages
-    index_table = (unsigned) virtualaddr / PageSize;
 
-    ASSERT(numPages >= index_table);
 
     // mise a jour des flags
     pageTable[index_table].valid = FALSE;
