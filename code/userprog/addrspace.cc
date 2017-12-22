@@ -22,9 +22,8 @@
 
 #include <strings.h>		/* for bzero */
 
+
 static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages);
-
-
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -104,6 +103,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
       }
 
       machine->pageTable = pageTable;
+      machine->pageTableSize = numPages;
 
 // zero out the entire address space, to zero the unitialized data segment
 // and the stack segment
@@ -118,7 +118,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
     //// MODIFICATION ReadAtVirtual
 
 
-    ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+    ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, machine->pageTable, machine->pageTableSize);
 
 	  //executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
 		//	      noffH.code.size, noffH.code.inFileAddr);
@@ -130,7 +130,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
           (machine->mainMemory
            [noffH.initData.virtualAddr]),
           noffH.initData.size, noffH.initData.inFileAddr);*/
-        ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
+        ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, machine->pageTable, machine->pageTableSize);
     }
 
       //// Allocation de(s) page(s) pour les threads 
@@ -237,18 +237,35 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
     int i;
     unsigned int index_table;
 
-    ASSERT(numBytes > PageSize);
+    // ASSERT(numBytes > PageSize);
 
 
     //  on rempli le buffer
     nbRead = executable->ReadAt(buff, numBytes, position);
 
 
+
     // on écrit dans le mémoire
-    for(i=0; i<nbRead; i++){
-        if(!machine->WriteMem(virtualaddr, 1, buff[i])){
-            DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+    i = 0;
+    while(i < nbRead){
+        if(nbRead - i < 4 && nbRead - i >= 2 ){
+
+            if(!machine->WriteMem(virtualaddr, 2, buff[i])){
+                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+            }
+            i += 2;
+        } else if(nbRead - i < 2) {
+            if(!machine->WriteMem(virtualaddr, 1, buff[i])){
+                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+            }
+            i += 1;
+        } else {
+            if(!machine->WriteMem(virtualaddr, 4, buff[i])){
+                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+            }
+            i += 4;
         }
+
     }
 
     // on récupère l'indice dans la table des pages
@@ -260,7 +277,6 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
     pageTable[index_table].valid = FALSE;
     pageTable[index_table].use = TRUE;
     // Flag dirty mis à jour par machine->Translate
-
 
 }
 
