@@ -100,6 +100,9 @@ class Thread
 
     void CheckOverflow ();	// Check if thread has
     // overflowed its stack
+
+    int getThreadID();
+
     void setStatus (ThreadStatus st)
     {
 	status = st;
@@ -126,20 +129,20 @@ class Thread
     // Allocate a stack for thread.
     // Used internally by Fork()
 
+    int threadID;
+
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers --
 // one for its state while executing user code, one for its state
 // while executing kernel code.
 
+    int stackBitmapIndex;
     int userRegisters[NumTotalRegs];	// user-level CPU register state
-    int threadID;
   public:
     void SaveUserState ();	// save user-level register state
     void RestoreUserState ();	// restore user-level register state
 
-    int getThreadID(){
-        return threadID;
-    }
+    int getStackBitmapIndex();
     AddrSpace *space;		// User code this thread is running.
 #endif
 };

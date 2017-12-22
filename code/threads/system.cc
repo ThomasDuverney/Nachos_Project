@@ -18,6 +18,7 @@ Interrupt *interrupt;		// interrupt status
 Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
+int threadCounter;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -160,7 +161,7 @@ Initialize (int argc, char **argv)
 	timer = new Timer (TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
-
+    threadCounter = 0;
     // We didn't explicitly allocate the current thread we are running in.
     // But if it ever tries to give up the CPU, we better have a Thread
     // object to save its state.
@@ -175,6 +176,7 @@ Initialize (int argc, char **argv)
     synchconsole = new SynchConsole(in, out);
     semExitProcess = new Semaphore("sem_Exit", 1);
     nbThreadProcess = 0;
+    threadCounter = 0; // Nombre de threads crées depuis le démarage du système
 #endif
 
 #ifdef FILESYS

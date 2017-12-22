@@ -23,6 +23,7 @@
 #define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
 					// execution stack, for detecting
 					// stack overflows
+extern int threadCounter;
 
 //----------------------------------------------------------------------
 // Thread::Thread
@@ -31,13 +32,14 @@
 //
 //      "threadName" is an arbitrary string, useful for debugging.
 //----------------------------------------------------------------------
-
 Thread::Thread (const char *threadName)
 {
     name = threadName;
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    this->threadID = ++threadCounter;
+
 #ifdef USER_PROGRAM
     space = NULL;
     // FBT: Need to initialize special registers of simulator to 0
@@ -69,6 +71,24 @@ Thread::~Thread ()
 	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
 }
 
+/*
+  int Thread::getThreadID()
+  sémantique: retourne l'identifiant du thread courant.
+  L'identifiant assigné à un thread est la valeur du compteur de tous les thread
+  crées depuis le démarage du système.
+ */
+int Thread::getThreadID(){
+  return this->threadID;
+}
+#ifdef USER_PROGRAM
+/*
+  int GetStackBitmapIndex():
+  sémantique: retourne l'index de la pile du thread courant dans la bitmap des piles
+ */
+int Thread::getStackBitmapIndex(){
+  return this->stackBitmapIndex;
+}
+#endif
 //----------------------------------------------------------------------
 // Thread::Fork
 //      Invoke (*func)(arg), allowing caller and callee to execute
@@ -116,7 +136,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     this->space->stackBitmap->Print();
 #endif
 
-    this->threadID = this->space->stackBitmap->Find();
+    this->stackBitmapIndex= this->space->stackBitmap->Find();
 
 #endif // USER_PROGRAM
 
@@ -176,7 +196,7 @@ Thread::Finish ()
 
 #ifdef USER_PROGRAM
     // Mise à jour de la bitmap (libération de la pile du thread)
-    this->space->stackBitmap->Clear(currentThread->getThreadID());
+    this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
 #endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName ());
