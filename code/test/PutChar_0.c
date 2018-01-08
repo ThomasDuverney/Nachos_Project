@@ -3,6 +3,6 @@
   Ecriture d'un caractère sur la sortie standard.
  */
 int main() {
-    PutChar('a');
+    PutChar('c');
     return(0);
 }

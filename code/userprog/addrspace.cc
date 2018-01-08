@@ -23,7 +23,45 @@
 #include <strings.h>		/* for bzero */
 
 
-static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages);
+
+/*
+  Readatvirtual
+  Specification: static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages)
+  Sémantique: Lit "numbytes" octets dans le fichier "executable" depuis la position "position" et les place en mémoire à l'adresse virtuelle "virtualaddr"
+  de la table des pages "pageTable".
+  Préconditions: executable est l'adresse d'un fichier valide. La table "pageTable" contient suffisament de pages pour stocker numBytes.
+*/
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages){
+    char buff[numBytes];
+    int nbRead;
+    TranslationEntry * oldTable;
+    int i, oldTableSize;
+
+    /* Sauvegarde de l'ancien contexte */
+    oldTable = machine->pageTable;
+    oldTableSize = machine->pageTableSize;
+
+    machine->pageTable = pageTable;
+    machine->pageTableSize = numPages;
+
+    /* Lit "numbytes" du fichier "executable" depuis la position "position" et les place dans le buffer "buff" */
+    nbRead = executable->ReadAt(buff, numBytes, position);
+    ASSERT(nbRead == numBytes);
+
+    i = 0;
+    while(i < nbRead){
+      if(!machine->WriteMem(virtualaddr, 1, buff[i])){
+        DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+      }
+      i++;
+      virtualaddr++;
+
+    }
+
+    /* Restoration de l'ancien contexte */
+    machine->pageTable = oldTable;
+    machine->pageTableSize = oldTableSize;
+}
 
 //----------------------------------------------------------------------
 // SwapHeader
@@ -68,9 +106,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     NoffHeader noffH;
     unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
-
+    /* Lecture du fichier objet depuis le disque dans la structure noff */
     executable->ReadAt ((char *) &noffH, sizeof (noffH), 0);
-    // ReadAtVirtual(executable, (char *) &noff, sizeof(noff), 0, machine->pageTable, machine->pageTableSize);
+
     if ((noffH.noffMagic != NOFFMAGIC) &&
 	(WordToHost (noffH.noffMagic) == NOFFMAGIC))
 	SwapHeader (&noffH);
@@ -89,12 +127,12 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
     DEBUG ('a', "Initializing address space, num pages %d, size %d\n",
 	   numPages, size);
-// first, set up the translation
+    // first, set up the translation
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++)
       {
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	  pageTable[i].physicalPage = i;
+	  pageTable[i].physicalPage = i+3;
 	  pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
@@ -106,36 +144,23 @@ AddrSpace::AddrSpace (OpenFile * executable)
       machine->pageTable = pageTable;
       machine->pageTableSize = numPages;
 
-// zero out the entire address space, to zero the unitialized data segment
-// and the stack segment
+      // zero out the entire address space, to zero the unitialized data segment
+      // and the stack segment
     bzero (machine->mainMemory, size);
 
-// then, copy in the code and data segments into memory
-    if (noffH.code.size > 0)
-      {
-	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n",
-		 noffH.code.virtualAddr, noffH.code.size);
-
-    //// MODIFICATION ReadAtVirtual
-
-
-    ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, machine->pageTable, machine->pageTableSize);
-
-	  //executable->ReadAt (&(machine->mainMemory[noffH.code.virtualAddr]),
-		//	      noffH.code.size, noffH.code.inFileAddr);
-      }
-    if (noffH.initData.size > 0){
-    DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n",
-    noffH.initData.virtualAddr, noffH.initData.size);
-    /*executable->ReadAt (&
-          (machine->mainMemory
-           [noffH.initData.virtualAddr]),
-          noffH.initData.size, noffH.initData.inFileAddr);*/
-        ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, machine->pageTable, machine->pageTableSize);
+    // then, copy in the code and data segments into memory
+    if (noffH.code.size > 0){
+	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
+      ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, machine->pageTable, machine->pageTableSize);
     }
 
-      //// Allocation de(s) page(s) pour les threads 
+    if (noffH.initData.size > 0){
+      DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
+      ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, machine->pageTable, machine->pageTableSize);
+    }
 
+
+      //// Allocation de(s) page(s) pour les threads
       // Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata
       numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
       // Nombre de piles que l'on peut stoquer dans l'espace disponible
@@ -220,72 +245,32 @@ AddrSpace::RestoreState ()
 }
 
 
-//----------------------------------------------------------------------
-// ReadAtVirtual
-//      Lit dans le disque physique numBytes à la bonne position,
-//      puis le stocke dans l'adresse virtuel grâce à la TLB,
-//
-//  "executable" -- objet openfile qui contient l'executable et permet
-//          d'utiliser ReadAt 
-//  "virtualaddr" -- adresse virtuelle
-// PAS FINI
-//----------------------------------------------------------------------
 
 
-static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages){
-    char buff[numBytes];
-    int nbRead;
-    int i;
-    unsigned int index_table;
-
-    // ASSERT(numBytes > PageSize);
 
 
-    //  on rempli le buffer
-    nbRead = executable->ReadAt(buff, numBytes, position);
 
+/*
+  if(nbRead - i < 4 && nbRead - i >= 2 ){
 
-    index_table = (unsigned) virtualaddr / PageSize;
+  if(!machine->WriteMem(virtualaddr, 2, buff[i])){
+  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+  }
+  i += 2;
+  virtualaddr = (int)(((char *)virtualaddr) + 2);
 
-    ASSERT(numPages >= index_table);
-
-    // on écrit dans la mémoire
-    //// IL FAUT FAIRE UN DECALAGE DE L'ADRESSE VIRTUELLE
-    //// CAR ON ECRIT TOUJOURS AU MEME ENDROIT
-    i = 0;
-    while(i < nbRead){
-        if(nbRead - i < 4 && nbRead - i >= 2 ){
-
-            if(!machine->WriteMem(virtualaddr, 2, buff[i])){
-                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-            }
-            i += 2;
-            virtualaddr = (int)(((char *)virtualaddr) + 2);
-
-        } else if(nbRead - i < 2) {
-            if(!machine->WriteMem(virtualaddr, 1, buff[i])){
-                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-            }
-            i += 1;
-            virtualaddr = virtualaddr << 1;
-            virtualaddr = (int)(((char *)virtualaddr) + 1);
-        } else {
-            if(!machine->WriteMem(virtualaddr, 4, buff[i])){
-                DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-            }
-            i += 4;
-            virtualaddr = (int)(((char *)virtualaddr) + 4);
-        }
-
-    }
-
-    // on récupère l'indice dans la table des pages
-
-
-    // mise a jour des flags
-    pageTable[index_table].valid = FALSE;
-    pageTable[index_table].use = TRUE;
-    // Flag dirty mis à jour par machine->Translate
-
-}
-
+  } else if(nbRead - i < 2) {
+  if(!machine->WriteMem(virtualaddr, 1, buff[i])){
+  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+  }
+  i += 1;
+  virtualaddr = virtualaddr << 1;
+  virtualaddr = (int)(((char *)virtualaddr) + 1);
+  } else {
+  if(!machine->WriteMem(virtualaddr, 4, buff[i])){
+  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+  }
+  i += 4;
+  virtualaddr = (int)(((char *)virtualaddr) + 4);
+  }
+*/
