@@ -32,6 +32,7 @@ SynchDisk *synchDisk;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 Semaphore *semExitProcess;
+FrameProvider *frameProvider;
 /* /!\ Remarque: la variable globale nbThreadProcess n'est accédée et modifiée que par le noyau,
    qui pour l'instant est considéré comme mono-thread.
    Dans ces conditions l'accès à cette variable n'a pas besoin d'être protégé par un
@@ -175,9 +176,12 @@ Initialize (int argc, char **argv)
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     semExitProcess = new Semaphore("sem_Exit", 1);
+    frameProvider = new FrameProvider();
     nbThreadProcess = 0;
     threadCounter = 0; // Nombre de threads crées depuis le démarage du système
 #endif
+
+
 
 #ifdef FILESYS
     synchDisk = new SynchDisk ("DISK");

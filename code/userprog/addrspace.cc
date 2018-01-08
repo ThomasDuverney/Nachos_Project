@@ -50,12 +50,12 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
 
     i = 0;
     while(i < nbRead){
-      if(!machine->WriteMem(virtualaddr, 1, buff[i])){
-        DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-      }
-      i++;
-      virtualaddr++;
 
+        if(!machine->WriteMem(virtualaddr, 1, buff[i])){
+          DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
+        }
+        i += 1;
+        virtualaddr += 1;
     }
 
     /* Restoration de l'ancien contexte */
@@ -132,8 +132,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
     for (i = 0; i < numPages; i++)
       {
 	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-	  pageTable[i].physicalPage = i+3;
-	  pageTable[i].valid = TRUE;
+      pageTable[i].physicalPage = frameProvider->GetEmptyFrameRandom();
+      pageTable[i].valid = TRUE;
 	  pageTable[i].use = FALSE;
 	  pageTable[i].dirty = FALSE;
 	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
@@ -146,7 +146,7 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
       // zero out the entire address space, to zero the unitialized data segment
       // and the stack segment
-    bzero (machine->mainMemory, size);
+      // bzero (machine->mainMemory, size);
 
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0){
@@ -243,34 +243,3 @@ AddrSpace::RestoreState ()
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
-
-
-
-
-
-
-
-/*
-  if(nbRead - i < 4 && nbRead - i >= 2 ){
-
-  if(!machine->WriteMem(virtualaddr, 2, buff[i])){
-  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-  }
-  i += 2;
-  virtualaddr = (int)(((char *)virtualaddr) + 2);
-
-  } else if(nbRead - i < 2) {
-  if(!machine->WriteMem(virtualaddr, 1, buff[i])){
-  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-  }
-  i += 1;
-  virtualaddr = virtualaddr << 1;
-  virtualaddr = (int)(((char *)virtualaddr) + 1);
-  } else {
-  if(!machine->WriteMem(virtualaddr, 4, buff[i])){
-  DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
-  }
-  i += 4;
-  virtualaddr = (int)(((char *)virtualaddr) + 4);
-  }
-*/

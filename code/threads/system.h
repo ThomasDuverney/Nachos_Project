@@ -33,6 +33,7 @@ extern Timer *timer;		// the hardware alarm clock
 #define MAX_STRING_SIZE 100
 #include "machine.h"
 #include "synchconsole.h"
+#include "frameprovider.h"
 extern Machine *machine;	// user program memory and registers
 /*
   semExitprocess:
@@ -49,6 +50,9 @@ extern Semaphore *semExitProcess;
    Dans ces conditions l'accès à cette variable n'a pas besoin d'être protégé par un
    verrou.
  */
+
+extern FrameProvider *frameProvider;
+
 extern int nbThreadProcess; // Nombre de threads actifs du processus courant.
 extern int threadCounter;
 
