@@ -172,6 +172,9 @@ void ExceptionHandler (ExceptionType which){
                 */
                 semExitProcess->P();
                 break;
+            case SC_ForkExec:
+
+                break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

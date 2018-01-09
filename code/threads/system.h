@@ -15,6 +15,7 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include <map>
 
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
@@ -32,8 +33,11 @@ extern Timer *timer;		// the hardware alarm clock
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100
 #include "machine.h"
+#include "process.h"
 #include "synchconsole.h"
 #include "frameprovider.h"
+//extern std::map<int,Process*> *processList;
+extern Process *currentProcess;
 extern Machine *machine;	// user program memory and registers
 /*
   semExitprocess:
@@ -57,7 +61,7 @@ extern int nbThreadProcess; // Nombre de threads actifs du processus courant.
 extern int threadCounter;
 
 extern SynchConsole *synchconsole;
-#endif
+#endif // USER_PROGRAM
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB
 #include "filesys.h"

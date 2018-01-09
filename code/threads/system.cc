@@ -11,6 +11,7 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
+
 Thread *currentThread;		// the thread we are running now
 Thread *threadToBeDestroyed;	// the thread that just finished
 Scheduler *scheduler;		// the ready list
@@ -19,6 +20,7 @@ Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
 int threadCounter;
+int processCounter;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -29,16 +31,12 @@ SynchDisk *synchDisk;
 #endif
 
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
+Process *currentProcess;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 Semaphore *semExitProcess;
 FrameProvider *frameProvider;
-/* /!\ Remarque: la variable globale nbThreadProcess n'est accédée et modifiée que par le noyau,
-   qui pour l'instant est considéré comme mono-thread.
-   Dans ces conditions l'accès à cette variable n'a pas besoin d'être protégé par un
-   verrou.
-*/
-int nbThreadProcess;
+//std::map<int,Process *> *processList;
 #endif
 
 #ifdef NETWORK
@@ -162,25 +160,30 @@ Initialize (int argc, char **argv)
 	timer = new Timer (TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
-    threadCounter = 0;
-    // We didn't explicitly allocate the current thread we are running in.
-    // But if it ever tries to give up the CPU, we better have a Thread
-    // object to save its state.
-    currentThread = new Thread ("main");
-    currentThread->setStatus (RUNNING);
+    threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
+    processCounter = 0;
 
-    interrupt->Enable ();
-    CallOnUserAbort (Cleanup);	// if user hits ctl-C
 
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     semExitProcess = new Semaphore("sem_Exit", 1);
     frameProvider = new FrameProvider();
-    nbThreadProcess = 0;
-    threadCounter = 0; // Nombre de threads crées depuis le démarage du système
+    processList = new std::unordered_map<int, Process>();
+    currentProcess = new Process("main");
+    processList[currentProcess->getPid()] = currentProcess;
+    // We didn't explicitly allocate the current thread we are running in.
+    // But if it ever tries to give up the CPU, we better have a Thread
+    // object to save its state.
+    currentThread = currentProcess->getThreadList()->front();
+    //currentThread = new Thread ("main");
+    currentThread->setStatus (RUNNING);
+
+
 #endif
 
+    interrupt->Enable ();
+    CallOnUserAbort (Cleanup);	// if user hits ctl-C
 
 
 #ifdef FILESYS
@@ -211,6 +214,7 @@ Cleanup ()
 #ifdef USER_PROGRAM
     delete synchconsole;
     delete machine;
+    delete frameProvider;
     delete semExitProcess;
 #endif
 

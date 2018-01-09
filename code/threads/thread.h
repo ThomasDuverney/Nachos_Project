@@ -103,6 +103,14 @@ class Thread
 
     int getThreadID();
 
+    int getPid(){
+        return pid;
+    }
+
+    void setPid(int id){
+        this->pid = id;
+    }
+
     void setStatus (ThreadStatus st)
     {
 	status = st;
@@ -130,6 +138,7 @@ class Thread
     // Used internally by Fork()
 
     int threadID;
+    int pid;
 
 #ifdef USER_PROGRAM
 // A thread running a user program actually has *two* sets of CPU registers --

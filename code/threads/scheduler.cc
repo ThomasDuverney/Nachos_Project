@@ -102,6 +102,13 @@ Scheduler::Run (Thread * nextThread)
 	  currentThread->SaveUserState ();	// save the user's CPU registers
 	  currentThread->space->SaveState ();
       }
+
+    if(currentThread->getPid() != nextThread->getPid()){
+      int pid = nextThread->getPid();
+
+      currentProcess = processList.find(pid);
+    }
+
 #endif
 
     oldThread->CheckOverflow ();	// check if the old thread
