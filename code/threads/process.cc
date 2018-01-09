@@ -1,20 +1,29 @@
-#include "copyright.h"
 #include "process.h"
+#include "copyright.h"
+#include "system.h"
+#include "filesys.h"
 
 extern int processCounter;
 
-Process::Process(const char *processName) {
+Process::Process(const char *procName) {
   pid = ++processCounter;
   ppid = currentThread->getPid();
-  processName = processName;
+  this->processName = procName;
   nbThreadProcess = 1;
 
-  Thread launcherThread = new Thread(processName);
+  Thread * launcherThread = new Thread(processName);
   launcherThread->setPid(pid);
 
-  threadList = new List();
-  threadList.insert(launcherThread);
+  threadList = new std::map<int,Thread *>();
+  threadList->insert(std::pair<int,Thread*>(launcherThread->getThreadID(),launcherThread));
 
+}
+
+
+Process::~Process(){
+  /*for (std::map<int,Thread*>::iterator it=threadList.begin(); it!=threadList.end(); ++it){
+
+    }*/
 }
 
 void Process::startProcess(const char * fileName){
@@ -50,6 +59,6 @@ int Process::getPpid() {
   return ppid;
 }
 
-List * Process::getThreadList() {
+std::map<int,Thread *>* Process::getThreadList() {
   return threadList;
 }
