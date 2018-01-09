@@ -94,9 +94,9 @@ git status
 Example de conflit (HEAD correpond à la branche master):
 ```
 <<<<<<< HEAD:Thread.cc
-coco
+int filedef;
 =======
-caca
+String fileName;
 >>>>>>> branch_Thread:Thread.cc
 ```
 Lorsque vous avez résolus les conflits d'un fichier vous pouvez l'ajouter :
