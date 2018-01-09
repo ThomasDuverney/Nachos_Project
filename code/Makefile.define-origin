@@ -39,7 +39,7 @@ ORIG_USERPROGS=halt matmult shell sort
 #
 THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
                         system.cc thread.cc utility.cc threadtest.cc interrupt.cc \
-                        stats.cc sysdep.cc timer.cc switch.S process.cc
+                        stats.cc sysdep.cc timer.cc switch.S
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc progtest.cc console.cc \
                         machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc \
