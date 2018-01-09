@@ -7,6 +7,7 @@
 
 #include "copyright.h"
 #include "system.h"
+#include <map>
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -14,15 +15,16 @@
 
 Thread *currentThread;		// the thread we are running now
 Thread *threadToBeDestroyed;	// the thread that just finished
-Process *currentProcess;
-std::map<int,Process *> *processList;
 Scheduler *scheduler;		// the ready list
 Interrupt *interrupt;		// interrupt status
 Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
-int processCounter;
+
+Process *currentProcess; // Le processus courant
 int threadCounter;
+int processCounter;
+std::map<int,Process*> *processList;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -37,7 +39,6 @@ Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 Semaphore *semExitProcess;
 FrameProvider *frameProvider;
-
 #endif
 
 #ifdef NETWORK
@@ -164,24 +165,22 @@ Initialize (int argc, char **argv)
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
     processCounter = 0; //Nombre de processes crées deuis le démarrage du système
 
-    processList = new std::map<int, Process*>();
+    processList = new std::map<int,Process *>();
+
+    interrupt->Enable ();
+    CallOnUserAbort (Cleanup);	// if user hits ctl-C
 
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     semExitProcess = new Semaphore("sem_Exit", 1);
     frameProvider = new FrameProvider();
-
-    //Il faudrait mettre tout ça hors du ifdef USER_PROGRAM mais référence indéfini
-    currentProcess = new Process("main");  //Processus père du système
-    processList->insert(std::pair<int, Process*>(currentProcess->getPid(), currentProcess));
-    currentThread = currentProcess->getFirstThread();
-    currentThread->setStatus(RUNNING);
-
+    currentProcess = new Process("main");
+    processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
+    currentThread = currentProcess->getThreadList()->begin()->second;
+    currentThread->setStatus (RUNNING);
 #endif
 
-    interrupt->Enable ();
-    CallOnUserAbort (Cleanup);	// if user hits ctl-C
 
 #ifdef FILESYS
     synchDisk = new SynchDisk ("DISK");
@@ -213,6 +212,8 @@ Cleanup ()
     delete machine;
     delete frameProvider;
     delete semExitProcess;
+    delete processList;
+    delete currentProcess;
 #endif
 
 #ifdef FILESYS_NEEDED

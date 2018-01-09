@@ -12,6 +12,7 @@
 #include "utility.h"
 #include "thread.h"
 #include "scheduler.h"
+#include "process.h"
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
@@ -23,7 +24,8 @@ extern void Initialize (int argc, char **argv);	// Initialization,
 						// called before anything else
 extern void Cleanup ();		// Cleanup, called when
 						// Nachos is done.
-
+extern std::map<int,Process *> *processList;
+extern Process *currentProcess;
 extern Thread *currentThread;	// the thread holding the CPU
 extern Thread *threadToBeDestroyed;	// the thread that just finished
 extern Scheduler *scheduler;	// the ready list
@@ -60,7 +62,7 @@ extern Semaphore *semExitProcess;
 extern FrameProvider *frameProvider;
 
 extern SynchConsole *synchconsole;
-#endif // USER_PROGRAM
+#endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB
 #include "filesys.h"
