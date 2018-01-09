@@ -41,10 +41,11 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
                         system.cc thread.cc utility.cc threadtest.cc interrupt.cc \
                         stats.cc sysdep.cc timer.cc switch.S
 
-USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc progtest.cc console.cc process.cc\
-                        machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc frameprovider.cc
+USERPROG_SRC    :=      process.cc addrspace.cc bitmap.cc exception.cc progtest.cc console.cc \
+                        machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc \
+                        frameprovider.cc process.cc
 
-VM_SRC          :=      
+VM_SRC          :=
 
 FILESYS_SRC     :=      directory.cc filehdr.cc filesys.cc fstest.cc openfile.cc \
                         synchdisk.cc disk.cc
@@ -58,7 +59,7 @@ FEATURE_LIST=base thread-test userprog filesys filesys-stub network vm
 # The 'base' feature will always be automatically added
 base_SRC= $(THREAD_SRC)
 base_CPPFLAGS=
-base_INCDIRS=threads machine
+base_INCDIRS=threads machine userprog
 
 # thread-test feature: run the thread test function
 thread-test_CPPFLAGS=-DTHREADS

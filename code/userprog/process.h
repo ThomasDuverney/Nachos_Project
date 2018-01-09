@@ -3,33 +3,27 @@
 
 #include "copyright.h"
 #include "utility.h"
-
-
-#ifndef USER_PROGRAM
 #include "machine.h"
+#include "thread.h"
+#include <map>
 
+extern int nbThreadProcess;
 
-class Process
-{
- private:
-  const char *processName;
-  int pid;
-  int ppid;
-  List * threadList;
-  int nbThreadProcess;
- public:
-
-  Process(const char * fileName);	// Initialise un process
-  ~Process ();		// Détruit un process
-
-  int getPid();
-  int getPpid();
-
-  List * getThreadList();
-  AddrSpace getAddrSpace();
-
+class Process {
+    public:
+        Process(const char *pName);	// Initialise un process
+        ~Process();		// Détruit un process
+        void startProcess(char * fileName);
+        int getPid();
+        int getPpid();
+        Thread* getFirstThread();
+        std::map<int,Thread*> *getThreadList();
+    private:
+        const char *processName;
+        int pid;
+        int ppid;
+        std::map<int,Thread*> *threadList;
+        Thread* firstThread;
 };
-
-#endif
 
 #endif				// PROCESS_H

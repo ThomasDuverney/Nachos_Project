@@ -37,6 +37,7 @@
 #define SC_GetInt           16
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit   18
+#define SC_ForkExec         19
 
 #ifdef IN_USER_MODE
 

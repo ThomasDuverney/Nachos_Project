@@ -14,13 +14,15 @@
 
 Thread *currentThread;		// the thread we are running now
 Thread *threadToBeDestroyed;	// the thread that just finished
+Process *currentProcess;
+std::map<int,Process *> *processList;
 Scheduler *scheduler;		// the ready list
 Interrupt *interrupt;		// interrupt status
 Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
-int threadCounter;
 int processCounter;
+int threadCounter;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -31,12 +33,11 @@ SynchDisk *synchDisk;
 #endif
 
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
-Process *currentProcess;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 Semaphore *semExitProcess;
 FrameProvider *frameProvider;
-//std::map<int,Process *> *processList;
+
 #endif
 
 #ifdef NETWORK
@@ -161,30 +162,26 @@ Initialize (int argc, char **argv)
 
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
-    processCounter = 0;
+    processCounter = 0; //Nombre de processes crées deuis le démarrage du système
 
+    processList = new std::map<int, Process*>();
 
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     semExitProcess = new Semaphore("sem_Exit", 1);
     frameProvider = new FrameProvider();
-    processList = new std::unordered_map<int, Process>();
-    currentProcess = new Process("main");
-    processList[currentProcess->getPid()] = currentProcess;
-    // We didn't explicitly allocate the current thread we are running in.
-    // But if it ever tries to give up the CPU, we better have a Thread
-    // object to save its state.
-    currentThread = currentProcess->getThreadList()->front();
-    //currentThread = new Thread ("main");
-    currentThread->setStatus (RUNNING);
 
+    //Il faudrait mettre tout ça hors du ifdef USER_PROGRAM mais référence indéfini
+    currentProcess = new Process("main");  //Processus père du système
+    processList->insert(std::pair<int, Process*>(currentProcess->getPid(), currentProcess));
+    currentThread = currentProcess->getFirstThread();
+    currentThread->setStatus(RUNNING);
 
 #endif
 
     interrupt->Enable ();
     CallOnUserAbort (Cleanup);	// if user hits ctl-C
-
 
 #ifdef FILESYS
     synchDisk = new SynchDisk ("DISK");
@@ -225,7 +222,6 @@ Cleanup ()
 #ifdef FILESYS
     delete synchDisk;
 #endif
-
     delete timer;
     delete scheduler;
     delete interrupt;

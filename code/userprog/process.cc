@@ -1,25 +1,25 @@
 #include "copyright.h"
 #include "process.h"
+#include "system.h"
 
-extern int processCounter;
+int nbThreadProcess;
 
-Process::Process(const char *processName) {
+Process::Process(const char *pName) {
   pid = ++processCounter;
   ppid = currentThread->getPid();
-  processName = processName;
+  processName = pName;
   nbThreadProcess = 1;
 
-  Thread launcherThread = new Thread(processName);
+  Thread *launcherThread = new Thread(processName);
   launcherThread->setPid(pid);
 
-  threadList = new List();
-  threadList.insert(launcherThread);
-
+  threadList->insert(std::pair<int, Thread*>(launcherThread->getPid(), launcherThread));
+  firstThread = launcherThread;
 }
 
-void Process::startProcess(const char * fileName){
+void Process::startProcess(char * fileName){
 
-  OpenFile *executable = fileSystem->Open (fileName);
+  OpenFile *executable = fileSystem->Open(fileName);
   AddrSpace *space;
 
   if (executable == NULL){
@@ -28,7 +28,7 @@ void Process::startProcess(const char * fileName){
   }
 
   space = new AddrSpace (executable);
-  launcherThread->space = space;
+  firstThread->space = space;
 
   delete executable;		// close file
 
@@ -36,7 +36,7 @@ void Process::startProcess(const char * fileName){
   space->RestoreState ();	// load page table register
 
   IntStatus oldLevel = interrupt->SetLevel (IntOff);
-  scheduler->ReadyToRun(launcherThread);	// ReadyToRun assumes that interrupts
+  scheduler->ReadyToRun(firstThread);	// ReadyToRun assumes that interrupts
   // are disabled!
   (void) interrupt->SetLevel (oldLevel);
 
@@ -50,6 +50,10 @@ int Process::getPpid() {
   return ppid;
 }
 
-List * Process::getThreadList() {
+Thread* Process::getFirstThread() {
+    return firstThread;
+}
+
+std::map<int,Thread*> *Process::getThreadList() {
   return threadList;
 }

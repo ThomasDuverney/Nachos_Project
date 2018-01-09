@@ -15,6 +15,7 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
+#include "process.h"
 #include <map>
 
 // Initialization and cleanup routines
@@ -29,15 +30,16 @@ extern Scheduler *scheduler;	// the ready list
 extern Interrupt *interrupt;	// interrupt status
 extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
+extern std::map<int,Process*> *processList;
+extern Process *currentProcess;
+extern int threadCounter;
+extern int processCounter;
 
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100
 #include "machine.h"
-#include "process.h"
 #include "synchconsole.h"
 #include "frameprovider.h"
-//extern std::map<int,Process*> *processList;
-extern Process *currentProcess;
 extern Machine *machine;	// user program memory and registers
 /*
   semExitprocess:
@@ -56,9 +58,6 @@ extern Semaphore *semExitProcess;
  */
 
 extern FrameProvider *frameProvider;
-
-extern int nbThreadProcess; // Nombre de threads actifs du processus courant.
-extern int threadCounter;
 
 extern SynchConsole *synchconsole;
 #endif // USER_PROGRAM
