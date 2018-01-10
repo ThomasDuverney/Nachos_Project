@@ -6,7 +6,7 @@ int nbThreadProcess;
 Process::Process(const char *pName) {
   pid = ++processCounter;
   if(currentThread == NULL) {
-    ppid = 1; /* Le processus courant est le processus init */
+    ppid = pid; /* Le processus courant est le processus init */
   } else {
     ppid = currentThread->getPid();
   }
