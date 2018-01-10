@@ -58,7 +58,7 @@
 
 // Thread state
 enum ThreadStatus
-{ JUST_CREATED, RUNNING, READY, BLOCKED };
+{ JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint (int arg);
@@ -115,6 +115,11 @@ class Thread
     {
 	status = st;
     }
+
+    ThreadStatus getStatus(){
+        return status;
+    }
+
     const char *getName ()
     {
 	return (name);

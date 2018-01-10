@@ -16,6 +16,7 @@ class Process {
         void startProcess(char * fileName);
         int getPid();
         int getPpid();
+        void finish();
         Thread* getFirstThread();
         std::map<int,Thread*> *getThreadList();
     private:

@@ -5,10 +5,11 @@ int nbThreadProcess;
 
 Process::Process(const char *pName) {
     pid = ++processCounter;
+
     if(currentThread == NULL) {
-    ppid = pid; /* Le processus courant est le processus init */
+        ppid = pid; /* Le processus courant est le processus init */
     } else {
-    ppid = currentThread->getPid();
+        ppid = currentThread->getPid();
     }
     processName = pName;
     nbThreadProcess = 1;
@@ -21,8 +22,24 @@ Process::Process(const char *pName) {
 }
 
 Process::~Process(){
-  /* Libération des structures à faire */
+
     
+
+    delete threadList;
+}
+
+
+void Process::finish(){
+
+    /*for(threadList::iterator it=threadList.begin() ; it!=threadList.end() ; ++it){
+        // on détruit tous les thread de la liste sauf le thread courant qui sera détruit par le scheduler
+        if (it->second == currentThread){
+            it->second->Finish(); // accede à la valeur
+        } else {
+            it->second->setStatus(TERMINATED);
+        }
+    }
+*/
 }
 
 void Process::startProcess(char * fileName){
@@ -31,8 +48,8 @@ void Process::startProcess(char * fileName){
     AddrSpace *space;
 
     if (executable == NULL){
-    printf ("Unable to open file %s\n", fileName);
-    ASSERT(FALSE);
+        printf ("Unable to open file %s\n", fileName);
+        ASSERT(FALSE);
     }
 
     space = new AddrSpace (executable);

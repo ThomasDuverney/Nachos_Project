@@ -67,10 +67,14 @@ Scheduler::ReadyToRun (Thread * thread)
 //      Thread is removed from the ready list.
 //----------------------------------------------------------------------
 
-Thread *
-Scheduler::FindNextToRun ()
-{
-    return (Thread *) readyList->Remove ();
+Thread * Scheduler::FindNextToRun () {
+    Thread * nextThread = (Thread *) readyList->Remove();
+    
+    while(nextThread != NULL && nextThread->getStatus() == TERMINATED){
+        delete nextThread;
+        nextThread = (Thread *) readyList->Remove();
+    }
+    return nextThread;
 }
 
 //----------------------------------------------------------------------
@@ -97,6 +101,7 @@ Scheduler::Run (Thread * nextThread)
     // End of addition
 
 #ifdef USER_PROGRAM		// ignore until running user programs
+
     if (currentThread->space != NULL)
       {				// if this thread is a user program,
 	  currentThread->SaveUserState ();	// save the user's CPU registers
@@ -108,6 +113,7 @@ Scheduler::Run (Thread * nextThread)
 
       currentProcess = processList->find(pid)->second;
     }
+
 
 #endif
 
