@@ -5,19 +5,23 @@ int nbThreadProcess;
 
 Process::Process(const char *pName) {
   pid = ++processCounter;
-  ppid = currentThread->getPid();
+  if(currentThread == NULL) {
+    ppid = 1; /* Le processus courant est le processus init */
+  } else {
+    ppid = currentThread->getPid();
+  }
   processName = pName;
   nbThreadProcess = 1;
 
   Thread *launcherThread = new Thread(processName);
   launcherThread->setPid(pid);
-
+  threadList = new std::map<int, Thread*>();
   threadList->insert(std::pair<int, Thread*>(launcherThread->getThreadID(), launcherThread));
   firstThread = launcherThread;
 }
 
 Process::~Process(){
-    
+  /* Libération des structures à faire */
 }
 
 void Process::startProcess(char * fileName){

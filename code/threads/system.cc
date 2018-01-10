@@ -177,7 +177,7 @@ Initialize (int argc, char **argv)
     frameProvider = new FrameProvider();
     currentProcess = new Process("main");
     processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
-    currentThread = currentProcess->getThreadList()->begin()->second;
+    currentThread = currentProcess->getFirstThread();
     currentThread->setStatus (RUNNING);
 #endif
 
