@@ -17,6 +17,7 @@
 
 #include "copyright.h"
 #include "list.h"
+#include "thread.h"
 
 //----------------------------------------------------------------------
 // ListElement::ListElement
@@ -251,4 +252,12 @@ List::SortedRemove (long long *keyPtr)
 	*keyPtr = element->key;
     delete element;
     return thing;
+}
+
+
+
+void List::showListThread(){
+    for (ListElement * ptr = first; ptr != NULL; ptr = ptr->next){
+          printf("Thead id: %d\n", ((Thread* )ptr->item)->getThreadID());
+    }
 }

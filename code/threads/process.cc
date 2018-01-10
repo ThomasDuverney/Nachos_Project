@@ -14,11 +14,10 @@ Process::Process(const char *pName) {
     processName = pName;
     nbThreadProcess = 1;
 
-    Thread *launcherThread = new Thread(processName);
+    launcherThread = new Thread(processName);
     launcherThread->setPid(pid);
     threadList = new std::map<int, Thread*>();
     threadList->insert(std::pair<int, Thread*>(launcherThread->getThreadID(), launcherThread));
-    firstThread = launcherThread;
 }
 
 Process::~Process(){
@@ -28,19 +27,6 @@ Process::~Process(){
     delete threadList;
 }
 
-
-void Process::finish(){
-
-    /*for(threadList::iterator it=threadList.begin() ; it!=threadList.end() ; ++it){
-        // on détruit tous les thread de la liste sauf le thread courant qui sera détruit par le scheduler
-        if (it->second == currentThread){
-            it->second->Finish(); // accede à la valeur
-        } else {
-            it->second->setStatus(TERMINATED);
-        }
-    }
-*/
-}
 
 void Process::startProcess(char * fileName){
 
@@ -53,18 +39,38 @@ void Process::startProcess(char * fileName){
     }
 
     space = new AddrSpace (executable);
-    firstThread->space = space;
+    launcherThread->space = space;
 
-    delete executable;		// close file
+    delete executable;      // close file
 
-    space->InitRegisters ();	// set the initial register values
-    space->RestoreState ();	// load page table register
+    space->InitRegisters ();    // set the initial register values
+    space->RestoreState (); // load page table register
 
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    scheduler->ReadyToRun(firstThread);	// ReadyToRun assumes that interrupts
+
+    if(launcherThread->getStatus() != RUNNING) {
+        scheduler->ReadyToRun(launcherThread);  // ReadyToRun assumes that interrupts
     // are disabled!
+    }
     (void) interrupt->SetLevel (oldLevel);
 
+}
+
+void Process::finish(){
+
+    for(std::map<int,Thread*>::iterator it=threadList->begin() ; it!=threadList->end() ; ++it){
+        // on détruit tous les thread de la liste sauf le thread courant qui sera détruit par le scheduler
+        if (it->second == currentThread){
+            it->second->Finish(); // accede à la valeur
+        } else {
+            it->second->setStatus(TERMINATED);
+        }
+    }
+}
+
+void Process::addThread(Thread * newThread){
+    threadList->insert(std::pair<int, Thread*>(newThread->getThreadID(), newThread));
+    newThread->setPid(pid);
 }
 
 int Process::getPid() {
@@ -75,10 +81,15 @@ int Process::getPpid() {
     return ppid;
 }
 
-Thread* Process::getFirstThread() {
-    return firstThread;
+Thread* Process::getLauncherThread() {
+    return launcherThread;
 }
 
 std::map<int,Thread*> *Process::getThreadList() {
   return threadList;
 }
+
+const char * Process::getProcessName(){
+    return processName;
+}
+

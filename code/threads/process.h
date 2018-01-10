@@ -17,14 +17,16 @@ class Process {
         int getPid();
         int getPpid();
         void finish();
-        Thread* getFirstThread();
+        Thread* getLauncherThread();
         std::map<int,Thread*> *getThreadList();
+        void addThread(Thread * newThread);
+        const char * getProcessName();
     private:
         const char *processName;
         int pid;
         int ppid;
         std::map<int,Thread*> *threadList;
-        Thread* firstThread;
+        Thread* launcherThread;
 };
 
 #endif				// PROCESS_H

@@ -65,7 +65,7 @@ Thread::~Thread ()
 {
     DEBUG ('t', "Deleting thread \"%s\"\n", name);
 
-    ASSERT (this != currentThread);
+    ASSERT (this != currentThread || this->status == TERMINATED);
     if (stack != NULL){
         DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
     }
@@ -444,4 +444,35 @@ Thread::RestoreUserState ()
     for (int i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, userRegisters[i]);
 }
+
 #endif
+
+
+int Thread::getPid(){
+    return pid;
+}
+
+
+void Thread::setPid(int id){
+    this->pid = id;
+}
+
+void Thread::setStatus (ThreadStatus st){
+    status = st;
+}
+
+ThreadStatus Thread::getStatus(){
+    return status;
+}
+
+const char *Thread::getName (){
+    return name;
+}
+
+void Thread::setName(const char * nameThread){
+    name = nameThread;
+}
+
+void Thread::Print(){
+    printf ("%s, ", name);
+}

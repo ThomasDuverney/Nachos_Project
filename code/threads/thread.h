@@ -103,31 +103,21 @@ class Thread
 
     int getThreadID();
 
-    int getPid(){
-        return pid;
-    }
+    int getPid();
 
-    void setPid(int id){
-        this->pid = id;
-    }
 
-    void setStatus (ThreadStatus st)
-    {
-	status = st;
-    }
+    void setPid(int id);
 
-    ThreadStatus getStatus(){
-        return status;
-    }
+    void setStatus (ThreadStatus st);
 
-    const char *getName ()
-    {
-	return (name);
-    }
-    void Print ()
-    {
-	printf ("%s, ", name);
-    }
+
+    ThreadStatus getStatus();
+
+    const char *getName ();
+
+    void setName(const char *nameThread); 
+
+    void Print();
 
   private:
     // some of the private data for this class is listed above

@@ -1,6 +1,8 @@
 #include "userthread.h"
 #include "thread.h"
 #include "system.h"
+#include <string>
+#include <cstring>
 
 /*
  * Lance un thread utilisateur qui execute la fonction UserThreadParams->f et prennant comme
@@ -47,6 +49,11 @@ extern int do_UserThreadCreate(int f, int arg){
   if ((t = new Thread ("kernel UserThread launcher")) == NULL) {
       return -1;
   }
+  currentProcess->addThread(t);
+
+
+  t->setName(currentProcess->getProcessName());
+
   UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
   threadParams->f = f;
   threadParams->arg = arg;
@@ -54,6 +61,7 @@ extern int do_UserThreadCreate(int f, int arg){
   t->Fork(StartUserThread,(int) threadParams);
   // /*\ Peut etre utile si jamais on est en thread noyau
   //currentThread->Yield();
+
 
   return t->getThreadID();
 }
