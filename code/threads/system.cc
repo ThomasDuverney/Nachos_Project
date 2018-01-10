@@ -213,7 +213,7 @@ Cleanup ()
     delete frameProvider;
     delete semExitProcess;
     delete processList;
-    delete currentProcess;
+    // delete currentProcess;
 #endif
 
 #ifdef FILESYS_NEEDED

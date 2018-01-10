@@ -4,57 +4,58 @@
 int nbThreadProcess;
 
 Process::Process(const char *pName) {
-  pid = ++processCounter;
-  if(currentThread == NULL) {
+    pid = ++processCounter;
+    if(currentThread == NULL) {
     ppid = pid; /* Le processus courant est le processus init */
-  } else {
+    } else {
     ppid = currentThread->getPid();
-  }
-  processName = pName;
-  nbThreadProcess = 1;
+    }
+    processName = pName;
+    nbThreadProcess = 1;
 
-  Thread *launcherThread = new Thread(processName);
-  launcherThread->setPid(pid);
-  threadList = new std::map<int, Thread*>();
-  threadList->insert(std::pair<int, Thread*>(launcherThread->getThreadID(), launcherThread));
-  firstThread = launcherThread;
+    Thread *launcherThread = new Thread(processName);
+    launcherThread->setPid(pid);
+    threadList = new std::map<int, Thread*>();
+    threadList->insert(std::pair<int, Thread*>(launcherThread->getThreadID(), launcherThread));
+    firstThread = launcherThread;
 }
 
 Process::~Process(){
   /* Libération des structures à faire */
+    
 }
 
 void Process::startProcess(char * fileName){
 
-  OpenFile *executable = fileSystem->Open(fileName);
-  AddrSpace *space;
+    OpenFile *executable = fileSystem->Open(fileName);
+    AddrSpace *space;
 
-  if (executable == NULL){
+    if (executable == NULL){
     printf ("Unable to open file %s\n", fileName);
     ASSERT(FALSE);
-  }
+    }
 
-  space = new AddrSpace (executable);
-  firstThread->space = space;
+    space = new AddrSpace (executable);
+    firstThread->space = space;
 
-  delete executable;		// close file
+    delete executable;		// close file
 
-  space->InitRegisters ();	// set the initial register values
-  space->RestoreState ();	// load page table register
+    space->InitRegisters ();	// set the initial register values
+    space->RestoreState ();	// load page table register
 
-  IntStatus oldLevel = interrupt->SetLevel (IntOff);
-  scheduler->ReadyToRun(firstThread);	// ReadyToRun assumes that interrupts
-  // are disabled!
-  (void) interrupt->SetLevel (oldLevel);
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    scheduler->ReadyToRun(firstThread);	// ReadyToRun assumes that interrupts
+    // are disabled!
+    (void) interrupt->SetLevel (oldLevel);
 
 }
 
 int Process::getPid() {
-  return pid;
+    return pid;
 }
 
 int Process::getPpid() {
-  return ppid;
+    return ppid;
 }
 
 Thread* Process::getFirstThread() {

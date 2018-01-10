@@ -42,7 +42,7 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
     oldTableSize = machine->pageTableSize;
 
     machine->pageTable = pageTable;
-    machine->pageTableSize = numPages;
+    machine->pageTableSize =  numPages;
 
     /* Lit "numbytes" du fichier "executable" depuis la position "position" et les place dans le buffer "buff" */
     nbRead = executable->ReadAt(buff, numBytes, position);
@@ -131,14 +131,14 @@ AddrSpace::AddrSpace (OpenFile * executable)
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++)
       {
-	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
-      pageTable[i].physicalPage = frameProvider->GetEmptyFrameRandom();
-      pageTable[i].valid = TRUE;
-	  pageTable[i].use = FALSE;
-	  pageTable[i].dirty = FALSE;
-	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
-	  // a separate page, we could set its
-	  // pages to be read-only
+    	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+          pageTable[i].physicalPage = frameProvider->GetEmptyFrameRandom();
+          pageTable[i].valid = TRUE;
+    	  pageTable[i].use = FALSE;
+    	  pageTable[i].dirty = FALSE;
+    	  pageTable[i].readOnly = FALSE;	// if the code segment was entirely on
+    	  // a separate page, we could set its
+    	  // pages to be read-only
       }
 
       machine->pageTable = pageTable;
@@ -151,12 +151,12 @@ AddrSpace::AddrSpace (OpenFile * executable)
     // then, copy in the code and data segments into memory
     if (noffH.code.size > 0){
 	  DEBUG ('a', "Initializing code segment, at 0x%x, size %d\n", noffH.code.virtualAddr, noffH.code.size);
-      ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, machine->pageTable, machine->pageTableSize);
+      ReadAtVirtual(executable, noffH.code.virtualAddr, noffH.code.size, noffH.code.inFileAddr, pageTable, numPages);
     }
 
     if (noffH.initData.size > 0){
       DEBUG ('a', "Initializing data segment, at 0x%x, size %d\n", noffH.initData.virtualAddr, noffH.initData.size);
-      ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, machine->pageTable, machine->pageTableSize);
+      ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
 
 
@@ -227,6 +227,8 @@ AddrSpace::InitRegisters ()
 void
 AddrSpace::SaveState ()
 {
+    pageTable = machine->pageTable;
+    numPages = machine->pageTableSize;
 }
 
 //----------------------------------------------------------------------
@@ -242,4 +244,13 @@ AddrSpace::RestoreState ()
 {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
+}
+
+
+TranslationEntry * AddrSpace::getPageTable(){
+    return pageTable;
+}
+
+unsigned int AddrSpace::getNumPages(){
+    return numPages;
 }

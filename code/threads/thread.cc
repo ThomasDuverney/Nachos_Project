@@ -66,8 +66,9 @@ Thread::~Thread ()
     DEBUG ('t', "Deleting thread \"%s\"\n", name);
 
     ASSERT (this != currentThread);
-    if (stack != NULL)
-	DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+    if (stack != NULL){
+        DeallocBoundedArray ((char *) stack, StackSize * sizeof (int));
+    }
 }
 
 /*

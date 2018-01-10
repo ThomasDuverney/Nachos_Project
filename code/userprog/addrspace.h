@@ -36,9 +36,11 @@ class AddrSpace
     void RestoreState ();	// info on a context switch
 
     BitMap *stackBitmap;
-    unsigned int getNumPages(){
-        return (numPages);
-    }
+    
+
+    TranslationEntry * getPageTable();
+    unsigned int getNumPages();
+
   private:
       TranslationEntry * pageTable;	// Assume linear page table translation
     // for now!
