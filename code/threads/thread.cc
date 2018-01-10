@@ -37,6 +37,7 @@ Thread::Thread (const char *threadName)
     stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
+    threadJoin = NULL;
     this->threadID = ++threadCounter;
 
 #ifdef USER_PROGRAM
@@ -475,4 +476,12 @@ void Thread::setName(const char * nameThread){
 
 void Thread::Print(){
     printf ("%s, ", name);
+}
+
+Thread * Thread::getThreadJoin(){
+    return threadJoin;
+}
+
+void Thread::setThreadJoin(Thread * tJoin){
+    threadJoin = tJoin;
 }

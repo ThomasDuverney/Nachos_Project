@@ -45,28 +45,45 @@
  * de donnée de type UserThreadParams.
  */
 extern int do_UserThreadCreate(int f, int arg){
-  Thread *t;
-  if ((t = new Thread ("kernel UserThread launcher")) == NULL) {
+    Thread *t;
+    if ((t = new Thread ("kernel UserThread launcher")) == NULL) {
       return -1;
-  }
-  currentProcess->addThread(t);
+    }
+    currentProcess->addThread(t);
 
 
-  t->setName(currentProcess->getProcessName());
+    t->setName(currentProcess->getProcessName());
 
-  UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
-  threadParams->f = f;
-  threadParams->arg = arg;
+    UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
+    threadParams->f = f;
+    threadParams->arg = arg;
 
-  t->Fork(StartUserThread,(int) threadParams);
-  // /*\ Peut etre utile si jamais on est en thread noyau
-  //currentThread->Yield();
+    t->Fork(StartUserThread,(int) threadParams);
+    // /*\ Peut etre utile si jamais on est en thread noyau
+    //currentThread->Yield();
 
 
-  return t->getThreadID();
+    return t->getThreadID();
 }
 
 extern void do_UserThreadExit(){
-  // Détruit le thread
-  currentThread->Finish();
+      Thread * threadJoined = currentThread->getThreadJoin();
+      if (threadJoined != NULL){
+          scheduler->ReadyToRun (threadJoined);
+      }
+      currentThread->Finish();
+}
+
+extern int do_UserThreadJoin(int tid){
+    printf("DEBUG : current=%d tid=%d\n",currentThread->getThreadID(), tid);
+    interrupt->SetLevel (IntOff);
+    std::map<int, Thread*> * map = currentProcess->getThreadList();
+    std::map<int, Thread*>::iterator it = map->find(tid);
+    Thread * threadJoined;
+    if (it == map->end() || (threadJoined = (it->second))->getThreadJoin() != NULL){
+        return -1;
+    }
+    threadJoined->setThreadJoin(currentThread);
+    currentThread->Sleep();
+    return 0;
 }

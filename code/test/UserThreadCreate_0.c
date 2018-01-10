@@ -7,7 +7,7 @@
  */
 void g(void *arg) {
 	int n = *(int*) arg;
-	PutString("Je suis le thread num ");
+	//PutString("Je suis le thread num ");
 	PutInt(n);
 	PutChar('\n');
 	UserThreadExit();
