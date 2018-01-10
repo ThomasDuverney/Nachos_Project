@@ -7,8 +7,6 @@
 #include "thread.h"
 #include <map>
 
-extern int nbThreadProcess;
-
 class Process {
     public:
         Process(const char *pName);	// Initialise un process

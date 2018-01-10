@@ -55,7 +55,7 @@ Scheduler::ReadyToRun (Thread * thread)
 {
     DEBUG ('t', "Putting thread %s on ready list.\n", thread->getName ());
     thread->setStatus (READY);
-    readyList->Append ((void *) thread);    
+    readyList->Append ((void *) thread);
 }
 
 //----------------------------------------------------------------------
@@ -67,13 +67,8 @@ Scheduler::ReadyToRun (Thread * thread)
 //----------------------------------------------------------------------
 
 Thread * Scheduler::FindNextToRun () {
-    Thread * nextThread = (Thread *) readyList->Remove();
-    
-    while(nextThread != NULL && nextThread->getStatus() == TERMINATED){
-        delete nextThread;
-        nextThread = (Thread *) readyList->Remove();
-    }
-    return nextThread;
+  Thread * nextThread = (Thread *) readyList->Remove();
+  return nextThread;
 }
 
 //----------------------------------------------------------------------
@@ -163,4 +158,27 @@ Scheduler::Print ()
 {
     printf ("Ready list contents:\n");
     readyList->Mapcar ((VoidFunctionPtr) ThreadPrint);
+}
+/*
+  void Scheduler::RemoveThreadFromReadyList()
+  sémantique: Supprime de la liste des thread en attente les threads dont le status est TERMINATED.
+  Réalisation: Defait la liste readylist element par élément et construit
+  une liste temporaire contenant les threads non-TERMINATED.
+ */
+void Scheduler::RemoveThreadFromReadyList() {
+  List* tempList = new List();
+  Thread* curElem;
+  ASSERT (interrupt->getLevel () == IntOff);
+  while(!readyList->IsEmpty()) {
+    curElem = (Thread*) readyList->Remove();
+    if (curElem->getStatus() != TERMINATED) {
+      tempList->Append(curElem);
+    }
+  }
+
+  while(!tempList->IsEmpty()) {
+    curElem = (Thread*) tempList->Remove();
+    readyList->Append(curElem);
+  }
+  delete tempList;
 }

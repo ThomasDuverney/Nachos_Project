@@ -24,6 +24,7 @@ Timer *timer;			// the hardware timer device,
 Process *currentProcess; // Le processus courant
 int threadCounter;
 int processCounter;
+int nbThreadProcess;
 std::map<int,Process*> *processList;
 
 #ifdef FILESYS_NEEDED
@@ -164,7 +165,7 @@ Initialize (int argc, char **argv)
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
     processCounter = 0; //Nombre de processes crées deuis le démarrage du système
-
+    nbThreadProcess = 0;
     processList = new std::map<int,Process *>();
 
     interrupt->Enable ();

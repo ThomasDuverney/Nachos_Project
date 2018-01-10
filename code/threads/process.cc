@@ -1,8 +1,6 @@
 #include "process.h"
 #include "system.h"
 
-int nbThreadProcess;
-
 Process::Process(const char *pName) {
     pid = ++processCounter;
 
@@ -12,7 +10,6 @@ Process::Process(const char *pName) {
         ppid = currentThread->getPid();
     }
     processName = pName;
-    nbThreadProcess = 1;
 
     launcherThread = new Thread(processName);
     launcherThread->setPid(pid);
@@ -50,7 +47,7 @@ void Process::startProcess(char * fileName){
 
     if(launcherThread->getStatus() != RUNNING) {
         scheduler->ReadyToRun(launcherThread);  // ReadyToRun assumes that interrupts
-    // are disabled!
+        // are disabled!
     }
     (void) interrupt->SetLevel (oldLevel);
 
@@ -66,6 +63,13 @@ void Process::finish(){
             it->second->setStatus(TERMINATED);
         }
     }
+    /* Suppréssion des threads TERMINATED de la ready list du scheduler */
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    scheduler->RemoveThreadFromReadyList();
+    (void) interrupt->SetLevel (oldLevel);
+
+    /* TODO mettre à jour la bitmap */
+
 }
 
 void Process::addThread(Thread * newThread){

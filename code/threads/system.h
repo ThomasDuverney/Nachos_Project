@@ -36,7 +36,7 @@ extern std::map<int,Process*> *processList;
 extern Process *currentProcess;
 extern int threadCounter;
 extern int processCounter;
-
+extern int nbThreadProcess;
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100
 #include "machine.h"
