@@ -68,6 +68,11 @@ Scheduler::ReadyToRun (Thread * thread)
 
 Thread * Scheduler::FindNextToRun () {
   Thread * nextThread = (Thread *) readyList->Remove();
+
+  while(nextThread != NULL && nextThread->getStatus() == TERMINATED){
+    delete nextThread;
+    nextThread = (Thread *) readyList->Remove();
+  }
   return nextThread;
 }
 
@@ -159,6 +164,7 @@ Scheduler::Print ()
     printf ("Ready list contents:\n");
     readyList->Mapcar ((VoidFunctionPtr) ThreadPrint);
 }
+
 /*
   void Scheduler::RemoveThreadFromReadyList()
   sémantique: Supprime de la liste des thread en attente les threads dont le status est TERMINATED.
