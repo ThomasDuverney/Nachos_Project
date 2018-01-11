@@ -21,8 +21,9 @@ int FrameProvider::GetEmptyFrame() {
 }
 
 int FrameProvider::GetEmptyFrameRandom(){
+
   int sizeFree = bitmap->NumClear();
-  int *freeFrameArray;
+  int *freeFrameArray; // Tableau des indexs libres dans la bitMap
   int indexArray, indexBitmap, indexFree;
 
   ASSERT(sizeFree > 0);
@@ -32,11 +33,12 @@ int FrameProvider::GetEmptyFrameRandom(){
   indexArray = 0;
   indexBitmap = 0;
 
+  /*Parcours la bitMap*/
   while(indexArray < sizeFree){
 
     /* Si le cadre de page d'index "indexbitmap" est libre on l'ajoute dans le tableau freeFrameArray */
     if(bitmap->Test(indexBitmap) == FALSE){
-      freeFrameArray[indexArray] = indexArray;
+      freeFrameArray[indexArray] = indexBitmap;
       indexArray++;
     }
     indexBitmap++;
@@ -46,6 +48,8 @@ int FrameProvider::GetEmptyFrameRandom(){
   indexFree = freeFrameArray[random() % sizeFree];
 
   free(freeFrameArray);
+  bitmap->Mark(indexFree);
+
   return indexFree;
 
 }
