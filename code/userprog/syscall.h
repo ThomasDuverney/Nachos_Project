@@ -221,7 +221,8 @@ void UserThreadExit();
 /*
  * int UserThreadJoin(int tid)
  * Sémantique:
- *   Attend la terminaison du threadUser d'id tid, renvoie -1 en cas d'erreur 0 sinon.
+ *   Attend la terminaison du threadUser d'id tid, renvoie -1
+ si le thread est déjà terminé ou déjà attendu, 0 sinon.
  */
 int UserThreadJoin(int tid);
 
