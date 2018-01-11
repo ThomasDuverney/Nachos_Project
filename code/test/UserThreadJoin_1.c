@@ -24,10 +24,11 @@ int main(){
 	int tid2 = UserThreadCreate(g, (void *)arg2);
 	PutString("Debut Join1\n");
 	int ret1 = UserThreadJoin(tid1);
-	PutString("Debut Join1\n");
-	int ret2 = UserThreadJoin(tid2);
 	PutString("Fin Join1 ret=");
 	PutInt(ret1);
+	PutString("\n");
+	PutString("Debut Join2\n");
+	int ret2 = UserThreadJoin(tid2);
 	PutString("\nFin Join2 ret=");
 	PutInt(ret2);
 	PutString("\nFin main\n");

@@ -37,8 +37,7 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
-Semaphore *semExitProcess;
-FrameProvider *frameProvider;
+FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
 #endif
 
 #ifdef NETWORK
@@ -164,7 +163,6 @@ Initialize (int argc, char **argv)
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
     processCounter = 0; //Nombre de processes crées deuis le démarrage du système
-
     processList = new std::map<int,Process *>();
 
     interrupt->Enable ();
@@ -173,14 +171,12 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
-    semExitProcess = new Semaphore("sem_Exit", 1);
     frameProvider = new FrameProvider();
     currentProcess = new Process("main");
     processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
     currentThread = currentProcess->getLauncherThread();
     currentThread->setStatus (RUNNING);
 #endif
-
 
 #ifdef FILESYS
     synchDisk = new SynchDisk ("DISK");
@@ -211,7 +207,6 @@ Cleanup ()
     delete synchconsole;
     delete machine;
     delete frameProvider;
-    delete semExitProcess;
     delete processList;
     // delete currentProcess;
 #endif

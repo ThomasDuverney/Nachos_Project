@@ -15,13 +15,17 @@ void g(void *arg) {
 int main(){
   int tab[NB];
   int i;
-  int tid;
+  int tid[NB];
 
   for(i=0; i<NB; i++){
     tab[i] = i;
-    tid = UserThreadCreate(g,(void*) (tab+i));
-    PutInt(tid);
+    tid[i] = UserThreadCreate(g,(void*) (tab+i));
+    PutInt(tid[i]);
     PutChar('\n');
+  }
+
+  for(i=0; i<NB; i++){
+    UserThreadJoin(tid[i]);
   }
 
   return 0;
