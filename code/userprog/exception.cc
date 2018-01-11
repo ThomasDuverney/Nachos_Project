@@ -152,20 +152,13 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_Exit:
                 /*
-                  La valeur de retour du main ou exit est dans le registre 4
-                  Remarque: synchconsole->Flush(); Pour des raisons de sécurité on flush la
+                  La valeur de retour du main ou exit est dans le
+                  registre 4
+                  Remarque: synchconsole->Flush();
+                  Pour des raisons de sécurité on flush la
                   la sortie standard??
                 */
                 DEBUG('a', "Exit, initiated by user program.\n");
-                /*
-                  La sémaphore semExitprocess empêche un processus d'appeler la fonction
-                  Exit avant que ses sous-threads aient terminé.
-                  /!\ Remarque: On suppose que notre système possède toujours un unique processus actif.
-                  Pour l'instant l'appel à Exit() entraîne un appel Halt(), qui éteint par la même occasion
-                  la machine. Quand nous considèrerons plusieurs processus, la fermeture d'un processus
-                  devra pas é teindre la machine.
-                */
-                semExitProcess->P();
                 break;
             case SC_ForkExec:
 
