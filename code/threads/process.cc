@@ -22,7 +22,7 @@ Process::Process(const char *pName) {
 
 Process::~Process(){
 
-    
+
 
     delete threadList;
 }
@@ -73,6 +73,10 @@ void Process::addThread(Thread * newThread){
     newThread->setPid(pid);
 }
 
+void Process::RemoveThread(int tid){
+    threadList->erase(tid);
+}
+
 int Process::getPid() {
     return pid;
 }
@@ -92,4 +96,3 @@ std::map<int,Thread*> *Process::getThreadList() {
 const char * Process::getProcessName(){
     return processName;
 }
-

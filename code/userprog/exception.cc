@@ -79,7 +79,7 @@ void ExceptionHandler (ExceptionType which){
     reg4 = machine->ReadRegister (4);
     reg5 = machine->ReadRegister (5);
     char c;
-
+    char * buff;
 
     if (which == SyscallException) {
         switch (type) {
@@ -106,7 +106,17 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
                 // reg4 = adresse du tableau de la string (memoire virtuelle)
                 // reg5 = taille max
-                synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
+                // On écrit la valeur de GetString en mémoire
+                buff = (char*) malloc(reg5 * sizeof(char));
+                synchconsole->SynchGetString(buff, reg5);
+                int h;
+                h = 0;
+                while(h < reg5){
+                    if(!machine->WriteMem(reg4++, 1, buff[h++])){
+                      DEBUG('f', "Error translation virtual address 0x%x.\n", reg4-1);
+                    }
+                }
+                free(buff);
                 break;
             case SC_PutInt:
                 DEBUG('a', "SynchPutInt, initiated by user program.\n");

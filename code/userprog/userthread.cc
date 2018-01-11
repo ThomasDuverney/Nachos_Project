@@ -71,11 +71,12 @@ extern void do_UserThreadExit(){
       if (threadJoined != NULL){
           scheduler->ReadyToRun (threadJoined);
       }
+      printf("\n");
+      currentProcess->RemoveThread(currentThread->getThreadID());
       currentThread->Finish();
 }
 
 extern int do_UserThreadJoin(int tid){
-    printf("DEBUG : current=%d tid=%d\n",currentThread->getThreadID(), tid);
     interrupt->SetLevel (IntOff);
     std::map<int, Thread*> * map = currentProcess->getThreadList();
     std::map<int, Thread*>::iterator it = map->find(tid);
