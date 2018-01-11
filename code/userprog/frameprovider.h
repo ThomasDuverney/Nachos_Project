@@ -2,13 +2,18 @@
 #define FRAMEPROVIDER_H
 #include "bitmap.h"
 
+/*
+  Classe pour l'allocation de cadres de pages pour les piles des threads utilisateurs. Les cadres de pages sont alloués par le FrameProvider.
+  On maintient dans le FrameProvider une bitmap décrivant les cadres de pages libres en mémoire physique.
+*/
+
 class FrameProvider {
 
   public:
 
   FrameProvider();
-
   ~FrameProvider();
+
   /*
     GetEmptyFrame
     Spécifications: int GetEmptyFrame()
