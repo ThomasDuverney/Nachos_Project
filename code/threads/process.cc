@@ -9,7 +9,7 @@ Process::Process(const char *pName) {
         ppid = currentThread->getPid();
     }
     processName = pName;
-    launcherThread = new Thread(processName);
+    launcherThread = new Thread(pName);
     launcherThread->setPid(pid);
     threadList = new std::map<int, Thread*>();
     threadList->insert(std::pair<int, Thread*>(launcherThread->getThreadID(), launcherThread));
@@ -21,8 +21,7 @@ Process::~Process(){
 
 static void startUserProcess(int threadParams){
     currentThread->space->InitRegisters();
-    currentThread->space->RestoreState();
-
+    //currentThread->space->RestoreState();
     // Lance l'interpreteur mips -> banchement vers f.
     machine->Run();
 }
@@ -39,16 +38,13 @@ void Process::startProcess(char * fileName){
     launcherThread->space = space;
     delete executable;      // close file
 
-    launcherThread->Fork(startUserProcess, -1);
-
-    // space->InitRegisters ();    // set the initial register values
-    // space->RestoreState (); // load page table register
-    //
-    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
-    // if(launcherThread->getStatus() != RUNNING) {
-    //     scheduler->ReadyToRun(launcherThread);  // ReadyToRun assumes that interrupts are disabled!
-    // }
-    // (void) interrupt->SetLevel (oldLevel);
+    if(threadCounter == 1){
+        launcherThread->space->InitRegisters();
+        launcherThread->space->RestoreState ();
+        machine->Run();
+    }else{
+        launcherThread->Fork(startUserProcess, -1);
+    }
 }
 
 void Process::finish(){
@@ -65,7 +61,13 @@ void Process::finish(){
     //IntStatus oldLevel = interrupt->SetLevel (IntOff);
     //scheduler->RemoveThreadFromReadyList();
     //(void) interrupt->SetLevel (oldLevel);
-    /* TODO mettre à jour la bitmap */
+    unsigned i;
+    TranslationEntry * pageTable = currentThread->space->getPageTable();
+    for (i = 0; i < currentThread->space->getNumPages() ; i++) {
+        frameProvider->ReleaseFrame( pageTable[i].physicalPage );
+    }
+
+
 }
 
 void Process::addThread(Thread * newThread){

@@ -4,20 +4,5 @@
  */
 int main() {
     PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
-    PutString("ABCDEFGHijklmnopqrstuvwxyz\n");
     return(0);
 }

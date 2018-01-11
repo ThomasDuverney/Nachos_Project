@@ -98,7 +98,6 @@ main (int argc, char **argv)
 	  if (!strcmp (*argv, "-x")){	// run a user program
           ASSERT (argc > 1);
           currentProcess->startProcess (*(argv + 1));
-          machine->Run();
           argCount = 2;
 	  } else if (!strcmp (*argv, "-c")){   // test the console
           if (argc == 1){

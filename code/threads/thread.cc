@@ -33,8 +33,9 @@
 //----------------------------------------------------------------------
 Thread::Thread (const char *threadName)
 {
-    name = threadName;
-    stackTop = NULL;
+
+  name = threadName;
+  stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
     threadJoin = NULL;

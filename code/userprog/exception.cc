@@ -158,12 +158,14 @@ void ExceptionHandler (ExceptionType which){
                   Pour des raisons de sécurité on flush la
                   la sortie standard??
                 */
+                //currentProcess->finish();
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             case SC_ForkExec:
                 char executableName [MAX_STRING_SIZE];
                 copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
                 Process * newProcess;
+
                 newProcess = new Process(executableName);
                 processList->insert(std::pair<int,Process*>(newProcess->getPid(),newProcess));
                 newProcess->startProcess (executableName);

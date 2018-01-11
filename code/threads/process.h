@@ -60,7 +60,8 @@ class Process {
         void addThread(Thread * newThread);
         void RemoveThread(int tid);
         const char * getProcessName();
-    private:
+
+ private:
         const char *processName;
         int pid;
         int ppid;
