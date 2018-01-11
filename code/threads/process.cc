@@ -27,6 +27,13 @@ Process::~Process(){
     delete threadList;
 }
 
+static void startUserProcess(int threadParams){
+    currentThread->space->InitRegisters();
+    currentThread->space->RestoreState();
+
+    // Lance l'interpreteur mips -> banchement vers f.
+    machine->Run();
+}
 
 void Process::startProcess(char * fileName){
 
@@ -43,17 +50,16 @@ void Process::startProcess(char * fileName){
 
     delete executable;      // close file
 
-    space->InitRegisters ();    // set the initial register values
-    space->RestoreState (); // load page table register
+    launcherThread->Fork(startUserProcess, -1);
 
-    IntStatus oldLevel = interrupt->SetLevel (IntOff);
-
-    if(launcherThread->getStatus() != RUNNING) {
-        scheduler->ReadyToRun(launcherThread);  // ReadyToRun assumes that interrupts
-    // are disabled!
-    }
-    (void) interrupt->SetLevel (oldLevel);
-
+    // space->InitRegisters ();    // set the initial register values
+    // space->RestoreState (); // load page table register
+    //
+    // IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    // if(launcherThread->getStatus() != RUNNING) {
+    //     scheduler->ReadyToRun(launcherThread);  // ReadyToRun assumes that interrupts are disabled!
+    // }
+    // (void) interrupt->SetLevel (oldLevel);
 }
 
 void Process::finish(){

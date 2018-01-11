@@ -55,7 +55,7 @@ Scheduler::ReadyToRun (Thread * thread)
 {
     DEBUG ('t', "Putting thread %s on ready list.\n", thread->getName ());
     thread->setStatus (READY);
-    readyList->Append ((void *) thread);    
+    readyList->Append ((void *) thread);
 }
 
 //----------------------------------------------------------------------
@@ -68,7 +68,7 @@ Scheduler::ReadyToRun (Thread * thread)
 
 Thread * Scheduler::FindNextToRun () {
     Thread * nextThread = (Thread *) readyList->Remove();
-    
+
     while(nextThread != NULL && nextThread->getStatus() == TERMINATED){
         delete nextThread;
         nextThread = (Thread *) readyList->Remove();
@@ -109,11 +109,8 @@ Scheduler::Run (Thread * nextThread)
 
     if(currentThread->getPid() != nextThread->getPid()){
       int pid = nextThread->getPid();
-
       currentProcess = processList->find(pid)->second;
     }
-
-
 #endif
 
     oldThread->CheckOverflow ();	// check if the old thread

@@ -39,7 +39,6 @@ Thread::Thread (const char *threadName)
     status = JUST_CREATED;
     threadJoin = NULL;
     this->threadID = ++threadCounter;
-
 #ifdef USER_PROGRAM
     space = NULL;
     // FBT: Need to initialize special registers of simulator to 0

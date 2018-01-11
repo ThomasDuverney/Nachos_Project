@@ -168,6 +168,14 @@ void ExceptionHandler (ExceptionType which){
                 semExitProcess->P();
                 break;
             case SC_ForkExec:
+                char executableName [MAX_STRING_SIZE];
+                copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
+                Process * newProcess;
+                newProcess = new Process(executableName);
+                processList->insert(std::pair<int,Process*>(newProcess->getPid(),newProcess));
+                newProcess->startProcess (executableName);
+                // currentThread = currentProcess->getLauncherThread();
+                // currentThread->setStatus (RUNNING);
 
                 break;
             default:

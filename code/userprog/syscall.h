@@ -225,6 +225,13 @@ void UserThreadExit();
  */
 int UserThreadJoin(int tid);
 
+/*
+ * int ForkExec(char * fileName)
+* Sémantique:
+ *   Crée un nouveau processus qui execute le fichier donné en paramètre
+ */
+int ForkExec(char * fileName);
+
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
