@@ -152,15 +152,14 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_Exit:
                 /*
-                  La valeur de retour du main ou exit est dans le
-                  registre 4
-                  Remarque: synchconsole->Flush();
-                  Pour des raisons de sécurité on flush la
+                  La valeur de retour du main ou exit est dans le registre 4
+                  Remarque: synchconsole->Flush(); Pour des raisons de sécurité on flush la
                   la sortie standard??
                 */
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             case SC_ForkExec:
+                DEBUG('a', "Syscall ForkExec");
                 char executableName [MAX_STRING_SIZE];
                 copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
                 Process * newProcess;
