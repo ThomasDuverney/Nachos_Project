@@ -19,14 +19,14 @@ void g(void *arg) {
 int main(){
   int tab[NB];
   int i;
-  int pid[NB];
+  int tid[NB];
 
   for(i=0; i<NB; i++){
     tab[i] = i;
-    pid[i] = UserThreadCreate(g,(void*) (tab+i));
+    tid[i] = UserThreadCreate(g,(void*) (tab+i));
   }
   for(i=0; i<NB; i++){
-    UserThreadJoin(pid[i]);
+    UserThreadJoin(tid[i]);
   }
 
   return 0;
