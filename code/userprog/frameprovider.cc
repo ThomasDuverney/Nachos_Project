@@ -36,7 +36,7 @@ int FrameProvider::GetEmptyFrameRandom(){
 
     /* Si le cadre de page d'index "indexbitmap" est libre on l'ajoute dans le tableau freeFrameArray */
     if(bitmap->Test(indexBitmap) == FALSE){
-      freeFrameArray[indexArray] = indexArray;
+      freeFrameArray[indexArray] = indexBitmap;
       indexArray++;
     }
     indexBitmap++;
@@ -44,7 +44,7 @@ int FrameProvider::GetEmptyFrameRandom(){
 
   /* Choix aléatoire dans freeFrameArray d'un index de cadre de page libre */
   indexFree = freeFrameArray[random() % sizeFree];
-
+  bitmap->Mark(indexFree);
   free(freeFrameArray);
   return indexFree;
 

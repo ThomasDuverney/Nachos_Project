@@ -79,7 +79,7 @@ void ExceptionHandler (ExceptionType which){
     reg4 = machine->ReadRegister (4);
     reg5 = machine->ReadRegister (5);
     char c;
-
+    char * buff;
 
     if (which == SyscallException) {
         switch (type) {
@@ -106,7 +106,17 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
                 // reg4 = adresse du tableau de la string (memoire virtuelle)
                 // reg5 = taille max
-                synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
+                // On écrit la valeur de GetString en mémoire
+                buff = (char*) malloc(reg5 * sizeof(char));
+                synchconsole->SynchGetString(buff, reg5);
+                int h;
+                h = 0;
+                while(h < reg5){
+                    if(!machine->WriteMem(reg4++, 1, buff[h++])){
+                      DEBUG('f', "Error translation virtual address 0x%x.\n", reg4-1);
+                    }
+                }
+                free(buff);
                 break;
             case SC_PutInt:
                 DEBUG('a', "SynchPutInt, initiated by user program.\n");
@@ -122,38 +132,23 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
                 int threadId;
                 threadId = do_UserThreadCreate(reg4, reg5);
-                if(threadId != -1){
-                    /* Si le thread a bien été crée */
-                    nbThreadProcess++; // Incrémente le nombre de threads actifs dans le processus parent */
-                    if(nbThreadProcess == 1) {
-                        /*
-                          Le premier thread actif décrémente la semaphore binaire semExitprocess (-> 0).
-                          On garantit ainsi que le processus père ne puisse pas appeler la fonction halt()
-                          tant qu'un thread est actif.
-                         */
-                        semExitProcess->P();
-                    }
-                 }else{
+                if(threadId == -1){
                     /*Si il y'a eu une erreur dans la création du thread*/
                     printf("Erreur lors de la création du thread \n");
-                    /* /!\ Attention ici, il y'a un seul process on peut se permettre d'éteindre la machine
-                       Dans le cas de multi-process, il faut uniquement terminer ce processus
-                     */
-                    interrupt->Halt();
+                    machine->WriteRegister(2,-1);
+                } else {
+                    machine->WriteRegister(2,threadId);
                 }
-                machine->WriteRegister(2,threadId);
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExit, initiated by user program.\n");
-                nbThreadProcess--;
-                if(nbThreadProcess == 0){
-                    /*
-                      Quand le dernier thread actif termine il incrémente la sémaphore binaire
-                      semExitprocess (-> 1).
-                     */
-                    semExitProcess->V();
-                }
                 do_UserThreadExit();
+                break;
+            case SC_UserThreadJoin:
+                DEBUG('a', "UserThreadJoin, initiated by user program.\n");
+                int returnValue;
+                returnValue = do_UserThreadJoin(reg4);
+                machine->WriteRegister(2,returnValue);
                 break;
             case SC_Exit:
                 /*

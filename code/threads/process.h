@@ -18,6 +18,7 @@ class Process {
         Thread* getLauncherThread();
         std::map<int,Thread*> *getThreadList();
         void addThread(Thread * newThread);
+        void RemoveThread(int tid);
         const char * getProcessName();
     private:
         const char *processName;

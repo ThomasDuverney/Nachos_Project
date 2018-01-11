@@ -37,7 +37,8 @@
 #define SC_GetInt           16
 #define SC_UserThreadCreate 17
 #define SC_UserThreadExit   18
-#define SC_ForkExec         19
+#define SC_UserThreadJoin   19
+#define SC_ForkExec         20
 
 #ifdef IN_USER_MODE
 
@@ -216,6 +217,13 @@ int UserThreadCreate(void f(void* arg), void* arg);
  *   L'espace mémoire du threadUser est libéré (zeroed ?).
  */
 void UserThreadExit();
+
+/*
+ * int UserThreadJoin(int tid)
+ * Sémantique:
+ *   Attend la terminaison du threadUser d'id tid, renvoie -1 en cas d'erreur 0 sinon.
+ */
+int UserThreadJoin(int tid);
 
 #endif // IN_USER_MODE
 
