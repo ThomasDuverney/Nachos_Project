@@ -157,9 +157,7 @@ main (int argc, char **argv)
 	   else if(!strcmp(*argv, "-mkdir"))
 	   {
 		ASSERT (argc > 1);
-		// CreateDir(*(argv + 1));
 		fileSystem->CreateDirectory(*(argv+1));
-		fileSystem->List ();
 		argCount = 2;
 	   }
 #endif // FILESYS

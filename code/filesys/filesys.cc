@@ -218,74 +218,84 @@ FileSystem::Create(const char *name, int initialSize)
 
 bool FileSystem::CreateDirectory(const char *name){
 
+    bool success;
+
     int sector;
     BitMap *freeMap;
     FileHeader *directoryFileHeader;
     Directory *newDir;
-
     Directory *currentDirectory;
     currentDirectory = new Directory(NumDirEntries);
 
     // TODO a changer avec le repertoire courant
     currentDirectory->FetchFrom(directoryFile); // on rempli le le root directory
 
+    ASSERT(currentDirectory != NULL);
 
     DEBUG('f', "Creating directory: %s\n", name);
 
-
+    // on cherche si le nom est deja pris
     if(currentDirectory->Find(name) != -1){ // si le nom est deja pris
         printf("Error couldn't create %s directory, name already taken\n", name);
-        delete currentDirectory;
-        return FALSE;
-    }
+        
+        success = FALSE;
 
-    freeMap = new BitMap(NumSectors);
-    freeMap->FetchFrom(freeMapFile);
-    sector = freeMap->Find();   // recherche d'un secteur sur le disque pour le dossier que l'on crée 
+    } else {
+
+        freeMap = new BitMap(NumSectors);
+        freeMap->FetchFrom(freeMapFile);
+        sector = freeMap->Find();   // recherche d'un secteur sur le disque pour le dossier que l'on crée 
 
 
-    if(sector == -1){ // il n'y a plus de secteur libre sur le disque;
-        printf("Error couldn't create %s directory, no sector free in current directory\n", name);
-        delete currentDirectory;
+        if(sector == -1){ // il n'y a plus de secteur libre sur le disque;
+            printf("Error couldn't create %s directory, no sector free in current directory\n", name);
+            
+            success = FALSE;
+
+        } else {
+
+            newDir = new Directory(sector);
+
+            DEBUG('f', "Sector for directory %s: %d\n", name, sector);
+
+            // on rempli la table du répertoire courant
+            currentDirectory->Add(name, sector);
+
+            directoryFileHeader = new FileHeader;
+
+            // alloue les secteurs pour les fichiers dans le repertoire que l'on crée
+            if(!directoryFileHeader->Allocate(freeMap, DirectoryFileSize)){
+                DEBUG('f', "Error couldn't create %s directory, not enougth space in freeMap\n", name);
+                success = FALSE;
+            } else {
+
+                // écrit les les fichiers du nouveau répertoire sur le disque
+                directoryFileHeader->WriteBack(sector); 
+                OpenFile *dirOpenFile = new OpenFile(sector);
+                newDir->WriteBack(dirOpenFile);
+
+
+                // met a jour le repertoire courant
+                // DirectorySector a changer pour le repertoire courant
+                directoryFile = new OpenFile(DirectorySector);
+                currentDirectory->WriteBack(directoryFile);
+
+
+                success = TRUE;
+
+                delete dirOpenFile;
+            }
+
+            delete newDir;
+            delete directoryFileHeader;
+        }
+
         delete freeMap;
-        return FALSE;
     }
 
-    newDir = new Directory(sector);
+    delete currentDirectory;
 
-    DEBUG('f', "Sector for directory: %d\n", sector);
-
-    // on rempli la table du répertoire courant
-    currentDirectory->Add(name, sector);
-
-
-    
-    directoryFileHeader = new FileHeader;
-
-    // alloue les secteurs pour les fichiers dans le repertoire que l'on crée
-    if(!directoryFileHeader->Allocate(freeMap, DirectoryFileSize)){
-        DEBUG('f', "Error couldn't create %s directory, not enougth space in freeMap\n", name);
-        delete currentDirectory;
-        delete freeMap;
-        delete directoryFileHeader;
-        return FALSE;
-    }
-
-
-    // écrit les les fichiers du nouveau répertoire sur le disque
-    directoryFileHeader->WriteBack(sector); 
-    OpenFile *dirOpenFile = new OpenFile(sector);
-    newDir->WriteBack(dirOpenFile);
-
-
-    // met a jour le repertoire courant
-    directoryFile = new OpenFile(DirectorySector);
-    currentDirectory->WriteBack(directoryFile);
-
-    delete dirOpenFile;
-    delete newDir;
-
-    return TRUE;
+    return success;
 
 
 }
