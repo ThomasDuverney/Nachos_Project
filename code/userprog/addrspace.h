@@ -46,11 +46,15 @@ class AddrSpace {
         unsigned int getNumPages();
         void printJoinMap();
         void printThreadList();
+        void incrementNbThread();
+        void decrementNbThread();
+        int getNbThread();
 
     private:
         TranslationEntry * pageTable;	// Assume linear page table translation
         // for now!
         unsigned int numPages;	// Number of pages in the virtual
+        int nbThread;
         // address space
 };
 

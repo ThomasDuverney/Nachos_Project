@@ -166,11 +166,13 @@ AddrSpace::AddrSpace (OpenFile * executable)
       stackBitmap = new BitMap(numStackPerAddrSpace);
       // Le main occupe le première emplacement de pile.
       stackBitmap->Mark(0);
-
+      //Initialise la sémaphore pour bloquer la terminaison d'un processus
+      this->nbThread = 1;
       //init joinMap
       joinMap = new std::map<int, std::list<Thread*>* >();
       //init threadList
       threadList = new std::list<int>();
+
 }
 
 //----------------------------------------------------------------------
@@ -274,4 +276,16 @@ void AddrSpace::printThreadList (){
     for (std::list<int>::const_iterator iterator = threadList->begin(), end = threadList->end(); iterator != end; ++iterator) {
         printf("\tThread = %d\n",*iterator);
     }
+}
+
+void AddrSpace::incrementNbThread(){
+  nbThread++;
+}
+
+void AddrSpace::decrementNbThread(){
+  nbThread--;
+}
+
+int AddrSpace::getNbThread(){
+  return nbThread;
 }
