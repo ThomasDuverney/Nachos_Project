@@ -133,6 +133,10 @@ Thread::Fork (VoidFunctionPtr func, int arg)
       le premier indice de bloc libre trouvé dans la bitmap devient l'indice du thread.
       Aussi l'indice d'un thread reflète la position de sa pile en mémoire.
     */
+
+    //Ajout du tid dans le processus
+    this->space->threadList->push_back(this->threadID);
+
 #ifdef DEBUG
     /*  Affiche l'état de la Bitmap */
     this->space->stackBitmap->Print();
@@ -199,6 +203,7 @@ Thread::Finish ()
 #ifdef USER_PROGRAM
     // Mise à jour de la bitmap (libération de la pile du thread)
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
+    currentThread->space->threadList->remove(currentThread->getThreadID());
 #endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName());

@@ -169,6 +169,8 @@ AddrSpace::AddrSpace (OpenFile * executable)
 
       //init joinMap
       joinMap = new std::map<int, std::list<Thread*>* >();
+      //init threadList
+      threadList = new std::list<int>();
 }
 
 //----------------------------------------------------------------------
@@ -253,4 +255,23 @@ TranslationEntry * AddrSpace::getPageTable(){
 
 unsigned int AddrSpace::getNumPages(){
     return numPages;
+}
+
+void AddrSpace::printJoinMap (){
+    std::map<int, std::list<Thread*>* >::iterator it;
+    printf("\n--------JOINMAP---------\n");
+    for (it = joinMap->begin(); it != joinMap->end(); it++ ){
+        printf("TID = %d\n",it->first);
+        std::list<Thread*>* list = it->second;
+        for (std::list<Thread*>::const_iterator iterator = list->begin(), end = list->end(); iterator != end; ++iterator) {
+            printf("\tThread = %d\n",(*iterator)->getThreadID());
+        }
+    }
+}
+
+void AddrSpace::printThreadList (){
+    printf("\n--------THREADLIST-----------\n");
+    for (std::list<int>::const_iterator iterator = threadList->begin(), end = threadList->end(); iterator != end; ++iterator) {
+        printf("\tThread = %d\n",*iterator);
+    }
 }

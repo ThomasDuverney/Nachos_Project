@@ -39,12 +39,13 @@ class AddrSpace {
 
         BitMap *stackBitmap;
 
-        #ifdef USER_PROGRAM
         std::map<int, std::list<Thread*>* > *joinMap;
-        #endif
+        std::list<int> *threadList;
 
         TranslationEntry * getPageTable();
         unsigned int getNumPages();
+        void printJoinMap();
+        void printThreadList();
 
     private:
         TranslationEntry * pageTable;	// Assume linear page table translation

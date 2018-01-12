@@ -3,6 +3,7 @@
 #include "system.h"
 #include <string>
 #include <cstring>
+#include <algorithm>
 
 /*
  * Lance un thread utilisateur qui execute la fonction UserThreadParams->f et prennant comme
@@ -71,6 +72,7 @@ extern void do_UserThreadExit(){
         for (std::list<Thread*>::const_iterator iterator = listThread->begin(), end = listThread->end(); iterator != end; ++iterator) {
             scheduler->ReadyToRun(*iterator);
         }
+        currentThread->space->joinMap->erase(currentThread->getThreadID());
     }
     currentThread->Finish();
 }
@@ -80,19 +82,22 @@ extern void do_UserThreadExit(){
         Sémantique: Lorsqu'un Thread T1 fait un join sur un Thread T2 on ajoute dans la map
         T1->space->joinMap l'association (T2.Tid, [T1]).
         Ainsi on sait que T2 est attendu par T1.
+        Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
 */
 extern int do_UserThreadJoin(int tid){
-    //Interrupt à off pour sleep
+    if (tid == currentThread->getThreadID() && std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
+        return -1;
+    }
     interrupt->SetLevel (IntOff);
     std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
-    std::list<Thread*>* threadList;
+    std::list<Thread*>* tempThreadList;
     if (it == currentThread->space->joinMap->end()){
-        threadList = new std::list<Thread*>();
-        currentThread->space->joinMap->insert(std::make_pair(tid, threadList));
+        tempThreadList = new std::list<Thread*>();
+        currentThread->space->joinMap->insert(std::make_pair(tid, tempThreadList));
     } else {
-        threadList = it->second;
+        tempThreadList = it->second;
     }
-    threadList->push_back(currentThread);
+    tempThreadList->push_back(currentThread);
     currentThread->Sleep();
     return 0;
 }

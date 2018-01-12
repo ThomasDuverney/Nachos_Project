@@ -34,6 +34,9 @@ void StartProcess (char *filename){
     space = new AddrSpace (executable);
     currentThread->space = space;
 
+    //Ajout du tid dans le processus
+    currentThread->space->threadList->push_back(currentThread->getThreadID());
+
     delete executable;		// close file
 
     space->InitRegisters ();	// set the initial register values
