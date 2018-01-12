@@ -164,8 +164,11 @@ AddrSpace::AddrSpace (OpenFile * executable)
       numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
       // Tableau des emplacement pour piles disponibles.
       stackBitmap = new BitMap(numStackPerAddrSpace);
-      // Le main occupe le première emplacement de pile. 
+      // Le main occupe le première emplacement de pile.
       stackBitmap->Mark(0);
+
+      //init joinMap
+      joinMap = new std::map<int, std::list<Thread*>* >();
 }
 
 //----------------------------------------------------------------------

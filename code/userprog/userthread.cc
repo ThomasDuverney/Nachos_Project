@@ -55,24 +55,44 @@ extern int do_UserThreadCreate(int f, int arg){
     threadParams->arg = arg;
 
     t->Fork(StartUserThread,(int) threadParams);
-
     return t->getThreadID();
 }
 
-extern void do_UserThreadExit(){
-      currentThread->Finish();
-}
 /*
-extern int do_UserThreadJoin(int tid){
-    interrupt->SetLevel (IntOff);
-    std::map<int, Thread*> * map = currentProcess->getThreadList();
-    std::map<int, Thread*>::iterator it = map->find(tid);
-    Thread * threadJoined;
-    if (it == map->end() || (threadJoined = (it->second))->getThreadJoin() != NULL){
-        return -1;
+    Spécification: extern void do_UserThreadExit()
+    Sémantique:
+    Lorsqu'un Thread T termine, il regarde si des Threads Ti l'attendent.
+    Avant de quiter le thread courant remet les eventuels Ti en sommeil dans la ready list du scheduler.
+*/
+extern void do_UserThreadExit(){
+    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(currentThread->getThreadID());
+    if (it != currentThread->space->joinMap->end()){
+        std::list<Thread*>* listThread = it->second;
+        for (std::list<Thread*>::const_iterator iterator = listThread->begin(), end = listThread->end(); iterator != end; ++iterator) {
+            scheduler->ReadyToRun(*iterator);
+        }
     }
-    threadJoined->setThreadJoin(currentThread);
+    currentThread->Finish();
+}
+
+/*
+        spécification: extern int do_UserThreadJoin(int tid)
+        Sémantique: Lorsqu'un Thread T1 fait un join sur un Thread T2 on ajoute dans la map
+        T1->space->joinMap l'association (T2.Tid, [T1]).
+        Ainsi on sait que T2 est attendu par T1.
+*/
+extern int do_UserThreadJoin(int tid){
+    //Interrupt à off pour sleep
+    interrupt->SetLevel (IntOff);
+    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
+    std::list<Thread*>* threadList;
+    if (it == currentThread->space->joinMap->end()){
+        threadList = new std::list<Thread*>();
+        currentThread->space->joinMap->insert(std::make_pair(tid, threadList));
+    } else {
+        threadList = it->second;
+    }
+    threadList->push_back(currentThread);
     currentThread->Sleep();
     return 0;
 }
-*/

@@ -35,4 +35,4 @@ extern void do_UserThreadExit();
 /*
  *
  */
-//extern int do_UserThreadJoin(int tid);
+extern int do_UserThreadJoin(int tid);

@@ -146,10 +146,10 @@ void ExceptionHandler (ExceptionType which){
                 do_UserThreadExit();
                 break;
             case SC_UserThreadJoin:
-                /*    DEBUG('a', "UserThreadJoin, initiated by user program.\n");
+                DEBUG('a', "UserThreadJoin, initiated by user program.\n");
                 int returnValue;
                 returnValue = do_UserThreadJoin(reg4);
-                machine->WriteRegister(2,returnValue);*/
+                machine->WriteRegister(2,returnValue);
                 break;
             case SC_Exit:
                 /*
