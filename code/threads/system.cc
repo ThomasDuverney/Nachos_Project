@@ -172,7 +172,7 @@ Initialize (int argc, char **argv)
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     frameProvider = new FrameProvider();
-    currentProcess = new Process("main");
+    currentProcess = new Process("main__nous");
     processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
     currentThread = currentProcess->getLauncherThread();
     currentThread->setStatus (RUNNING);

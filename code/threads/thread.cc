@@ -126,8 +126,9 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     // an already running program, as in the "fork" Unix system call.
 
     // LB: Observe that currentThread->space may be NULL at that time.
-    this->space = currentThread->space;
-
+    if(space == NULL){
+      this->space = currentThread->space;
+    }
     /*
       le premier indice de bloc libre trouvé dans la bitmap devient l'indice du thread.
       Aussi l'indice d'un thread reflète la position de sa pile en mémoire.
@@ -200,7 +201,7 @@ Thread::Finish ()
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
 #endif
 
-    DEBUG ('t', "Finishing thread \"%s\"\n", getName ());
+    DEBUG ('t', "Finishing thread \"%s\"\n", getName());
 
     // LB: Be careful to guarantee that no thread to be destroyed
     // is ever lost
@@ -208,7 +209,7 @@ Thread::Finish ()
     // End of addition
 
     threadToBeDestroyed = currentThread;
-    Sleep ();			// invokes SWITCH
+    Sleep();			// invokes SWITCH
     // not reached
 }
 

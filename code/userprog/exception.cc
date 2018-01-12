@@ -161,7 +161,9 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_ForkExec:
                 DEBUG('a', "Syscall ForkExec");
-                char executableName [MAX_STRING_SIZE];
+                //char executableName [MAX_STRING_SIZE];
+                char * executableName;
+                executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
                 copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
                 Process * newProcess;
 

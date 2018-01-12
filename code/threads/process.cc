@@ -21,7 +21,7 @@ Process::~Process(){
 
 static void startUserProcess(int threadParams){
     currentThread->space->InitRegisters();
-    //currentThread->space->RestoreState();
+    currentThread->space->RestoreState();
     // Lance l'interpreteur mips -> banchement vers f.
     machine->Run();
 }

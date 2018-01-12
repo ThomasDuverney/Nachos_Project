@@ -2,7 +2,6 @@
 
 int main(){
 	PutChar('1');
-	ForkExec("Forkexec_call");
-
+	ForkExec("PutChar_0");
 	return 0;
 }
