@@ -166,6 +166,9 @@ AddrSpace::AddrSpace (OpenFile * executable)
       stackBitmap = new BitMap(numStackPerAddrSpace);
       // Le main occupe le première emplacement de pile. 
       stackBitmap->Mark(0);
+
+      //Initialise la sémaphore pour bloquer la terminaison d'un processus
+      this->nbThread = 1;
 }
 
 //----------------------------------------------------------------------
@@ -250,4 +253,16 @@ TranslationEntry * AddrSpace::getPageTable(){
 
 unsigned int AddrSpace::getNumPages(){
     return numPages;
+}
+
+void AddrSpace::incrementNbThread(){
+  nbThread++;
+}
+
+void AddrSpace::decrementNbThread(){
+  nbThread--;
+}
+
+int AddrSpace::getNbThread(){
+  return nbThread;
 }

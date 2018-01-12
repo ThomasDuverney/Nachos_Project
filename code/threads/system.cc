@@ -20,8 +20,7 @@ Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
 
-int threadCounter;
-std::map<int,Process*> *processList;
+unsigned int threadCounter;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -35,6 +34,8 @@ SynchDisk *synchDisk;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
+Semaphore *semExitProcess;
+unsigned int nbThreadActifs;
 #endif
 
 #ifdef NETWORK
@@ -159,7 +160,10 @@ Initialize (int argc, char **argv)
 
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
-
+#ifdef USER_PROGRAM
+    nbThreadActifs = 0; // Nombre de threads actifs dans le système
+    semExitProcess = new Semaphore("sem_Exit", 1);
+#endif
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);
 
@@ -201,8 +205,8 @@ Cleanup ()
     delete synchconsole;
     delete machine;
     delete frameProvider;
-    delete processList;
-    // delete currentProcess;
+    delete semExitProcess;
+
 #endif
 
 #ifdef FILESYS_NEEDED

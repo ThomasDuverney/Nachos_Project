@@ -12,30 +12,24 @@
 #include "utility.h"
 #include "thread.h"
 #include "scheduler.h"
-#include "process.h"
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
-#include "process.h"
-#include <map>
 
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
 						// called before anything else
 extern void Cleanup ();		// Cleanup, called when
 						// Nachos is done.
-extern std::map<int,Process *> *processList;
-extern Process *currentProcess;
+
 extern Thread *currentThread;	// the thread holding the CPU
 extern Thread *threadToBeDestroyed;	// the thread that just finished
 extern Scheduler *scheduler;	// the ready list
 extern Interrupt *interrupt;	// interrupt status
 extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
-extern std::map<int,Process*> *processList;
-extern Process *currentProcess;
-extern int threadCounter;
-extern int processCounter;
+extern unsigned int threadCounter,nbThreadActifs;
+
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100
 #include "machine.h"
@@ -44,6 +38,9 @@ extern int processCounter;
 extern Machine *machine;	// user program memory and registers
 extern FrameProvider *frameProvider;
 extern SynchConsole *synchconsole;
+extern Semaphore *semExitProcess;
+extern unsigned int nbThreadActifs;
+
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB

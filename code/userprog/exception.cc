@@ -133,34 +133,27 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
                 int threadId;
                 threadId = do_UserThreadCreate(reg4, reg5);
-                if(threadId == -1){
-                    /*Si il y'a eu une erreur dans la création du thread*/
-                    printf("Erreur lors de la création du thread \n");
-                    machine->WriteRegister(2,-1);
-                } else {
-                    machine->WriteRegister(2,threadId);
-                }
+                // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
+                machine->WriteRegister(2,threadId);
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExit, initiated by user program.\n");
                 do_UserThreadExit();
                 break;
             case SC_UserThreadJoin:
-                /*    DEBUG('a', "UserThreadJoin, initiated by user program.\n");
-                int returnValue;
-                returnValue = do_UserThreadJoin(reg4);
-                machine->WriteRegister(2,returnValue);*/
+                /**/
                 break;
             case SC_Exit:
-                /*
-                  La valeur de retour du main ou exit est dans le registre 4
-                  Remarque: synchconsole->Flush(); Pour des raisons de sécurité on flush la
-                  la sortie standard??
-                */
+                currentThread->Finish();
+                // il reste un seul thread dans le processus. On supprimme l'espace d'adressage/
+                if(currentThread->space->getNbThread() == 1){
+                    do_UserProcessFinish();
+                }
+
+
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             case SC_ForkExec:
-
                 DEBUG('a', "Syscall ForkExec");
                 char * executableName;
                 executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);

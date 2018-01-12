@@ -40,6 +40,7 @@ Thread::Thread (const char *threadName)
     status = JUST_CREATED;
     threadJoin = NULL;
     this->threadID = ++threadCounter;
+
 #ifdef USER_PROGRAM
     space = NULL;
     // FBT: Need to initialize special registers of simulator to 0
@@ -47,6 +48,11 @@ Thread::Thread (const char *threadName)
     // user threads.
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
+
+    nbThreadActifs = threadCounter;
+    if(nbThreadActifs == 1) {
+      semExitProcess->P();
+    }
 #endif
 }
 
@@ -129,15 +135,12 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     if(space == NULL){
       this->space = currentThread->space;
     }
-    /*
-      le premier indice de bloc libre trouvé dans la bitmap devient l'indice du thread.
-      Aussi l'indice d'un thread reflète la position de sa pile en mémoire.
-    */
+
 #ifdef DEBUG
     /*  Affiche l'état de la Bitmap */
     this->space->stackBitmap->Print();
 #endif
-
+    /* Recherche d'un emplacement libre dans la bitmap pour la pile du thread */
     this->stackBitmapIndex= this->space->stackBitmap->Find();
 
 #endif // USER_PROGRAM
@@ -199,6 +202,11 @@ Thread::Finish ()
 #ifdef USER_PROGRAM
     // Mise à jour de la bitmap (libération de la pile du thread)
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
+    nbThreadActifs--;
+    if(nbThreadActifs == 0){
+      interrupt->Halt();
+      semExitProcess->V();
+    }
 #endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName());
