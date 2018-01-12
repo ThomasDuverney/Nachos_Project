@@ -7,7 +7,6 @@
 
 #include "copyright.h"
 #include "system.h"
-#include <map>
 
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
@@ -21,9 +20,7 @@ Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
 
-Process *currentProcess; // Le processus courant
 int threadCounter;
-int processCounter;
 std::map<int,Process*> *processList;
 
 #ifdef FILESYS_NEEDED
@@ -162,8 +159,6 @@ Initialize (int argc, char **argv)
 
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
-    processCounter = 0; //Nombre de processes crées deuis le démarrage du système
-    processList = new std::map<int,Process *>();
 
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);
@@ -175,13 +170,6 @@ Initialize (int argc, char **argv)
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     frameProvider = new FrameProvider();
-    /*
-    currentProcess = new Process("main__nous");
-    processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
-    currentThread = currentProcess->getLauncherThread();
-    currentThread->setStatus (RUNNING);
-    */
-
 #endif
 
 #ifdef FILESYS

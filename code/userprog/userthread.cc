@@ -49,33 +49,20 @@ extern int do_UserThreadCreate(int f, int arg){
     if ((t = new Thread ("kernel UserThread launcher")) == NULL) {
       return -1;
     }
-    currentProcess->addThread(t);
-
-
-    t->setName(currentProcess->getProcessName());
 
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
     threadParams->f = f;
     threadParams->arg = arg;
 
     t->Fork(StartUserThread,(int) threadParams);
-    // /*\ Peut etre utile si jamais on est en thread noyau
-    //currentThread->Yield();
-
 
     return t->getThreadID();
 }
 
 extern void do_UserThreadExit(){
-      Thread * threadJoined = currentThread->getThreadJoin();
-      if (threadJoined != NULL){
-          scheduler->ReadyToRun (threadJoined);
-      }
-      printf("\n");
-      currentProcess->RemoveThread(currentThread->getThreadID());
       currentThread->Finish();
 }
-
+/*
 extern int do_UserThreadJoin(int tid){
     interrupt->SetLevel (IntOff);
     std::map<int, Thread*> * map = currentProcess->getThreadList();
@@ -88,3 +75,4 @@ extern int do_UserThreadJoin(int tid){
     currentThread->Sleep();
     return 0;
 }
+*/

@@ -1,7 +1,8 @@
 #include "syscall.h"
 
 int main(){
-	PutChar('1');
+	PutChar('A');
 	ForkExec("PutChar_0");
-	return 0;
+	PutChar('B');
+	Exit(0);
 }

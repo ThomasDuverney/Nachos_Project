@@ -25,6 +25,7 @@
 #include "system.h"
 #include "syscall.h"
 #include "userthread.h"
+#include "userprocess.h"
 
 void copyStringFromMachine(int from, char *to, unsigned size){
     unsigned int i=0;
@@ -145,10 +146,10 @@ void ExceptionHandler (ExceptionType which){
                 do_UserThreadExit();
                 break;
             case SC_UserThreadJoin:
-                DEBUG('a', "UserThreadJoin, initiated by user program.\n");
+                /*    DEBUG('a', "UserThreadJoin, initiated by user program.\n");
                 int returnValue;
                 returnValue = do_UserThreadJoin(reg4);
-                machine->WriteRegister(2,returnValue);
+                machine->WriteRegister(2,returnValue);*/
                 break;
             case SC_Exit:
                 /*
@@ -156,22 +157,15 @@ void ExceptionHandler (ExceptionType which){
                   Remarque: synchconsole->Flush(); Pour des raisons de sécurité on flush la
                   la sortie standard??
                 */
-                //currentProcess->finish();
                 DEBUG('a', "Exit, initiated by user program.\n");
                 break;
             case SC_ForkExec:
+
                 DEBUG('a', "Syscall ForkExec");
-                //char executableName [MAX_STRING_SIZE];
                 char * executableName;
                 executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
                 copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
-                Process * newProcess;
-
-                newProcess = new Process(executableName);
-                processList->insert(std::pair<int,Process*>(newProcess->getPid(),newProcess));
-                newProcess->startProcess (executableName);
-                // currentThread = currentProcess->getLauncherThread();
-                // currentThread->setStatus (RUNNING);
+                do_UserProcessCreate(executableName);
 
                 break;
             default:

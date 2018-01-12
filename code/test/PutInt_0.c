@@ -4,5 +4,5 @@
 */
 int main(){
 	PutInt(10);
-	return 0;
+	Exit(0);
 }

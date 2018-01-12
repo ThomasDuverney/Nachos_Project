@@ -67,13 +67,7 @@ Scheduler::ReadyToRun (Thread * thread)
 //----------------------------------------------------------------------
 
 Thread * Scheduler::FindNextToRun () {
-    Thread * nextThread = (Thread *) readyList->Remove();
-    /*
-    while(nextThread != NULL && nextThread->getStatus() == TERMINATED){
-        delete nextThread;
-        nextThread = (Thread *) readyList->Remove();
-        }*/
-    return nextThread;
+  return (Thread *) readyList->Remove ();   
 }
 
 //----------------------------------------------------------------------
@@ -106,11 +100,6 @@ Scheduler::Run (Thread * nextThread)
 	  currentThread->SaveUserState ();	// save the user's CPU registers
 	  currentThread->space->SaveState ();
       }
-
-    if(currentThread->getPid() != nextThread->getPid()){
-      int pid = nextThread->getPid();
-      currentProcess = processList->find(pid)->second;
-    }
 #endif
 
     oldThread->CheckOverflow ();	// check if the old thread
@@ -135,7 +124,7 @@ Scheduler::Run (Thread * nextThread)
     // we need to delete its carcass.  Note we cannot delete the thread
     // before now (for example, in Thread::Finish()), because up to this
     // point, we were still running on the old thread's stack!
-    ASSERT(threadToBeDestroyed != currentThread);
+
     if (threadToBeDestroyed != NULL)
       {
 	  delete threadToBeDestroyed;
