@@ -139,6 +139,10 @@ FileSystem::FileSystem(bool format)
         freeMapFile = new OpenFile(FreeMapSector);
         directoryFile = new OpenFile(DirectorySector);
     }
+
+    // on demarre le systeme de fichier toujours à la racine
+    currentDirectorySector = DirectorySector;
+    currentDirectoryFile = new OpenFile(currentDirectorySector);
 }
 
 
@@ -228,11 +232,11 @@ bool FileSystem::CreateDirectory(const char *name){
     currentDirectory = new Directory(NumDirEntries);
 
     // TODO a changer avec le repertoire courant
-    currentDirectory->FetchFrom(directoryFile); // on rempli le le root directory
+    currentDirectory->FetchFrom(currentDirectoryFile); // on rempli le le root directory
 
     ASSERT(currentDirectory != NULL);
 
-    DEBUG('f', "Creating directory: %s\n", name);
+    DEBUG('f', "Creating directory: %s in the directory at the sector %d\n", name, currentDirectorySector);
 
     // on cherche si le nom est deja pris
     if(currentDirectory->Find(name) != -1){ // si le nom est deja pris
@@ -277,8 +281,8 @@ bool FileSystem::CreateDirectory(const char *name){
 
                 // met a jour le repertoire courant
                 // DirectorySector a changer pour le repertoire courant
-                directoryFile = new OpenFile(DirectorySector);
-                currentDirectory->WriteBack(directoryFile);
+                directoryFile = new OpenFile(currentDirectorySector);
+                currentDirectory->WriteBack(currentDirectoryFile);
 
 
                 success = TRUE;
@@ -298,6 +302,15 @@ bool FileSystem::CreateDirectory(const char *name){
     return success;
 
 
+}
+
+bool FileSystem::RemoveDirectory(const char *name){
+
+    bool success = FALSE;
+
+    /// TODO
+
+    return success;
 }
 
 //----------------------------------------------------------------------
