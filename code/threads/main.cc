@@ -154,6 +154,14 @@ main (int argc, char **argv)
 	    {			// performance test
 		PerformanceTest ();
 	    }
+	   else if(!strcmp(*argv, "-mkdir"))
+	   {
+		ASSERT (argc > 1);
+		// CreateDir(*(argv + 1));
+		fileSystem->CreateDirectory(*(argv+1));
+		fileSystem->List ();
+		argCount = 2;
+	   }
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))
@@ -168,7 +176,8 @@ main (int argc, char **argv)
 #endif // NETWORK
       }
 
-    currentThread->Finish ();	// NOTE: if the procedure "main"
+
+    //currentThread->Finish ();	// NOTE: if the procedure "main"  
     // returns, then the program "nachos"
     // will exit (as any other normal program
     // would).  But there may be other

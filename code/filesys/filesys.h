@@ -79,6 +79,8 @@ class FileSystem {
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
 
+    bool CreateDirectory(const char *name);
+
     bool Remove(const char *name); 	// Delete a file (UNIX unlink)
 
     void List();			// List all the files in the file system

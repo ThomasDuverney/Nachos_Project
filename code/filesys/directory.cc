@@ -110,9 +110,11 @@ Directory::Find(const char *name)
 {
     int i = FindIndex(name);
 
-    if (i != -1)
-	return table[i].sector;
-    return -1;
+    if (i != -1){
+	   return table[i].sector;
+    } else {
+        return -1;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -130,15 +132,17 @@ bool
 Directory::Add(const char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
 
-    for (int i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++){
+
         if (!table[i].inUse) {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-        return TRUE;
-	}
+            return TRUE;
+    	}
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
