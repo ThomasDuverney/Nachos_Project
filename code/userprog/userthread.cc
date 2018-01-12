@@ -85,7 +85,7 @@ extern void do_UserThreadExit(){
         Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
 */
 extern int do_UserThreadJoin(int tid){
-    if (tid == currentThread->getThreadID() && std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
+    if (tid == currentThread->getThreadID() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
         return -1;
     }
     interrupt->SetLevel (IntOff);
