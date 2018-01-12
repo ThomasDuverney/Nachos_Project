@@ -165,6 +165,9 @@ Initialize (int argc, char **argv)
     processCounter = 0; //Nombre de processes crées deuis le démarrage du système
     processList = new std::map<int,Process *>();
 
+    currentThread = new Thread("main");
+    currentThread->setStatus(RUNNING);
+
     interrupt->Enable ();
     CallOnUserAbort (Cleanup);	// if user hits ctl-C
 
@@ -172,10 +175,13 @@ Initialize (int argc, char **argv)
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
     frameProvider = new FrameProvider();
+    /*
     currentProcess = new Process("main__nous");
     processList->insert(std::pair<int,Process*>(currentProcess->getPid(),currentProcess));
     currentThread = currentProcess->getLauncherThread();
     currentThread->setStatus (RUNNING);
+    */
+
 #endif
 
 #ifdef FILESYS
