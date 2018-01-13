@@ -82,7 +82,6 @@ class Thread
     // THEY MUST be in this position for SWITCH to work.
     int *stackTop;		// the current stack pointer
     int machineState[MachineStateSize];	// all registers except for stackTop
-    Thread * threadJoin;
   public:
       Thread (const char *debugName);	// initialize a Thread
      ~Thread ();		// deallocate a Thread
@@ -117,10 +116,6 @@ class Thread
     const char *getName ();
 
     void setName(const char *nameThread);
-
-    Thread * getThreadJoin();
-
-    void setThreadJoin(Thread * tJoin);
 
     void Print();
 

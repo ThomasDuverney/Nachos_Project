@@ -33,14 +33,17 @@
 //----------------------------------------------------------------------
 Thread::Thread (const char *threadName)
 {
-
   name = threadName;
   stackTop = NULL;
     stack = NULL;
     status = JUST_CREATED;
-    threadJoin = NULL;
+    /*
+      On assigne à chaque thread un identifiant unique
+      correspondant à la valeur du compteur de nombre total de threads
+      crées sur le système. On est limité à Max_unsigned_int_value
+      threads.
+    */
     this->threadID = ++threadCounter;
-
 #ifdef USER_PROGRAM
     space = NULL;
     // FBT: Need to initialize special registers of simulator to 0
@@ -82,8 +85,6 @@ Thread::~Thread ()
 /*
   int Thread::getThreadID()
   sémantique: retourne l'identifiant du thread courant.
-  L'identifiant assigné à un thread est la valeur du compteur de tous les thread
-  crées depuis le démarage du système.
  */
 int Thread::getThreadID(){
   return this->threadID;
@@ -495,12 +496,4 @@ void Thread::setName(const char * nameThread){
 
 void Thread::Print(){
     printf ("%s, ", name);
-}
-
-Thread * Thread::getThreadJoin(){
-    return threadJoin;
-}
-
-void Thread::setThreadJoin(Thread * tJoin){
-    threadJoin = tJoin;
 }
