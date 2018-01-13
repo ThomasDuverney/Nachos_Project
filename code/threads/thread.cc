@@ -43,7 +43,7 @@ Thread::Thread (const char *threadName)
       crées sur le système. On est limité à Max_unsigned_int_value
       threads.
     */
-    this->threadID = ++threadCounter;
+    this->tid = ++threadCounter;
 #ifdef USER_PROGRAM
     space = NULL;
     // FBT: Need to initialize special registers of simulator to 0
@@ -79,13 +79,14 @@ Thread::~Thread ()
 }
 
 /*
-  int Thread::getThreadID()
+  int Thread::getTid()
   sémantique: retourne l'identifiant du thread courant.
  */
-int Thread::getThreadID(){
-  return this->threadID;
+int Thread::getTid(){
+  return this->tid;
 }
 #ifdef USER_PROGRAM
+
 /*
   int GetStackBitmapIndex():
   sémantique: retourne l'index de la pile du thread courant dans la bitmap des piles
@@ -135,7 +136,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     }
 
     //Ajout du tid dans la liste des threads du processus
-    this->space->threadList->push_back(this->threadID);
+    this->space->threadList->push_back(this->tid);
 
 #ifdef DEBUG
     /*  Affiche l'état de la Bitmap */
@@ -213,7 +214,7 @@ Thread::Finish ()
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
 
     // Enlève le tid de la liste des threads du processus
-    currentThread->space->threadList->remove(currentThread->getThreadID());
+    currentThread->space->threadList->remove(currentThread->getTid());
 #endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName());
@@ -468,7 +469,6 @@ Thread::RestoreUserState ()
 int Thread::getPid(){
     return pid;
 }
-
 
 void Thread::setPid(int id){
     this->pid = id;

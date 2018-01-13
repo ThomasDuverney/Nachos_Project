@@ -258,6 +258,6 @@ List::SortedRemove (long long *keyPtr)
 
 void List::showListThread(){
     for (ListElement * ptr = first; ptr != NULL; ptr = ptr->next){
-          printf("Thead id: %d\n", ((Thread* )ptr->item)->getThreadID());
+          printf("Thead id: %d\n", ((Thread* )ptr->item)->getTid());
     }
 }

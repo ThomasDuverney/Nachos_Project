@@ -35,7 +35,7 @@ void StartProcess (char *filename){
     currentThread->space = space;
 
     //Ajout du tid dans le processus
-    currentThread->space->threadList->push_back(currentThread->getThreadID());
+    currentThread->space->threadList->push_back(currentThread->getTid());
 
     delete executable;		// close file
 

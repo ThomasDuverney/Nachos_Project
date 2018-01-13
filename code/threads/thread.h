@@ -101,9 +101,9 @@ class Thread
     void CheckOverflow ();	// Check if thread has
     // overflowed its stack
 
-    int getThreadID();
+    int getTid(); // Retourne l'identifiant du thread.
 
-    int getPid();
+    int getPid(); // Retourne l'identifiant du processus.
 
 
     void setPid(int id);
@@ -132,7 +132,7 @@ class Thread
     // Allocate a stack for thread.
     // Used internally by Fork()
 
-    int threadID;
+    int tid;
     int pid;
 
 #ifdef USER_PROGRAM

@@ -56,7 +56,7 @@ extern int do_UserThreadCreate(int f, int arg){
     threadParams->arg = arg;
 
     t->Fork(StartUserThread,(int) threadParams);
-    return t->getThreadID();
+    return t->getTid();
 }
 
 /*
@@ -66,13 +66,13 @@ extern int do_UserThreadCreate(int f, int arg){
     Avant de quiter le thread courant remet les eventuels Ti en sommeil dans la ready list du scheduler.
 */
 extern void do_UserThreadExit(){
-    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(currentThread->getThreadID());
+    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(currentThread->getTid());
     if (it != currentThread->space->joinMap->end()){
         std::list<Thread*>* listThread = it->second;
         for (std::list<Thread*>::const_iterator iterator = listThread->begin(), end = listThread->end(); iterator != end; ++iterator) {
             scheduler->ReadyToRun(*iterator);
         }
-        currentThread->space->joinMap->erase(currentThread->getThreadID());
+        currentThread->space->joinMap->erase(currentThread->getTid());
     }
     currentThread->Finish();
 }
@@ -85,7 +85,7 @@ extern void do_UserThreadExit(){
         Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
 */
 extern int do_UserThreadJoin(int tid){
-    if (tid == currentThread->getThreadID() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
+    if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
         return -1;
     }
     interrupt->SetLevel (IntOff);

@@ -266,7 +266,7 @@ void AddrSpace::printJoinMap (){
         printf("TID = %d\n",it->first);
         std::list<Thread*>* list = it->second;
         for (std::list<Thread*>::const_iterator iterator = list->begin(), end = list->end(); iterator != end; ++iterator) {
-            printf("\tThread = %d\n",(*iterator)->getThreadID());
+            printf("\tThread = %d\n",(*iterator)->getTid());
         }
     }
 }
