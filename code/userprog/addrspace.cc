@@ -287,5 +287,6 @@ void AddrSpace::decrementNbThread(){
 }
 
 int AddrSpace::getNbThread(){
-  return nbThread;
+  return threadList->size();
+  //return nbThread;
 }
