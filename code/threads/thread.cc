@@ -49,10 +49,11 @@ Thread::Thread (const char *threadName)
     for (int r=NumGPRegs; r<NumTotalRegs; r++)
       userRegisters[r] = 0;
 
-    nbThreadActifs = threadCounter;
+    nbThreadActifs++;
+    /*
     if(nbThreadActifs == 1) {
       semExitProcess->P();
-    }
+      }*/
 #endif
 }
 
@@ -136,7 +137,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
       this->space = currentThread->space;
     }
 
-    //Ajout du tid dans le processus
+    //Ajout du tid dans la liste des threads du processus
     this->space->threadList->push_back(this->threadID);
 
 #ifdef DEBUG
@@ -202,17 +203,20 @@ Thread::Finish ()
     (void) interrupt->SetLevel (IntOff);
     ASSERT (this == currentThread);
 
+    nbThreadActifs--;
+    /* Si le thread courant est le dernier thread actif dans le système
+       on arrète la machine.
+     */
+    if(nbThreadActifs == 0){
+      interrupt->Halt();
+    }
+
 #ifdef USER_PROGRAM
     // Mise à jour de la bitmap (libération de la pile du thread)
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
 
+    // Enlève le tid de la liste des threads du processus
     currentThread->space->threadList->remove(currentThread->getThreadID());
-
-    nbThreadActifs--;
-    if(nbThreadActifs == 0){
-      interrupt->Halt();
-      semExitProcess->V();
-    }
 #endif
 
     DEBUG ('t', "Finishing thread \"%s\"\n", getName());
