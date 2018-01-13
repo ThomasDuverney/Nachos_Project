@@ -147,14 +147,17 @@ void ExceptionHandler (ExceptionType which){
                 machine->WriteRegister(2,returnValue);
                 break;
             case SC_Exit:
+                DEBUG('a', "Exit, initiated by user program.\n");
                 currentThread->Finish();
-                // il reste un seul thread dans le processus. On supprimme l'espace d'adressage/
+                /*
+                  Il reste un seul thread dans le processus.
+                  On supprimme l'espace d'adressage
+                  /!\ jamais atteint à cause du sleep dans thread->Finish?
+                */
+                /*
                 if(currentThread->space->getNbThread() == 1){
                     do_UserProcessFinish();
-                }
-
-
-                DEBUG('a', "Exit, initiated by user program.\n");
+                    }*/
                 break;
             case SC_ForkExec:
                 DEBUG('a', "Syscall ForkExec");

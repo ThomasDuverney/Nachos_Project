@@ -21,6 +21,7 @@
 #include "copyright.h"
 #include "scheduler.h"
 #include "system.h"
+#include "userprocess.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -127,8 +128,18 @@ Scheduler::Run (Thread * nextThread)
 
     if (threadToBeDestroyed != NULL)
       {
-	  delete threadToBeDestroyed;
-	  threadToBeDestroyed = NULL;
+        #ifdef USER_PROGRAM
+        /*
+          Si threadTobedestroyed était le dernier thread d'un processus
+          on libère l'espace mémoire de ce processus avec do_UserProcessfinish
+        */
+        if (threadToBeDestroyed->space->getNbThread() == 0) {
+          do_UserProcessFinish(threadToBeDestroyed);
+        }
+        #endif
+
+        delete threadToBeDestroyed;
+        threadToBeDestroyed = NULL;
       }
 
 #ifdef USER_PROGRAM

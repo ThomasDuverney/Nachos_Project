@@ -1,5 +1,4 @@
 #include "userprocess.h"
-#include "thread.h"
 #include "system.h"
 
 static void startUserProcess(int threadParams){
@@ -32,11 +31,12 @@ extern int do_UserProcessCreate(char *filename){
   return 1;
 }
 
-extern void do_UserProcessFinish(){
-
+/* Supprimer l'espace d'adressage du thread courant ne semble pas avisé
+   il faut déléguer la tache à un autre thread comme pour la méthode finish()*/
+extern void do_UserProcessFinish(Thread *t) {
   unsigned int i = 0;
-  TranslationEntry * pageTable = currentThread->space->getPageTable();
-  unsigned int numPages = currentThread->space->getNumPages();
+  TranslationEntry * pageTable = t->space->getPageTable();
+  unsigned int numPages = t->space->getNumPages();
 
   // libère les frames mémoire utilisées par ce processus.
   for(i= 0; i<numPages;i++){
@@ -44,5 +44,5 @@ extern void do_UserProcessFinish(){
   }
 
   //Supprime l'espace d'adressage du processus
-  delete currentThread->space;
+  delete t->space;
 }
