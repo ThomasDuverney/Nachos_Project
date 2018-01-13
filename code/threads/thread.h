@@ -58,7 +58,7 @@
 
 // Thread state
 enum ThreadStatus
-{ JUST_CREATED, RUNNING, READY, BLOCKED, TERMINATED };
+{ JUST_CREATED, RUNNING, READY, BLOCKED };
 
 // external function, dummy routine whose sole job is to call Thread::Print
 extern void ThreadPrint (int arg);
