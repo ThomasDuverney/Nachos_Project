@@ -53,10 +53,6 @@ Thread::Thread (const char *threadName)
       userRegisters[r] = 0;
 
     nbThreadActifs++;
-    /*
-    if(nbThreadActifs == 1) {
-      semExitProcess->P();
-      }*/
 #endif
 }
 

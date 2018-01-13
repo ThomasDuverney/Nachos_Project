@@ -38,7 +38,6 @@ extern unsigned int threadCounter,nbThreadActifs;
 extern Machine *machine;	// user program memory and registers
 extern FrameProvider *frameProvider;
 extern SynchConsole *synchconsole;
-extern Semaphore *semExitProcess;
 extern unsigned int nbThreadActifs;
 
 #endif

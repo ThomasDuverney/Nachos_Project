@@ -36,7 +36,6 @@ Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
 Semaphore *semExitProcess;
-
 #endif
 
 #ifdef NETWORK
@@ -161,10 +160,8 @@ Initialize (int argc, char **argv)
 
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
-#ifdef USER_PROGRAM
     nbThreadActifs = 0; // Nombre de threads actifs dans le système
-    semExitProcess = new Semaphore("sem_Exit", 1);
-#endif
+
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);
 
@@ -207,7 +204,6 @@ Cleanup ()
     delete machine;
     delete frameProvider;
     delete semExitProcess;
-
 #endif
 
 #ifdef FILESYS_NEEDED
