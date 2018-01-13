@@ -20,7 +20,8 @@ Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
 
-unsigned int threadCounter;
+unsigned int threadCounter; //Nb total de thread Crées -> ThreadId
+unsigned int nbThreadActifs; // Nb Total de thread actifs du système
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -35,7 +36,7 @@ Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
 Semaphore *semExitProcess;
-unsigned int nbThreadActifs;
+
 #endif
 
 #ifdef NETWORK
