@@ -242,7 +242,41 @@ MutexDestroy:
 	 j  $31
 	.end    MutexDestroy
 
-    /* dummy function to keep gcc happy */
+
+	.globl 	SemInit
+	.ent    SemInit
+SemInit:
+	 addiu $2,$0,SC_SemInit
+	 syscall
+	 j  $31
+	.end    SemInit
+
+	.globl 	SemWait
+	.ent    SemWait
+SemWait:
+	 addiu $2,$0,SC_SemWait
+	 syscall
+	 j  $31
+	.end    SemWait
+
+	.globl 	SemPost
+	.ent    SemPost
+SemPost:
+	 addiu $2,$0,SC_SemPost
+	 syscall
+	 j  $31
+	.end    SemPost
+
+
+	.globl 	SemDestroy
+	.ent    SemDestroy
+SemDestroy:
+	 addiu $2,$0,SC_SemDestroy
+	 syscall
+	 j  $31
+	.end    SemDestroy
+
+/* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
 __main:

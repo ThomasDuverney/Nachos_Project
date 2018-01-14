@@ -24,6 +24,10 @@ unsigned int threadCounter; //Nb total de thread Crées -> ThreadId
 unsigned int nbThreadActifs; // Nb Total de thread actifs du système
 unsigned int mutexCounter; // Nb Total de mutex créés -> mutexId
 std::map<int,Lock * > * mutexMap;
+
+unsigned int semCounter; // Nb Total de sémaphore créées -> semId
+std::map<int,Semaphore * > * semMap;
+
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
 #endif
@@ -163,6 +167,10 @@ Initialize (int argc, char **argv)
     nbThreadActifs = 0; // Nombre de threads actifs dans le système
     mutexCounter = 0;
     mutexMap = new std::map<int, Lock *>();
+
+    semCounter = 0;
+    semMap = new std::map<int, Semaphore *>();
+
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);
 
