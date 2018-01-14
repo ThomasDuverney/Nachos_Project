@@ -38,10 +38,10 @@ Thread::Thread (const char *threadName)
     stack = NULL;
     status = JUST_CREATED;
     /*
-      On assigne à chaque thread un identifiant unique
-      correspondant à la valeur du compteur de nombre total de threads
-      crées sur le système. On est limité à Max_unsigned_int_value
-      threads.
+     * On assigne à chaque thread un identifiant unique
+     * correspondant à la valeur du compteur de nombre total de threads
+     * crées sur le système. On est limité à Max_unsigned_int_value
+     * threads.
     */
     this->tid = ++threadCounter;
 #ifdef USER_PROGRAM
@@ -79,8 +79,8 @@ Thread::~Thread ()
 }
 
 /*
-  int Thread::getTid()
-  sémantique: retourne l'identifiant du thread courant.
+ * Spécification: int Thread::getTid()
+ * Sémantique: retourne l'identifiant du thread courant.
  */
 int Thread::getTid(){
   return this->tid;
@@ -88,8 +88,8 @@ int Thread::getTid(){
 #ifdef USER_PROGRAM
 
 /*
-  int GetStackBitmapIndex():
-  sémantique: retourne l'index de la pile du thread courant dans la bitmap des piles
+ * Spécification: int GetStackBitmapIndex():
+ * Sémantique: retourne l'index de la pile du thread courant dans la bitmap des piles
  */
 int Thread::getStackBitmapIndex(){
   return this->stackBitmapIndex;
@@ -135,7 +135,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
       this->space = currentThread->space;
     }
 
-    //Ajout du tid dans la liste des threads du processus
+    /* Ajout du tid dans la liste des threads du processus */
     this->space->threadList->push_back(this->tid);
 
 #ifdef DEBUG
@@ -202,18 +202,19 @@ Thread::Finish ()
     ASSERT (this == currentThread);
 
     nbThreadActifs--;
-    /* Si le thread courant est le dernier thread actif dans le système
-       on arrète la machine.
+    /*
+     * Si le thread courant est le dernier thread actif dans le système
+     * on arrête la machine.
      */
     if(nbThreadActifs == 0){
       interrupt->Halt();
     }
 
 #ifdef USER_PROGRAM
-    // Mise à jour de la bitmap (libération de la pile du thread)
+    /* Mise à jour de la bitmap (libération de la pile du thread) */
     this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
 
-    // Enlève le tid de la liste des threads du processus
+    /* Enlève le tid de la liste des threads du processus */
     currentThread->space->threadList->remove(currentThread->getTid());
 #endif
 
