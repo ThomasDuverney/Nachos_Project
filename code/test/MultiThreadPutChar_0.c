@@ -3,21 +3,25 @@
 #define NB 5
 
 /*
- * Création de plusieurs threads exécutant getString puis PutString.
- * On vérifie le bon fonctionnement des structures de synchronisation par
- * l'utilisation concurrente de synchconsole
+ * Création de plusieurs threads exécutant putchar.
  */
+unsigned int mutex;
 
 void g(void *arg) {
+  MutexLock(mutex);
   PutChar('c'+*(int*) arg);
+  PutChar('c'+*(int*) arg);
+  PutChar('c'+*(int*) arg);
+  PutChar('c'+*(int*) arg);
+  MutexUnlock(mutex);
   UserThreadExit();
 }
-
 
 int main(){
   int tab[NB];
   int i;
   int tid[NB];
+  mutex  = MutexCreate();
   for(i=0; i<NB; i++){
     tab[i] = i;
     tid[i] = UserThreadCreate(g,(void*) (tab+i));
@@ -26,5 +30,6 @@ int main(){
   for(i=0; i<NB; i++){
     UserThreadJoin(tid[i]);
   }
+  MutexDestroy(mutex);
   return 0;
 }

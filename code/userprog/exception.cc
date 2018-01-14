@@ -26,7 +26,7 @@
 #include "syscall.h"
 #include "userthread.h"
 #include "userprocess.h"
-
+#include "usersynchro.h"
 void copyStringFromMachine(int from, char *to, unsigned size){
     unsigned int i=0;
     int c;
@@ -158,12 +158,16 @@ void ExceptionHandler (ExceptionType which){
                 do_UserProcessCreate(executableName);
                 break;
             case SC_MutexCreate:
+                do_UserMutexCreate();
                 break;
             case SC_MutexLock:
+                do_UserMutexLock();
                 break;
             case SC_MutexUnlock:
+                do_UserMutexUnlock();
                 break;
             case SC_MutexDestroy:
+                do_UserMutexDestroy();
                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
