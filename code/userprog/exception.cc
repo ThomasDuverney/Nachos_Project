@@ -149,15 +149,6 @@ void ExceptionHandler (ExceptionType which){
             case SC_Exit:
                 DEBUG('a', "Exit, initiated by user program.\n");
                 currentThread->Finish();
-                /*
-                  Il reste un seul thread dans le processus.
-                  On supprimme l'espace d'adressage
-                  /!\ jamais atteint à cause du sleep dans thread->Finish?
-                */
-                /*
-                if(currentThread->space->getNbThread() == 1){
-                    do_UserProcessFinish();
-                    }*/
                 break;
             case SC_ForkExec:
                 DEBUG('a', "Syscall ForkExec");
@@ -165,7 +156,14 @@ void ExceptionHandler (ExceptionType which){
                 executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
                 copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
                 do_UserProcessCreate(executableName);
-
+                break;
+            case SC_MutexCreate:
+                break;
+            case SC_MutexLock:
+                break;
+            case SC_MutexUnlock:
+                break;
+            case SC_MutexDestroy:
                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);

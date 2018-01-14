@@ -15,7 +15,8 @@
 #include "interrupt.h"
 #include "stats.h"
 #include "timer.h"
-
+#include <map>
+#include "synch.h"
 // Initialization and cleanup routines
 extern void Initialize (int argc, char **argv);	// Initialization,
 						// called before anything else
@@ -28,7 +29,8 @@ extern Scheduler *scheduler;	// the ready list
 extern Interrupt *interrupt;	// interrupt status
 extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
-extern unsigned int threadCounter,nbThreadActifs;
+extern unsigned int threadCounter,nbThreadActifs,mutexCounter;
+extern std::map<int,Lock * > * mutexMap;
 
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100
@@ -38,8 +40,6 @@ extern unsigned int threadCounter,nbThreadActifs;
 extern Machine *machine;	// user program memory and registers
 extern FrameProvider *frameProvider;
 extern SynchConsole *synchconsole;
-extern unsigned int nbThreadActifs;
-
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB

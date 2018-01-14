@@ -22,7 +22,8 @@ Timer *timer;			// the hardware timer device,
 
 unsigned int threadCounter; //Nb total de thread Crées -> ThreadId
 unsigned int nbThreadActifs; // Nb Total de thread actifs du système
-
+unsigned int mutexCounter; // Nb Total de mutex créés -> mutexId
+std::map<int,Lock * > * mutexMap;
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
 #endif
@@ -35,7 +36,6 @@ SynchDisk *synchDisk;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
-Semaphore *semExitProcess;
 #endif
 
 #ifdef NETWORK
@@ -161,7 +161,8 @@ Initialize (int argc, char **argv)
     threadToBeDestroyed = NULL;
     threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
     nbThreadActifs = 0; // Nombre de threads actifs dans le système
-
+    mutexCounter = 0;
+    mutexMap = new std::map<int, Lock *>();
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);
 
@@ -203,7 +204,6 @@ Cleanup ()
     delete synchconsole;
     delete machine;
     delete frameProvider;
-    delete semExitProcess;
 #endif
 
 #ifdef FILESYS_NEEDED

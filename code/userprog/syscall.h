@@ -39,7 +39,10 @@
 #define SC_UserThreadExit   18
 #define SC_UserThreadJoin   19
 #define SC_ForkExec         20
-
+#define SC_MutexCreate      21
+#define SC_MutexLock        22
+#define SC_MutexUnlock      23
+#define SC_MutexDestroy     24
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
@@ -221,17 +224,43 @@ void UserThreadExit();
 /*
  * int UserThreadJoin(int tid)
  * Sémantique:
- *   Attend la terminaison du threadUser d'id tid, renvoie -1
+ *   Attends la terminaison du threadUser d'id tid, renvoie -1
  si le thread est déjà terminé ou déjà attendu, 0 sinon.
  */
 int UserThreadJoin(int tid);
 
 /*
  * int ForkExec(char * fileName)
-* Sémantique:
- *   Crée un nouveau processus qui execute le fichier donné en paramètre
+ * Sémantique:
+ *   Crée un nouveau processus qui éxécute le fichier donné en paramètre
  */
 int ForkExec(char * fileName);
+
+/*
+ * int MutexCreate()
+ * Sémantique: Crée un mutex et retourne un numéro d'identifiant
+ */
+
+int MutexCreate();
+
+/*
+ * void MutexLock(int mutexId)
+ * Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
+ */
+void MutexLock(int mutexId);
+
+
+/*
+ * void MutexUnlock(int mutexId)
+ * Sémantique: Relache le vérrou dont l'identifiant est mutexId
+ */
+void MutexUnlock(int mutexId);
+
+/*
+ * void MutexDestroy(int mutexId)
+ * Sémantique: Détruit le vérrou dont l'identifiant est mutexId
+ */
+void MutexDestroy(int mutexId);
 
 #endif // IN_USER_MODE
 

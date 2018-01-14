@@ -209,7 +209,40 @@ ForkExec:
     j	$31
     .end ForkExec
 
-/* dummy function to keep gcc happy */
+	.globl 	MutexCreate
+	.ent    MutexCreate
+MutexCreate:
+	 addiu $2,$0,SC_MutexCreate
+	 syscall
+	 j  $31
+	.end 	MutexCreate
+
+
+    .globl 	MutexLock
+	.ent    MutexLock
+MutexLock:
+	 addiu $2,$0,SC_MutexLock
+	 syscall
+	 j  $31
+	.end 	MutexLock
+
+	.globl 	MutexUnlock
+	.ent    MutexUnlock
+MutexUnlock:
+	 addiu $2,$0,SC_MutexUnlock
+	 syscall
+	 j  $31
+	.end 	MutexLock
+
+	.globl 	MutexDestroy
+	.ent    MutexDestroy
+MutexDestroy:
+	 addiu $2,$0,SC_MutexDestroy
+	 syscall
+	 j  $31
+	.end    MutexDestroy
+
+    /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main
 __main:
