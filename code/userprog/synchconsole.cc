@@ -42,9 +42,10 @@ char SynchConsole::SynchGetChar() {
 void SynchConsole::SynchPutString(const char *s) {
     semWrite->P();
     int i=0;
-    while(s[i] != '\0'){
-        console->PutChar(s[i++]);
+    while(s[i] != '\0' && s[i] != '\n' && s[i] != EOF && s[i] != 04){
+        console->PutChar(s[i]);
         writeDone->P();
+        i++;
     }
     semWrite->V();
 }
@@ -58,7 +59,7 @@ void SynchConsole::SynchGetString(char *s, int n) {
     while(i<n && continuer == true){
         readAvail->P();
         c = console->GetChar();
-        if (c == EOF || c == 04 || c == '\n'){
+        if (c == EOF || c == 04 || c == '\n' || c == '\0'){
             s[i] = '\0';
             /* On s'arrète quand on trouve un caractère de fin de séquence */
             continuer = false;
