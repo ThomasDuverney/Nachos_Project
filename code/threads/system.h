@@ -29,8 +29,9 @@ extern Scheduler *scheduler;	// the ready list
 extern Interrupt *interrupt;	// interrupt status
 extern Statistics *stats;	// performance metrics
 extern Timer *timer;		// the hardware alarm clock
-extern unsigned int threadCounter,nbThreadActifs,mutexCounter;
+extern unsigned int threadCounter,nbThreadActifs,mutexCounter,semCounter;
 extern std::map<int,Lock * > * mutexMap;
+extern std::map<int,Semaphore * > * semMap;
 
 #ifdef USER_PROGRAM
 #define MAX_STRING_SIZE 100

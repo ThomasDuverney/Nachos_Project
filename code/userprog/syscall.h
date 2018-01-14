@@ -43,6 +43,11 @@
 #define SC_MutexLock        22
 #define SC_MutexUnlock      23
 #define SC_MutexDestroy     24
+#define SC_SemInit          25
+#define SC_SemWait          26
+#define SC_SemPost          27
+#define SC_SemDestroy       28
+
 #ifdef IN_USER_MODE
 
 // LB: This part is read only on compiling the test/*.c files.
@@ -262,6 +267,13 @@ void MutexUnlock(int mutexId);
  */
 void MutexDestroy(int mutexId);
 
+int SemInit(int initialValue);
+
+void SemWait();
+
+void SemPost();
+
+void SemDestroy();
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
