@@ -35,7 +35,6 @@ SynchDisk *synchDisk;
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
 FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
-Semaphore *semExitProcess;
 #endif
 
 #ifdef NETWORK
@@ -203,7 +202,6 @@ Cleanup ()
     delete synchconsole;
     delete machine;
     delete frameProvider;
-    delete semExitProcess;
 #endif
 
 #ifdef FILESYS_NEEDED

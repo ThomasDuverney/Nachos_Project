@@ -38,8 +38,6 @@ extern unsigned int threadCounter,nbThreadActifs;
 extern Machine *machine;	// user program memory and registers
 extern FrameProvider *frameProvider;
 extern SynchConsole *synchconsole;
-extern unsigned int nbThreadActifs;
-
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB
