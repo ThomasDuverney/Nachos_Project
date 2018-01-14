@@ -30,18 +30,13 @@ class AddrSpace {
         // initializing it with the program
         // stored in the file "executable"
         ~AddrSpace ();		// De-allocate an address space
-
         void InitRegisters ();	// Initialize user-level CPU registers,
         // before jumping to user code
-
         void SaveState ();		// Save/restore address space-specific
         void RestoreState ();	// info on a context switch
-
         BitMap *stackBitmap;
-
         std::map<int, std::list<Thread*>* > *joinMap;
         std::list<int> *threadList;
-
         TranslationEntry * getPageTable();
         unsigned int getNumPages();
         void printJoinMap();

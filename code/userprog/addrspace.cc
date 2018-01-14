@@ -19,19 +19,16 @@
 #include "system.h"
 #include "addrspace.h"
 #include "noff.h"
-
 #include <strings.h>		/* for bzero */
 
-
-
 /*
-  Readatvirtual
-  Specification: static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages)
-  Sémantique: Lit "numbytes" octets dans le fichier "executable" depuis la position "position" et les place en mémoire à l'adresse virtuelle "virtualaddr"
-  de la table des pages "pageTable".
-  Préconditions: executable est l'adresse d'un fichier valide. La table "pageTable" contient suffisament de pages pour stocker numBytes.
-*/
-static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages){
+ * Spécification:
+ * static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, * unsigned numPages)
+ * Sémantique: Lit "numbytes" octets dans le fichier "executable" depuis la position "position"
+ * et les place en mémoire à l'adresse virtuele "virtualaddr" de la table des pages "pageTable".
+ * Pré-conditions: executable est l'adresse d'un fichier valide. La table "pageTable" contient suffisamment de pages pour stocker numBytes.
+ */
+static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, int position, TranslationEntry *pageTable, unsigned numPages) {
     char buff[numBytes];
     int nbRead;
     TranslationEntry * oldTable;
@@ -40,17 +37,14 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
     /* Sauvegarde de l'ancien contexte */
     oldTable = machine->pageTable;
     oldTableSize = machine->pageTableSize;
-
     machine->pageTable = pageTable;
     machine->pageTableSize =  numPages;
 
     /* Lit "numbytes" du fichier "executable" depuis la position "position" et les place dans le buffer "buff" */
     nbRead = executable->ReadAt(buff, numBytes, position);
     ASSERT(nbRead == numBytes);
-
     i = 0;
     while(i < nbRead){
-
         if(!machine->WriteMem(virtualaddr, 1, buff[i])){
           DEBUG('f', "Error translation virtual address 0x%x.\n", virtualaddr);
         }
@@ -58,7 +52,7 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
         virtualaddr += 1;
     }
 
-    /* Restoration de l'ancien contexte */
+    /* Restauration de l'ancien contexte */
     machine->pageTable = oldTable;
     machine->pageTableSize = oldTableSize;
 }
@@ -69,10 +63,7 @@ static void ReadAtVirtual(OpenFile *executable, int virtualaddr, int numBytes, i
 //      object file header, in case the file was generated on a little
 //      endian machine, and we're now running on a big endian machine.
 //----------------------------------------------------------------------
-
-static void
-SwapHeader (NoffHeader * noffH)
-{
+static void SwapHeader (NoffHeader * noffH) {
     noffH->noffMagic = WordToHost (noffH->noffMagic);
     noffH->code.size = WordToHost (noffH->code.size);
     noffH->code.virtualAddr = WordToHost (noffH->code.virtualAddr);
@@ -100,10 +91,7 @@ SwapHeader (NoffHeader * noffH)
 //
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
-
-AddrSpace::AddrSpace (OpenFile * executable)
-{
-
+AddrSpace::AddrSpace (OpenFile * executable) {
     NoffHeader noffH;
     unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
     /* Lecture du fichier objet depuis le disque dans la structure noff */
@@ -156,32 +144,28 @@ AddrSpace::AddrSpace (OpenFile * executable)
       ReadAtVirtual(executable, noffH.initData.virtualAddr, noffH.initData.size, noffH.initData.inFileAddr, pageTable, numPages);
     }
 
-
-      //// Allocation de(s) page(s) pour les threads
-      // Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata
+    /* Allocation de(s) page(s) pour les threads */
+    /* Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata */
       numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
-      // Nombre de piles que l'on peut stoquer dans l'espace disponible
+      /* Nombre de piles que l'on peut stocker dans l'espace disponible */
       numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
-      // Tableau des emplacement pour piles disponibles.
+      /* Tableau des emplacements pour piles disponibles */
       stackBitmap = new BitMap(numStackPerAddrSpace);
-      // Le main occupe le première emplacement de pile.
+      /* Le main occupe le première emplacement de pile */
       stackBitmap->Mark(0);
-      //Initialise la sémaphore pour bloquer la terminaison d'un processus
+      /* Initialise la sémaphore pour bloquer la terminaison d'un processus */
       this->nbThread = 1;
-      //init joinMap
+      /* init joinMap */
       joinMap = new std::map<int, std::list<Thread*>* >();
-      //init threadList
+      /* init threadList */
       threadList = new std::list<int>();
-
 }
 
 //----------------------------------------------------------------------
 // AddrSpace::~AddrSpace
 //      Dealloate an address space.  Nothing for now!
 //----------------------------------------------------------------------
-
-AddrSpace::~AddrSpace ()
-{
+AddrSpace::~AddrSpace () {
   // LB: Missing [] for delete
   // delete pageTable;
   delete [] pageTable;
@@ -197,12 +181,8 @@ AddrSpace::~AddrSpace ()
 //      will be saved/restored into the currentThread->userRegisters
 //      when this thread is context switched out.
 //----------------------------------------------------------------------
-
-void
-AddrSpace::InitRegisters ()
-{
+void AddrSpace::InitRegisters () {
     int i;
-
     for (i = 0; i < NumTotalRegs; i++)
 	machine->WriteRegister (i, 0);
 
@@ -227,10 +207,7 @@ AddrSpace::InitRegisters ()
 //
 //      For now, nothing!
 //----------------------------------------------------------------------
-
-void
-AddrSpace::SaveState ()
-{
+void AddrSpace::SaveState () {
     pageTable = machine->pageTable;
     numPages = machine->pageTableSize;
 }
@@ -242,24 +219,20 @@ AddrSpace::SaveState ()
 //
 //      For now, tell the machine where to find the page table.
 //----------------------------------------------------------------------
-
-void
-AddrSpace::RestoreState ()
-{
+void AddrSpace::RestoreState () {
     machine->pageTable = pageTable;
     machine->pageTableSize = numPages;
 }
 
-
-TranslationEntry * AddrSpace::getPageTable(){
+TranslationEntry * AddrSpace::getPageTable() {
     return pageTable;
 }
 
-unsigned int AddrSpace::getNumPages(){
+unsigned int AddrSpace::getNumPages() {
     return numPages;
 }
 
-void AddrSpace::printJoinMap (){
+void AddrSpace::printJoinMap () {
     std::map<int, std::list<Thread*>* >::iterator it;
     printf("\n--------JOINMAP---------\n");
     for (it = joinMap->begin(); it != joinMap->end(); it++ ){
@@ -271,22 +244,21 @@ void AddrSpace::printJoinMap (){
     }
 }
 
-void AddrSpace::printThreadList (){
+void AddrSpace::printThreadList () {
     printf("\n--------THREADLIST-----------\n");
     for (std::list<int>::const_iterator iterator = threadList->begin(), end = threadList->end(); iterator != end; ++iterator) {
         printf("\tThread = %d\n",*iterator);
     }
 }
 
-void AddrSpace::incrementNbThread(){
+void AddrSpace::incrementNbThread() {
   nbThread++;
 }
 
-void AddrSpace::decrementNbThread(){
+void AddrSpace::decrementNbThread() {
   nbThread--;
 }
 
-int AddrSpace::getNbThread(){
+int AddrSpace::getNbThread() {
   return threadList->size();
-  //return nbThread;
 }
