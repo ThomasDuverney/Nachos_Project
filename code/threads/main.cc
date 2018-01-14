@@ -39,6 +39,7 @@
 //    -n sets the network reliability
 //    -m sets this machine's host id (needed for the network)
 //    -o runs a simple test of the Nachos network software
+//    -r runs a simple test of the Nachos network software (Ring) (1er param ID du precedent 2eme param ID du next)
 //
 //  NOTE -- flags are ignored until the relevant assignment.
 //  Some of the flags are interpreted here; some in system.cc.
@@ -61,6 +62,7 @@ extern void ThreadTest (void), Copy (const char *unixFile, const char *nachosFil
 extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest (int networkID);
+extern void MailTestRing (int prevID, int nextID);
 
 //----------------------------------------------------------------------
 // main
@@ -156,15 +158,21 @@ main (int argc, char **argv)
 	    }
 #endif // FILESYS
 #ifdef NETWORK
-	  if (!strcmp (*argv, "-o"))
-	    {
+	  if (!strcmp (*argv, "-o")) {
 		ASSERT (argc > 1);
 		Delay (2);	// delay for 2 seconds
 		// to give the user time to
 		// start up another nachos
 		MailTest (atoi (*(argv + 1)));
 		argCount = 2;
-	    }
+    } else if (!strcmp(*argv, "-r")){
+        ASSERT (argc > 1);
+        Delay (5);	// delay for 2 seconds
+        // to give the user time to
+        // start up another nachos
+        MailTestRing(atoi (*(argv + 1)), atoi (*(argv + 2)));
+        argCount = 3;
+    }
 #endif // NETWORK
       }
 

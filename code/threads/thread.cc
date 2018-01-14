@@ -137,14 +137,17 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     }
 
     //Ajout du tid dans le processus
-    this->space->threadList->push_back(this->threadID);
+    if (this->space != NULL)
+        this->space->threadList->push_back(this->threadID);
 
 #ifdef DEBUG
     /*  Affiche l'état de la Bitmap */
-    this->space->stackBitmap->Print();
+    if (this->space != NULL)
+        this->space->stackBitmap->Print();
 #endif
     /* Recherche d'un emplacement libre dans la bitmap pour la pile du thread */
-    this->stackBitmapIndex= this->space->stackBitmap->Find();
+    if (this->space != NULL)
+        this->stackBitmapIndex= this->space->stackBitmap->Find();
 
 #endif // USER_PROGRAM
 
@@ -204,9 +207,10 @@ Thread::Finish ()
 
 #ifdef USER_PROGRAM
     // Mise à jour de la bitmap (libération de la pile du thread)
-    this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
-
-    currentThread->space->threadList->remove(currentThread->getThreadID());
+    if (this->space != NULL){
+        this->space->stackBitmap->Clear(currentThread->getStackBitmapIndex());
+        currentThread->space->threadList->remove(currentThread->getThreadID());
+    }
 
     nbThreadActifs--;
     if(nbThreadActifs == 0){
