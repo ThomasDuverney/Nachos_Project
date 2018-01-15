@@ -47,7 +47,7 @@
  */
 extern int do_UserThreadCreate(int f, int arg) {
     Thread *t;
-    if ((t = new Thread ("kernel initiate by user ")) == NULL) {
+    if ((t = new Thread ("UserThread")) == NULL) {
       return -1;
     }
 

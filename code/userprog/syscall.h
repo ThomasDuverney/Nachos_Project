@@ -288,7 +288,7 @@ typedef int Cond_t;
 
 int CondCreate();
 
-void CondWait(Cond_t condId);
+void CondWait(Cond_t condId, Mutex_t mutedId);
 
 void CondSignal(Cond_t condId);
 

@@ -11,21 +11,25 @@
 Cond_t cond;
 Mutex_t mutex;
 int checkNumber;
-
+/*
 struct threadParam{
   int * size;
 };
 
 struct threadParam p;
-
+*/
 void g(void *arg) {
   MutexLock(mutex);
-  while(checkNumber == 1){
-    CondWait(cond);
+  while(checkNumber <= 0){
+    PutInt(checkNumber);
+    checkNumber++;
+    CondWait(cond,mutex);
+    PutInt(666);
   }
-  checkNumber++;
+  checkNumber = checkNumber+5;
   CondSignal(cond);
   MutexUnlock(mutex);
+  PutInt(89);
   UserThreadExit();
 }
 
@@ -34,7 +38,7 @@ int main(){
   int i;
   int tid[NB];
 
-  *(p.size) = 0;
+  //*(p.size) = 0;
   cond = CondCreate();
   mutex = MutexCreate();
   checkNumber = 0;
@@ -44,9 +48,11 @@ int main(){
     tid[i] = UserThreadCreate(g,(void*) (tab+i));
   }
 
+
   for(i=0; i<NB; i++){
     UserThreadJoin(tid[i]);
   }
+ 
   CondDestroy(cond);
   return 0;
 }
