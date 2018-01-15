@@ -82,7 +82,10 @@ class FileSystem {
     bool CreateDirectory(const char *name);
 
 
+
     bool Remove(const char *name); 	/* supprime un fichier ou un repertoire dans le dossier courant (pas de pathname) */
+
+    void ChangeDirectory(const char *name);
 
     void List();			// List all the files in the file system
 
@@ -96,6 +99,7 @@ class FileSystem {
 
    int currentDirectorySector;
    OpenFile* currentDirectoryFile;
+   
 
 };
 

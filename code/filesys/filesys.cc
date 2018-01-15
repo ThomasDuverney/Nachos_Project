@@ -85,6 +85,9 @@ FileSystem::FileSystem(bool format)
     	FileHeader *mapHdr = new FileHeader;
     	FileHeader *dirHdr = new FileHeader;
 
+        directory->Add(".", DirectorySector, TRUE);
+        directory->Add("..", DirectorySector, TRUE);
+
             DEBUG('f', "Formatting the file system.\n");
 
         // First, allocate space for FileHeaders for the directory and bitmap
@@ -196,11 +199,8 @@ FileSystem::Create(const char *name, int initialSize)
         sector = freeMap->Find();	// find a sector to hold the file header
     	if (sector == -1) 		
             success = FALSE;		// no free block for file header 
-        #ifdef FILESYS
+
         else if (!directory->Add(name, sector, FALSE))
-        #else
-        else if (!directory->Add(name, sector))
-        #endif
             success = FALSE;	// no space in directory
     	else {
         	    hdr = new FileHeader;
@@ -265,12 +265,12 @@ bool FileSystem::CreateDirectory(const char *name){
 
             DEBUG('f', "Sector for directory %s: %d\n", name, sector);
 
+            /* On ajoute l'entrée . dans le nouveau repertoire */
+            newDir->Add(".", sector, TRUE);
+            /* On ajoute l'entrée du répertoire parent dans le nouveau repertoire */
+            newDir->Add("..", currentDirectorySector, TRUE);
             /* On ajoute l'entrée du nouveau répertoire dans le repertoire courant */
-            #ifdef FILESYS
             currentDirectory->Add(name, sector, TRUE);
-            #else
-            currentDirectory->Add(name, sector);
-            #endif
 
             /* Création d'un FileHeader pour le nouveau repertoire */
             directoryFileHeader = new FileHeader;
@@ -397,6 +397,24 @@ FileSystem::Remove(const char *name)
     delete freeMap;
     return TRUE;
 } 
+
+
+void FileSystem::ChangeDirectory(const char *name){
+
+    // if(currentDirectory->Find(name) != -1){ // si le nom est deja pris
+    //     printf("Error couldn't create %s directory, name already taken\n", name);
+        
+    //     success = FALSE;
+
+    // } else {
+
+    // }
+
+
+
+}
+
+
 
 //----------------------------------------------------------------------
 // FileSystem::List
