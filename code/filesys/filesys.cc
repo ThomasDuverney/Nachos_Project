@@ -258,31 +258,38 @@ bool FileSystem::CreateDirectory(const char *name){
 
         } else {
 
-            newDir = new Directory(sector);
+            newDir = new Directory(NumDirEntries);
 
             DEBUG('f', "Sector for directory %s: %d\n", name, sector);
 
-            // on rempli la table du répertoire courant
+            /* On ajoute la nouvelle entrée dans le repertoire courant */
             currentDirectory->Add(name, sector);
 
+            /* Création d'un FileHeader pour le nouveau repertoire */
             directoryFileHeader = new FileHeader;
 
-            // alloue les secteurs pour les fichiers dans le repertoire que l'on crée
+            /* Alloue les secteurs néccessaires pour stocker les données de la structure de repertoire (dirEntry) */
             if(!directoryFileHeader->Allocate(freeMap, DirectoryFileSize)){
                 DEBUG('f', "Error couldn't create %s directory, not enougth space in freeMap\n", name);
                 success = FALSE;
             } else {
 
-                // écrit les les fichiers du nouveau répertoire sur le disque
+                /* Ecriture des données du nouveau répertoire sur le disque :
+                *  Ecriture du Fileheader du nouveau repertoire
+                * lecture des entrées depuis le fileHeader et écriture des entrées.
+                */
                 directoryFileHeader->WriteBack(sector); 
                 OpenFile *dirOpenFile = new OpenFile(sector);
                 newDir->WriteBack(dirOpenFile);
 
 
-                // met a jour le repertoire courant
-                // DirectorySector a changer pour le repertoire courant
+                /* Met a jour les entrées du repertoire courant */
                 directoryFile = new OpenFile(currentDirectorySector);
                 currentDirectory->WriteBack(currentDirectoryFile);
+
+                /* Met a jour la bitmap */
+                freeMapFile = new OpenFile(FreeMapSector);
+                freeMap->WriteBack(freeMapFile);
 
 
                 success = TRUE;
