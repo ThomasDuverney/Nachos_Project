@@ -158,20 +158,20 @@ static void interruptTimer(int params){
     }
     if(stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO){
         char* buffer = new char[MaxPacketSize];
+        printf("data2=%s\n", mailTempoParams->data);
         bcopy(&(mailTempoParams->mailHdr), buffer, sizeof(MailHeader));
         bcopy(mailTempoParams->data, buffer + sizeof(MailHeader), mailTempoParams->mailHdr.length);
 
         if (DebugIsEnabled('n')) {
             printf("RePost send: ");
             PrintHeader(mailTempoParams->pktHdr, mailTempoParams->mailHdr);
-            printf("RE ACK = %d SEQ+LENGTH = %d\n", postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from], (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length));
         }
 
         postOffice->sendLock->Acquire();
         *mailTempoParams->totalTicksStart = stats->totalTicks;
         (*mailTempoParams->nbEnvoi)++;
         postOffice->network->Send(mailTempoParams->pktHdr, buffer);
-        postOffice->messageSent->P();
+        //postOffice->messageSent->P();
         postOffice->sendLock->Release();
         delete [] buffer;
     }
@@ -218,9 +218,6 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes) {
     // Third, initialize the network; tell it which interrupt handlers to call
     network = new Network(addr, reliability, ReadAvail, WriteDone, (int) this);
 
-    // // Timer initialize
-    // timer = new Timer(interruptTimer, 0, false);
-
     // Finally, create a thread whose sole job is to wait for incoming messages,
     //   and put them in the right mailbox.
     Thread *t = new Thread("postal worker");
@@ -256,46 +253,63 @@ PostOffice::~PostOffice()
 void PostOffice::PostalDelivery() {
     PacketHeader pktHdr, outPktHdr;
     MailHeader mailHdr, outMailHdr;
-    char *buffer = new char[MaxPacketSize];
+    char *bufin = new char[MaxPacketSize];
+    char *bufout = new char[MaxPacketSize];
 
     for (;;) {
         // first, wait for a message
         messageAvailable->P();
-        pktHdr = network->Receive(buffer);
+        pktHdr = network->Receive(bufin);
 
-        mailHdr = *(MailHeader *)buffer;
-        if (mailHdr.length > 0){
-            printf("ACK = %d SEQ  = %d\n", ackSelfByBoxes[mailHdr.to], mailHdr.seq);
-            if ((ackSelfByBoxes[mailHdr.to] + mailHdr.length) == (mailHdr.seq + mailHdr.length)){
+        mailHdr = *(MailHeader *)bufin;
+        if (mailHdr.type == 0){
+            if ((ackSelfByBoxes[mailHdr.to] + mailHdr.length) >= (mailHdr.seq + mailHdr.length)){
                 ackSelfByBoxes[mailHdr.to] += mailHdr.length;
                 ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
                 outPktHdr.to = pktHdr.from;
                 outMailHdr.to = mailHdr.from;
                 outMailHdr.from = mailHdr.to;
-                outMailHdr.ack = ackSelfByBoxes[mailHdr.to];
-                outMailHdr.seq = seqByBoxes[mailHdr.to];
+                outMailHdr.ack = ackSelfByBoxes[outMailHdr.from];
+                outMailHdr.seq = seqByBoxes[outMailHdr.from];
                 outMailHdr.length = 0;
-                Send(outPktHdr, outMailHdr, "");
+                outMailHdr.type = 1;
+
+                ASSERT(0 <= outMailHdr.to && outMailHdr.to < numBoxes);
+                bcopy(&outMailHdr, bufout, sizeof(MailHeader));
+
+                outPktHdr.from = netAddr;
+                outPktHdr.length = outMailHdr.length + sizeof(MailHeader);
+
+                if (DebugIsEnabled('n')) {
+                    printf("ACK send: ");
+                    PrintHeader(outPktHdr, outMailHdr);
+                }
+
+                sendLock->Acquire();
+                network->Send(outPktHdr, bufout);
+                //messageSent->P();
+                sendLock->Release();
+
+                if (DebugIsEnabled('n')) {
+                    printf("Putting mail into mailbox: ");
+                    PrintHeader(pktHdr, mailHdr);
+                }
+
+                // check that arriving message is legal!
+                ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
+                ASSERT(mailHdr.length <= MaxMailSize);
+
+                // put into mailbox
+                boxes[mailHdr.to].Put(pktHdr, mailHdr, bufin + sizeof(MailHeader));
             }
-        } else {
+        } else if(ackOtherByBoxes[mailHdr.to] < mailHdr.ack){
             ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
         }
-        if (DebugIsEnabled('n')) {
-    	    printf("Putting mail into mailbox: ");
-    	    PrintHeader(pktHdr, mailHdr);
-        }
-
-    	// check that arriving message is legal!
-    	ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
-    	ASSERT(mailHdr.length <= MaxMailSize);
-
-    	// put into mailbox
-        boxes[mailHdr.to].Put(pktHdr, mailHdr, buffer + sizeof(MailHeader));
     }
 }
 
 //----------------------------------------------------------------------
-// PostOffice::Send
+// PostOffice::SendPrivate
 // 	Concatenate the MailHeader to the front of the data, and pass
 //	the result to the Network for delivery to the destination machine.
 //
@@ -307,14 +321,14 @@ void PostOffice::PostalDelivery() {
 //	"data" -- payload message data
 //----------------------------------------------------------------------
 
-void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data) {
+void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char* data) {
     char* buffer = new char[MaxPacketSize];	// space to hold concatenated mailHdr + data
-
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
 
     mailHdr.seq = seqByBoxes[mailHdr.from];
     mailHdr.ack = ackSelfByBoxes[mailHdr.from];
+    mailHdr.type = 0;
 
     // concatenate MailHeader and data
     bcopy(&mailHdr, buffer, sizeof(MailHeader));
@@ -333,13 +347,16 @@ void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     MailTempoParams *params = (MailTempoParams*) malloc(sizeof(MailTempoParams));
     params->pktHdr = pktHdr;
     params->mailHdr = mailHdr;
-    params->data = data;
+    params->data = (char*) malloc(sizeof(mailHdr.length));
+    strcpy(params->data, data);
+
     params->totalTicksStart = (int*) malloc(sizeof(int));
     *params->totalTicksStart = stats->totalTicks;
     params->nbEnvoi = (int*) malloc(sizeof(int));
     *params->nbEnvoi = 0;
     Timer *t = new Timer(interruptTimer, (int) params, false);
     params->timer = t;
+
     network->Send(pktHdr, buffer);
     seqByBoxes[mailHdr.from] += mailHdr.length;
     messageSent->P();			// wait for interrupt to tell us
@@ -352,7 +369,7 @@ void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 }
 
 //----------------------------------------------------------------------
-// PostOffice::Receive
+// PostOffice::ReceivePrivate
 // 	Retrieve a message from a specific box if one is available,
 //	otherwise wait for a message to arrive in the box.
 //
@@ -366,11 +383,41 @@ void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
 //	"data" -- address to put: payload message data
 //----------------------------------------------------------------------
 
-void PostOffice::Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char* data) {
+void PostOffice::ReceivePrivate(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char* data) {
     ASSERT((box >= 0) && (box < numBoxes));
 
     boxes[box].Get(pktHdr, mailHdr, data);
     ASSERT(mailHdr->length <= MaxMailSize);
+}
+
+void PostOffice::Send(int farAddrNext, const char *data){
+    int cpt = 0;
+    unsigned sizeRemaining = strlen(data);
+    PacketHeader outPktHdr;
+    MailHeader outMailHdr;
+
+    while ((sizeRemaining + 1) > MaxMailSize){
+        char buffer[MaxMailSize];
+        strncpy(buffer, (data + (cpt * (MaxMailSize - 1))), MaxMailSize - 1);
+        outPktHdr.to = farAddrNext;
+        outMailHdr.to = 0;
+        outMailHdr.from = 1;
+        outMailHdr.length = strlen(buffer) + 1;
+        postOffice->SendPrivate(outPktHdr, outMailHdr, data);
+    }
+}
+
+void PostOffice::Receive(int box, char *data){
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
+    char buffer[MaxMailSize];
+    printf("Got \"");
+    postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
+    while(strlen(buffer) < MaxMailSize){
+        printf("%s", buffer);
+    }
+    printf(" from %d, box %d\n",inPktHdr.from,inMailHdr.from);
+    fflush(stdout);
 }
 
 //----------------------------------------------------------------------

@@ -47,13 +47,14 @@ class MailHeader {
         unsigned ack;
         unsigned seq;
         unsigned length;		// Bytes of message data (excluding the mail header)
+        int type;
 };
 
 typedef struct _mailTempoParams{
     int *totalTicksStart;
     PacketHeader pktHdr;
     MailHeader mailHdr;
-    const char* data;
+    char* data;
     Timer *timer;
     int *nbEnvoi;
 } MailTempoParams;
@@ -62,8 +63,8 @@ typedef struct _mailTempoParams{
 // Excluding the MailHeader and the PacketHeader
 
 #define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-#define TEMPO 50000000
-#define MAXREEMISSIONS 5
+#define TEMPO 100000000
+#define MAXREEMISSIONS 20
 
 
 // The following class defines the format of an incoming/outgoing
@@ -118,17 +119,9 @@ class PostOffice {
     				//   get dropped by the underlying network
         ~PostOffice();		// De-allocate Post Office data
 
-        void Send(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-        			// Send a message to a mailbox on a remote
-    				// machine.  The fromBox in the MailHeader is
-    				// the return box for ack's.
 
-        void Receive(int box, PacketHeader *pktHdr,	MailHeader *mailHdr, char *data);
-        			// Retrieve a message from "box".  Wait if
-    				// there is no message in the box.
-
-        void SendTCP(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
-        void ReceiveTCP(int box, PacketHeader *pktHdr,	MailHeader *mailHdr, char *data);
+        void Send(int farAddrNext, const char *data);
+        void Receive(int box, char *data);
 
         void PostalDelivery();	// Wait for incoming messages,
     				// and then put them in the correct mailbox
@@ -149,11 +142,17 @@ class PostOffice {
         Lock *sendLock;		// Only one outgoing message at a time
         Network *network;		// Physical network connection
     private:
+        void SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+        // Send a message to a mailbox on a remote
+        // machine.  The fromBox in the MailHeader is
+        // the return box for ack's.
+
+        void ReceivePrivate(int box, PacketHeader *pktHdr,	MailHeader *mailHdr, char *data);
+        // Retrieve a message from "box".  Wait if
+        // there is no message in the box.
         NetworkAddress netAddr;	// Network address of this machine
         MailBox *boxes;		// Table of mail boxes to hold incoming mail
         int numBoxes;		// Number of mail boxes
-        // Timer *timer;
-        // std::map<int, int> * timerTempo;
 };
 
 #endif
