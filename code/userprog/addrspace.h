@@ -19,8 +19,8 @@
 #include <map>
 #include <list>
 
-#define UserStackSize		1024	// increase this as necessary!
-#define NumPagesPerStack    1       // Nombre de pages allouées aux piles des threads utilisateur
+#define UserStackSize		4096	// increase this as necessary!
+#define NumPagesPerStack    2       // Nombre de pages allouées aux piles des threads utilisateur
 #define MainGuardOffset     16      // Une garde pour empêcher la pile du main de démarer à l'adresse de fin de l'espace d'adressage.
 
 class Thread;
