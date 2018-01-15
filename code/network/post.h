@@ -44,8 +44,8 @@ class MailHeader {
     public:
         MailBoxAddress to;		// Destination mail box
         MailBoxAddress from;	// Mail box to reply to
-        int ack;
-        int seq;
+        unsigned ack;
+        unsigned seq;
         unsigned length;		// Bytes of message data (excluding the mail header)
 };
 
@@ -62,7 +62,7 @@ typedef struct _mailTempoParams{
 // Excluding the MailHeader and the PacketHeader
 
 #define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-#define TEMPO 10000
+#define TEMPO 50000000
 #define MAXREEMISSIONS 5
 
 
@@ -141,8 +141,9 @@ class PostOffice {
     				// off of network (i.e., time to call
     				// PostalDelivery)
 
-        int *ackByBoxes;
-        int *seqByBoxes;
+        unsigned *ackSelfByBoxes;
+        unsigned *ackOtherByBoxes;
+        unsigned *seqByBoxes;
         Semaphore *messageAvailable;// V'ed when message has arrived from network
         Semaphore *messageSent;	// V'ed when next message can be sent to network
         Lock *sendLock;		// Only one outgoing message at a time

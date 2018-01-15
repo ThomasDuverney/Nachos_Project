@@ -146,17 +146,17 @@ static void WriteDone(int arg)
 
 static void interruptTimer(int params){
     MailTempoParams *mailTempoParams = (MailTempoParams*) params;
-    if(postOffice->ackByBoxes[mailTempoParams->mailHdr.from] >= mailTempoParams->mailHdr.seq || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO)){
+    if(postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] >= (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length)
+            || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO)){
         if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
             printf("Envoi du paquet annulé : trop de réémission\n");
-        delete mailTempoParams->timer;
-        delete &mailTempoParams->pktHdr;
-        delete &mailTempoParams->mailHdr;
+        mailTempoParams->timer->setToBeDestroyed(TRUE);
+        // delete &mailTempoParams->pktHdr;
+        // delete &mailTempoParams->mailHdr;
         free(mailTempoParams);
         return;
     }
     if(stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO){
-
         char* buffer = new char[MaxPacketSize];
         bcopy(&(mailTempoParams->mailHdr), buffer, sizeof(MailHeader));
         bcopy(mailTempoParams->data, buffer + sizeof(MailHeader), mailTempoParams->mailHdr.length);
@@ -164,6 +164,7 @@ static void interruptTimer(int params){
         if (DebugIsEnabled('n')) {
             printf("RePost send: ");
             PrintHeader(mailTempoParams->pktHdr, mailTempoParams->mailHdr);
+            printf("RE ACK = %d SEQ+LENGTH = %d\n", postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from], (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length));
         }
 
         postOffice->sendLock->Acquire();
@@ -205,10 +206,12 @@ PostOffice::PostOffice(NetworkAddress addr, double reliability, int nBoxes) {
     netAddr = addr;
     numBoxes = nBoxes;
     boxes = new MailBox[nBoxes];
-    ackByBoxes = new int[nBoxes];
-    seqByBoxes = new int[nBoxes];
+    ackSelfByBoxes = new unsigned[nBoxes];
+    ackOtherByBoxes = new unsigned[nBoxes];
+    seqByBoxes = new unsigned[nBoxes];
     for (int i=0; i<nBoxes; i++){
-        ackByBoxes[i] = 0;
+        ackSelfByBoxes[i] = 0;
+        ackOtherByBoxes[i] = 0;
         seqByBoxes[i] = 0;
     }
 
@@ -234,7 +237,9 @@ PostOffice::~PostOffice()
 {
     delete network;
     delete [] boxes;
-    delete [] ackByBoxes;
+    delete [] ackSelfByBoxes;
+    delete [] ackOtherByBoxes;
+    delete [] seqByBoxes;
     delete messageAvailable;
     delete messageSent;
     delete sendLock;
@@ -260,16 +265,20 @@ void PostOffice::PostalDelivery() {
 
         mailHdr = *(MailHeader *)buffer;
         if (mailHdr.length > 0){
-            if (ackByBoxes[mailHdr.to] == mailHdr.seq){
-                ackByBoxes[mailHdr.to] += (mailHdr.length + 1);
+            printf("ACK = %d SEQ  = %d\n", ackSelfByBoxes[mailHdr.to], mailHdr.seq);
+            if ((ackSelfByBoxes[mailHdr.to] + mailHdr.length) == (mailHdr.seq + mailHdr.length)){
+                ackSelfByBoxes[mailHdr.to] += mailHdr.length;
+                ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
                 outPktHdr.to = pktHdr.from;
                 outMailHdr.to = mailHdr.from;
                 outMailHdr.from = mailHdr.to;
-                outMailHdr.ack = ackByBoxes[mailHdr.to];
+                outMailHdr.ack = ackSelfByBoxes[mailHdr.to];
                 outMailHdr.seq = seqByBoxes[mailHdr.to];
                 outMailHdr.length = 0;
                 Send(outPktHdr, outMailHdr, "");
             }
+        } else {
+            ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
         }
         if (DebugIsEnabled('n')) {
     	    printf("Putting mail into mailbox: ");
@@ -304,9 +313,8 @@ void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
 
-    seqByBoxes[mailHdr.from] += (mailHdr.length +1);
     mailHdr.seq = seqByBoxes[mailHdr.from];
-    mailHdr.ack = ackByBoxes[mailHdr.from];
+    mailHdr.ack = ackSelfByBoxes[mailHdr.from];
 
     // concatenate MailHeader and data
     bcopy(&mailHdr, buffer, sizeof(MailHeader));
@@ -333,6 +341,7 @@ void PostOffice::Send(PacketHeader pktHdr, MailHeader mailHdr, const char* data)
     Timer *t = new Timer(interruptTimer, (int) params, false);
     params->timer = t;
     network->Send(pktHdr, buffer);
+    seqByBoxes[mailHdr.from] += mailHdr.length;
     messageSent->P();			// wait for interrupt to tell us
 					            // ok to send the next message
     sendLock->Release();

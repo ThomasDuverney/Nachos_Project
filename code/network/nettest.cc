@@ -22,6 +22,7 @@
 #include "network.h"
 #include "post.h"
 #include "interrupt.h"
+#include <unistd.h>
 
 // Test out message delivery, by doing the following:
 //	1. send a message to the machine with ID "farAddr", at mail box #0
@@ -110,6 +111,9 @@ void MailTestRing(int farAddrPrev, int farAddrNext) {
 
         // Send the token to the next
         postOffice->Send(outPktHdr, outMailHdr, buffer);
+
+        sleep(5);
+        printf("END OF SLEEP\n");
     }
 
     // Then we're done!
