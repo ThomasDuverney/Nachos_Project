@@ -119,8 +119,8 @@ void MailTestRing(int farAddrPrev, int farAddrNext) {
 }
 
 void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
-    const char *token = "Jeton";
-    char buffer[MaxMailSize];
+    const char *token = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    char buffer[40 * MaxMailSize];
 
     if (farAddrNext == 2){
 
@@ -131,6 +131,7 @@ void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
 
         // Wait for the token from the prev machine
         postOffice->Receive(0, buffer);
+        printf("RECU =%s\n", buffer);
         postOffice->Send(farAddrNext, buffer);
 
     }

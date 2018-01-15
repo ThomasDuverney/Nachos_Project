@@ -63,6 +63,7 @@ extern void Print (char *file), PerformanceTest (void);
 extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchConsoleTest(char *in, char *out);
 extern void MailTest (int networkID);
 extern void MailTestRing (int prevID, int nextID);
+extern void MailTestRingTCP (int prevID, int nextID);
 
 //----------------------------------------------------------------------
 // main
@@ -170,7 +171,7 @@ main (int argc, char **argv)
         Delay (5);	// delay for 2 seconds
         // to give the user time to
         // start up another nachos
-        MailTestRing(atoi (*(argv + 1)), atoi (*(argv + 2)));
+        MailTestRingTCP(atoi (*(argv + 1)), atoi (*(argv + 2)));
         argCount = 3;
     }
 #endif // NETWORK
