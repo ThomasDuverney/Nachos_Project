@@ -19,7 +19,7 @@
 
 #include "openfile.h"
 
-#define FileNameMaxLen 		9	// for simplicity, we assume 
+#define FileNameMaxLen 		20	// for simplicity, we assume 
 					// file names are <= 9 characters long
 
 // The following class defines a "directory entry", representing a file
@@ -68,6 +68,9 @@ class Directory {
     #ifdef FILESYS
     bool Add(const char *name, int newSector, bool isDir);
     bool isEmpty(); /* renvoie si le repertoire est vide */
+    bool isDirectory(int index);
+    int getSectorFile(int index);
+    int nbEntry();
     #else
 
 
@@ -82,13 +85,13 @@ class Directory {
     void Print();			// Verbose print of the contents
 					//  of the directory -- all the file
 					//  names and their contents.
+    int FindIndex(const char *name);	// Find the index into the directory 
 
   private:
-    int tableSize;			// Number of directory entries
-    DirectoryEntry *table;		// Table of pairs: 
-					// <file name, file header location> 
+    int tableSize;          // Number of directory entries
+    DirectoryEntry *table;      // Table of pairs: 
+                    // <file name, file header location> 
 
-    int FindIndex(const char *name);	// Find the index into the directory 
 					//  table corresponding to "name"
 };
 

@@ -146,6 +146,10 @@ main (int argc, char **argv)
 	    {			// list Nachos directory
 		fileSystem->List ();
 	    }
+	    else if (!strcmp (*argv, "-ls"))
+	    {			// list Nachos directory
+		fileSystem->ListCurrentDirectory ();
+	    }
 	  else if (!strcmp (*argv, "-D"))
 	    {			// print entire filesystem
 		fileSystem->Print ();
@@ -160,6 +164,29 @@ main (int argc, char **argv)
 		fileSystem->CreateDirectory(*(argv+1));
 		argCount = 2;
 	   }	
+	   else if(!strcmp(*argv, "-cd"))
+	   {			// changement de repertoire
+		ASSERT (argc > 1);
+		fileSystem->ChangeDirectory(*(argv+1));
+		argCount = 2;
+	   }
+	   else if(!strcmp(*argv, "-test2"))
+	   {			// changement de repertoire
+			fileSystem->ChangeDirectory("");
+			fileSystem->ListCurrentDirectory();
+	   }
+
+	   else if(!strcmp(*argv, "-test"))
+	   {			// changement de repertoire
+	   	printf("Creation directory\n");
+		fileSystem->CreateDirectory("newDir");
+		fileSystem->ListCurrentDirectory();
+		printf("Change directory to the previously created directory\n");
+		fileSystem->ChangeDirectory("newDir");
+		printf("Creation of file\n");
+		fileSystem->Create("file", 128);
+		fileSystem->ListCurrentDirectory();
+	   }
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))

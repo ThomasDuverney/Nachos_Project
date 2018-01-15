@@ -122,12 +122,7 @@ Directory::Find(const char *name)
 #ifdef FILESYS
 
 bool Directory::isEmpty(){
-    for(int i = 0; i < tableSize; i++){
-        if(table[i].inUse){
-            return FALSE;
-        }
-    }
-    return TRUE;
+    return nbEntry() == 0;
 }
 
 //----------------------------------------------------------------------
@@ -157,6 +152,31 @@ bool Directory::Add(const char *name, int newSector, bool isDir) {
         }
     }
     return FALSE;   // no space.  Fix when we have extensible files.
+}
+
+/* Retourne vrai si l'entrée table[index] est un repertoire */
+bool Directory::isDirectory(int index){
+    ASSERT(index >= 0 && index < tableSize);
+    return table[index].isDirectory;
+}
+
+/* Retourne le secteur de l'entrée table[index] */
+int Directory::getSectorFile(int index){
+    ASSERT(index >= 0 && index < tableSize);
+    return table[index].sector;
+}
+
+/* Retourne le nombres d'entrées dans le repertoire courant */
+int Directory::nbEntry(){
+    int nb = 0;
+    for (int i = 0; i < tableSize; i++){
+
+        if (table[i].inUse && strcmp(table[i].name, ".") && strcmp(table[i].name, "..")){
+            printf("DEBUG nb++\n");
+            nb++;
+        }
+    }
+    return nb;
 }
 
 #else
