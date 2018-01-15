@@ -19,11 +19,14 @@
 #include "switch.h"
 #include "synch.h"
 #include "system.h"
+#include <string>
+#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define STACK_FENCEPOST 0xdeadbeef	// this is put at the top of the
 					// execution stack, for detecting
 					// stack overflows
-
 //----------------------------------------------------------------------
 // Thread::Thread
 //      Initialize a thread control block, so that we can then call
@@ -53,6 +56,11 @@ Thread::Thread (const char *threadName)
       userRegisters[r] = 0;
 
     nbThreadActifs++;
+
+    char * str= (char *) malloc(MAX_STRING_SIZE);
+    sprintf(str, "%d", this->getTid());
+    name = str;
+
 #endif
 }
 
