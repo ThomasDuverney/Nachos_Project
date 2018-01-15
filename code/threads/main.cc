@@ -159,14 +159,7 @@ main (int argc, char **argv)
 		ASSERT (argc > 1);
 		fileSystem->CreateDirectory(*(argv+1));
 		argCount = 2;
-	   }
-
-	   else if(!strcmp(*argv, "-rmdir"))
-	   {			// suppression de repertoire
-		ASSERT (argc > 1);
-		fileSystem->RemoveDirectory(*(argv+1));
-		argCount = 2;
-	   }
+	   }	
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))

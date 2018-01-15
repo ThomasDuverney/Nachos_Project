@@ -61,7 +61,6 @@
 // supports extensible files, the directory size sets the maximum number 
 // of files that can be loaded onto the disk.
 #define FreeMapFileSize 	(NumSectors / BitsInByte)
-#define NumDirEntries 		10
 #define DirectoryFileSize 	(sizeof(DirectoryEntry) * NumDirEntries)
 
 //----------------------------------------------------------------------
@@ -368,7 +367,7 @@ FileSystem::Remove(const char *name)
     int sector;
     
     directory = new Directory(NumDirEntries);
-    directory->FetchFrom(directoryFile);
+    directory->FetchFrom(currentDirectoryFile);
     sector = directory->Find(name);
     if (sector == -1) {
        delete directory;
@@ -380,9 +379,16 @@ FileSystem::Remove(const char *name)
     freeMap = new BitMap(NumSectors);
     freeMap->FetchFrom(freeMapFile);
 
-    fileHdr->Deallocate(freeMap);  		// remove data blocks
-    freeMap->Clear(sector);			// remove header block
-    directory->Remove(name);
+    /* si on a pas réussi la suppression du fichier/repertoire */ 
+    if(!directory->Remove(name)) {
+        delete fileHdr;
+        delete freeMap;
+        delete directory;
+        return FALSE;
+    }
+
+    fileHdr->Deallocate(freeMap);       // remove data blocks
+    freeMap->Clear(sector);         // remove header block
 
     freeMap->WriteBack(freeMapFile);		// flush to disk
     directory->WriteBack(directoryFile);        // flush to disk

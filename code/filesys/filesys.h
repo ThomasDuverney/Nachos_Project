@@ -52,7 +52,7 @@ class FileSystem {
 	Close(fileDescriptor); 
 	return TRUE; 
 	}
-ef FILESYS_STUB ef FILESYS_STUB 
+
     OpenFile* Open(char *name) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
@@ -82,7 +82,7 @@ class FileSystem {
     bool CreateDirectory(const char *name);
 
 
-    bool Remove(const char *name); 	// Delete a file (UNIX unlink)
+    bool Remove(const char *name); 	/* supprime un fichier ou un repertoire dans le dossier courant (pas de pathname) */
 
     void List();			// List all the files in the file system
 

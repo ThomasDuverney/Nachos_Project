@@ -34,8 +34,12 @@ class DirectoryEntry {
     bool inUse;				// Is this directory entry in use?
     int sector;				// Location on disk to find the 
 					//   FileHeader for this file 
-    char name[FileNameMaxLen + 1];	// Text name for file, with +1 for 
+    char name[FileNameMaxLen + 1];	// Text name for file, with +1 for
 					// the trailing '\0'
+
+    #ifdef FILESYS
+    bool isDirectory; /* si l'entrée est un répertoire */
+    #endif
 };
 
 // The following class defines a UNIX-like "directory".  Each entry in
@@ -61,7 +65,15 @@ class Directory {
     int Find(const char *name);		// Find the sector number of the 
 					// FileHeader for file: "name"
 
+    #ifdef FILESYS
+    bool Add(const char *name, int newSector, bool isDir);
+    bool isEmpty(); /* renvoie si le repertoire est vide */
+    #else
+
+
     bool Add(const char *name, int newSector);  // Add a file name into the directory
+    #endif
+
 
     bool Remove(const char *name);	// Remove a file from the directory
 

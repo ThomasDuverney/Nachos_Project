@@ -24,6 +24,7 @@
 #include "utility.h"
 #include "filehdr.h"
 #include "directory.h"
+#include "filesys.h"
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -117,16 +118,48 @@ Directory::Find(const char *name)
     }
 }
 
+
+#ifdef FILESYS
+
+bool Directory::isEmpty(){
+    for(int i = 0; i < tableSize; i++){
+        if(table[i].inUse){
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 //----------------------------------------------------------------------
 // Directory::Add
-// 	Add a file into the directory.  Return TRUE if successful;
-//	return FALSE if the file name is already in the directory, or if
-//	the directory is completely full, and has no more space for
-//	additional file names.
+//  Add a file into the directory.  Return TRUE if successful;
+//  return FALSE if the file name is already in the directory, or if
+//  the directory is completely full, and has no more space for
+//  additional file names.
 //
-//	"name" -- the name of the file being added
-//	"newSector" -- the disk sector containing the added file's header
+//  "name" -- the name of the file being added
+//  "newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
+
+bool Directory::Add(const char *name, int newSector, bool isDir) { 
+
+    if (FindIndex(name) != -1)
+       return FALSE;
+
+    for (int i = 0; i < tableSize; i++){
+
+        if (!table[i].inUse) {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDirectory = isDir;
+            return TRUE;
+        }
+    }
+    return FALSE;   // no space.  Fix when we have extensible files.
+}
+
+#else
 
 bool
 Directory::Add(const char *name, int newSector)
@@ -146,6 +179,8 @@ Directory::Add(const char *name, int newSector)
     return FALSE;	// no space.  Fix when we have extensible files.
 }
 
+#endif
+
 //----------------------------------------------------------------------
 // Directory::Remove
 // 	Remove a file name from the directory.  Return TRUE if successful;
@@ -159,8 +194,32 @@ Directory::Remove(const char *name)
 { 
     int i = FindIndex(name);
 
-    if (i == -1)
-	return FALSE; 		// name not in directory
+    if (i == -1){
+        DEBUG('f', "Couldn't find %s\n", name);
+	    return FALSE; 		// name not in directory
+    }
+
+    #ifdef FILESYS
+
+    /* si le fichier est un répertoire on teste si il est vide ou pas
+    * Si il est vide on met le inUse a FALSE et on renvoie TRUE
+    * Sinon on affiche une erreur et on renvoie FALSE;
+    */
+    if(table[i].isDirectory){
+        OpenFile *directoryFile = new OpenFile(table[i].sector);
+        Directory *directory = new Directory(NumDirEntries);
+        directory->FetchFrom(directoryFile);      
+        if(directory->isEmpty()){
+            table[i].inUse = FALSE;
+            return TRUE;
+        } else {
+            printf("Couldn't remove directory %s, this directory is not empty\n", name);
+            return FALSE;
+        }
+    }
+
+    #endif
+
     table[i].inUse = FALSE;
     return TRUE;	
 }
