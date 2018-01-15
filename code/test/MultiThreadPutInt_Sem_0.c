@@ -25,7 +25,7 @@ int main(){
   int tab[NB];
   int i;
   int tid[NB];
-  sem = SemInit(1);
+  sem = SemCreate(1);
   for(i=0; i<NB; i++){
     tab[i] = i;
     tid[i] = UserThreadCreate(g,(void*) (tab+i));
