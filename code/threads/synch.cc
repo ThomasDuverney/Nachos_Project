@@ -135,7 +135,7 @@ Condition::~Condition (){
     delete queue;
 }
 
-void Condition::Wait (Lock * conditionLock){
+void Condition::Wait(Lock * conditionLock){
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     queue->Append ((void *) currentThread);
     conditionLock->Release();
@@ -145,7 +145,7 @@ void Condition::Wait (Lock * conditionLock){
 
 }
 
-void Condition::Signal (Lock * conditionLock){
+void Condition::Signal(){
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     thread = (Thread *) queue->Remove();
@@ -155,7 +155,7 @@ void Condition::Signal (Lock * conditionLock){
     (void) interrupt->SetLevel (oldLevel);
 }
 
-void Condition::Broadcast (Lock * conditionLock){
+void Condition::Broadcast(){
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
     thread = (Thread *) queue->Remove();
