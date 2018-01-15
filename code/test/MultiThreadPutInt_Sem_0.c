@@ -12,7 +12,10 @@ unsigned int sem;
 
 void g(void *arg) {
   SemWait(sem);
-  PutInt(*(int *)arg);
+  int i = 0;
+  for(i = 0; i < NB; i++){
+    PutInt(*(int *)arg);
+  }
   SemPost(sem);
   UserThreadExit();
 }
