@@ -167,25 +167,26 @@ main (int argc, char **argv)
 	   else if(!strcmp(*argv, "-cd"))
 	   {			// changement de repertoire
 		ASSERT (argc > 1);
-		fileSystem->ChangeDirectory(*(argv+1));
+		fileSystem->ChangeDirectoryPath(*(argv+1));
+		fileSystem->ListCurrentDirectory();
 		argCount = 2;
 	   }
 	   else if(!strcmp(*argv, "-test2"))
 	   {			// changement de repertoire
-			fileSystem->ChangeDirectory("");
+			fileSystem->ChangeDirectoryPath("newDir/newDir2/..");
 			fileSystem->ListCurrentDirectory();
 	   }
 
 	   else if(!strcmp(*argv, "-test"))
 	   {			// changement de repertoire
-	   	printf("Creation directory\n");
+	   	
+	   	fileSystem->ListCurrentDirectory();
 		fileSystem->CreateDirectory("newDir");
 		fileSystem->ListCurrentDirectory();
-		printf("Change directory to the previously created directory\n");
 		fileSystem->ChangeDirectory("newDir");
-		printf("Creation of file\n");
-		fileSystem->Create("file", 128);
-		fileSystem->ListCurrentDirectory();
+		fileSystem->CreateDirectory("newDir2");
+		fileSystem->ChangeDirectory("newDir2");
+		fileSystem->Create("fichier", 128);
 	   }
 #endif // FILESYS
 #ifdef NETWORK
