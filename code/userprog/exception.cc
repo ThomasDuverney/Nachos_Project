@@ -169,8 +169,8 @@ void ExceptionHandler (ExceptionType which){
             case SC_MutexDestroy:
                 do_UserMutexDestroy();
                 break;
-            case SC_SemInit:
-                do_UserSemInit();
+            case SC_SemCreate:
+                do_UserSemCreate();
                 break;
             case SC_SemWait:
                 do_UserSemWait();
@@ -181,6 +181,21 @@ void ExceptionHandler (ExceptionType which){
             case SC_SemDestroy:
                 do_UserSemDestroy();
                 break;
+            case SC_CondCreate:
+                 do_UserCondCreate();
+                 break;
+            case SC_CondWait:
+                 do_UserCondWait();
+                 break;
+            case SC_CondSignal:
+                 do_UserCondSignal();
+                 break;
+            case SC_CondBroadCast:
+                 do_UserCondBroadCast();
+                 break;
+            case SC_CondDestroy:
+                 do_UserCondDestroy();
+                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

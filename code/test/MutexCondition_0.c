@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-#define NB 5
+#define NB 2
 
 /*
  * Création de plusieurs threads exécutant PutString.
@@ -8,17 +8,24 @@
  * l'utilisation concurrente de synchconsole
  */
 
-Sem_t sem;
+Cond_t cond;
+Mutex_t mutex;
+int checkNumber;
+
+struct threadParam{
+  int * size;
+};
+
+struct threadParam p;
 
 void g(void *arg) {
-  SemWait(sem);
-  PutString("Je suis un thread ");
-  PutChar('c'+*(int*) arg);
-  PutChar('c'+*(int*) arg);
-  PutChar('c'+*(int*) arg);
-  PutChar('c'+*(int*) arg);
-  PutString("\n");
-  SemPost(sem);
+  MutexLock(mutex);
+  while(checkNumber == 1){
+    CondWait(cond);
+  }
+  checkNumber++;
+  CondSignal(cond);
+  MutexUnlock(mutex);
   UserThreadExit();
 }
 
@@ -26,7 +33,11 @@ int main(){
   int tab[NB];
   int i;
   int tid[NB];
-  sem = SemCreate(1);
+
+  *(p.size) = 0;
+  cond = CondCreate();
+  mutex = MutexCreate();
+  checkNumber = 0;
 
   for(i=0; i<NB; i++){
     tab[i] = i;
@@ -36,6 +47,6 @@ int main(){
   for(i=0; i<NB; i++){
     UserThreadJoin(tid[i]);
   }
-  SemDestroy(sem);
+  CondDestroy(cond);
   return 0;
 }

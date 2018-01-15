@@ -28,6 +28,9 @@ std::map<int,Lock * > * mutexMap;
 unsigned int semCounter; // Nb Total de sémaphore créées -> semId
 std::map<int,Semaphore * > * semMap;
 
+unsigned int condCounter; // Nb Total de condtionMutex créées -> condId
+std::map<int,Condition * > * condMap;
+
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
 #endif
@@ -170,6 +173,9 @@ Initialize (int argc, char **argv)
 
     semCounter = 0;
     semMap = new std::map<int, Semaphore *>();
+
+    condCounter = 0;
+    condMap = new std::map<int, Condition *>();
 
     currentThread = new Thread("main");
     currentThread->setStatus(RUNNING);

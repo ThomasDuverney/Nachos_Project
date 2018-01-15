@@ -243,13 +243,13 @@ MutexDestroy:
 	.end    MutexDestroy
 
 
-	.globl 	SemInit
-	.ent    SemInit
-SemInit:
-	 addiu $2,$0,SC_SemInit
+	.globl 	SemCreate
+	.ent    SemCreate
+SemCreate:
+	 addiu $2,$0,SC_SemCreate
 	 syscall
 	 j  $31
-	.end    SemInit
+	.end    SemCreate
 
 	.globl 	SemWait
 	.ent    SemWait
@@ -275,6 +275,46 @@ SemDestroy:
 	 syscall
 	 j  $31
 	.end    SemDestroy
+
+	.globl 	CondCreate
+	.ent    CondCreate
+CondCreate:
+	 addiu $2,$0,SC_CondCreate
+	 syscall
+	 j  $31
+	.end    CondCreate
+
+    .globl 	CondWait
+	.ent    CondWait
+CondWait:
+	 addiu $2,$0,SC_CondWait
+	 syscall
+	 j  $31
+	.end    CondWait
+
+    .globl 	CondSignal
+	.ent    CondSignal
+CondSignal:
+	 addiu $2,$0,SC_CondSignal
+	 syscall
+	 j  $31
+	.end    CondSignal
+
+    .globl 	CondBroadCast
+	.ent    CondBroadCast
+CondBroadCast:
+	 addiu $2,$0,SC_CondBroadCast
+	 syscall
+	 j  $31
+	.end    CondBroadCast
+
+    .globl 	CondDestroy
+	.ent    CondDestroy
+CondDestroy:
+	 addiu $2,$0,SC_CondDestroy
+	 syscall
+	 j  $31
+	.end    CondDestroy
 
 /* dummy function to keep gcc happy */
         .globl  __main

@@ -5,7 +5,7 @@
 /*
  * Création de plusieurs threads exécutant putchar.
  */
-unsigned int mutex;
+Mutex_t mutex;
 
 void g(void *arg) {
   MutexLock(mutex);

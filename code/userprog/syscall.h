@@ -43,10 +43,15 @@
 #define SC_MutexLock        22
 #define SC_MutexUnlock      23
 #define SC_MutexDestroy     24
-#define SC_SemInit          25
+#define SC_SemCreate        25
 #define SC_SemWait          26
 #define SC_SemPost          27
 #define SC_SemDestroy       28
+#define SC_CondCreate       29
+#define SC_CondWait         30
+#define SC_CondSignal       31
+#define SC_CondBroadCast    32
+#define SC_CondDestroy      33
 
 #ifdef IN_USER_MODE
 
@@ -241,39 +246,56 @@ int UserThreadJoin(int tid);
  */
 int ForkExec(char * fileName);
 
+typedef int Mutex_t;
+
 /*
  * int MutexCreate()
  * Sémantique: Crée un mutex et retourne un numéro d'identifiant
  */
 
-int MutexCreate();
+Mutex_t MutexCreate();
 
 /*
  * void MutexLock(int mutexId)
  * Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
  */
-void MutexLock(int mutexId);
+void MutexLock(Mutex_t mutexId);
 
 
 /*
  * void MutexUnlock(int mutexId)
  * Sémantique: Relache le vérrou dont l'identifiant est mutexId
  */
-void MutexUnlock(int mutexId);
+void MutexUnlock(Mutex_t mutexId);
 
 /*
  * void MutexDestroy(int mutexId)
  * Sémantique: Détruit le vérrou dont l'identifiant est mutexId
  */
-void MutexDestroy(int mutexId);
+void MutexDestroy(Mutex_t mutexId);
 
-int SemInit(int initialValue);
+typedef int Sem_t;
 
-void SemWait();
+Sem_t SemCreate(int initialValue);
 
-void SemPost();
+void SemWait(Sem_t semaphore);
 
-void SemDestroy();
+void SemPost(Sem_t semaphore);
+
+void SemDestroy(Sem_t semaphore);
+
+typedef int Cond_t;
+
+int CondCreate();
+
+void CondWait(Cond_t condId);
+
+void CondSignal(Cond_t condId);
+
+void CondBroadCast(Cond_t condId);
+
+void CondDestroy(Cond_t condId);
+
 #endif // IN_USER_MODE
 
 #endif /* SYSCALL_H */
