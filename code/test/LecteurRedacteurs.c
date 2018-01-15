@@ -134,14 +134,10 @@ int main(){
   nbLa = 0;
   enEcriture = 0;
 
-  for (i=0; i<nbL; i++) {
+  for (i=0; i<nbL+nbR; i++) {
     tab[i] = i;
-    tid[i] = UserThreadCreate(lecteur,(void*) (tab+i));
-  }
-
-  for (i=0; i<nbR; i++) {
-    tab[nbL + 1 + i] = nbL + 1 + i;
-    tid[nbL + 1 + i] = UserThreadCreate(redacteur,(void*) (tab+i));
+    if(i<nbL) tid[i] = UserThreadCreate(lecteur,(void*) (tab+i));
+    else tid[i] = UserThreadCreate(redacteur,(void*) (tab+i));
   }
 
   for (i=0; i<nbL + nbR; i++) {
