@@ -427,6 +427,64 @@ void FileSystem::ChangeDirectory(const char *name){
 
 
 
+void FileSystem::ChangeDirectoryPath(const char *name){
+
+    Directory *currentDirectory = new Directory(NumDirEntries);
+    char buff[FileNameMaxLen+1];
+    OpenFile *currentOpenFile;
+    int i, j, index, currentSector;
+    currentDirectory->FetchFrom(currentDirectoryFile);
+
+    currentSector = currentDirectorySector;
+
+    i=0;
+
+    do {
+        j=0;
+        while(name[i] != '\0' && name[i] != '/'){
+            buff[j] = name[i];
+            i++;
+            j++;
+        }
+
+        buff[j] = '\0';
+
+        if(name[i] == '/'){
+            i++;
+        }
+
+        index = currentDirectory->FindIndex(buff);
+
+        if(index == -1){ /* si le nom n'est pas trouvé */
+            printf("Error couldn't find %s\n", buff);
+            return;
+        } else if(!currentDirectory->isDirectory(index)) { /* si le nom correspond à un fichier */
+            printf("Error %s isn't a directory\n", buff);
+            return;
+        } else { /*  si le nom correspond à un repertoire */
+            currentSector = currentDirectory->getSectorFile(index);
+            currentOpenFile = new OpenFile(currentSector);
+            currentDirectory->FetchFrom(currentOpenFile);
+            DEBUG('f', "After change directory, current directory sector = %d\n", currentDirectorySector);
+            delete currentOpenFile;
+        }
+
+
+
+    }  while(name[i] != '\0');
+
+
+    /* met à jour les infos du dossier courant */
+    currentDirectorySector = currentSector;
+    currentDirectoryFile = new OpenFile(currentDirectorySector);
+
+
+    delete currentDirectory;
+}
+
+
+
+
 //----------------------------------------------------------------------
 // FileSystem::List
 // 	List all the files in the file system directory.
