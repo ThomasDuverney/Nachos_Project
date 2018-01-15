@@ -79,6 +79,8 @@ void ExceptionHandler (ExceptionType which){
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
     reg5 = machine->ReadRegister (5);
+
+
     char c;
     char * buff;
 
@@ -132,7 +134,7 @@ void ExceptionHandler (ExceptionType which){
             case SC_UserThreadCreate:
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
                 int threadId;
-                threadId = do_UserThreadCreate(reg4, reg5);
+                threadId = do_UserThreadCreate();
                 // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
                 machine->WriteRegister(2,threadId);
                 break;

@@ -13,7 +13,7 @@ void g(void *arg) {
   for(i = 0; i < NB; i++){
     PutInt(*(int *)arg);
   }
-  UserThreadExit();
+
 }
 
 

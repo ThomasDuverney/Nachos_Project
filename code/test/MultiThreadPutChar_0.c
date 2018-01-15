@@ -14,7 +14,6 @@ void g(void *arg) {
   PutChar('c'+*(int*) arg);
   PutChar('c'+*(int*) arg);
   MutexUnlock(mutex);
-  UserThreadExit();
 }
 
 int main(){

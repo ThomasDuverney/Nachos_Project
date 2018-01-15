@@ -13,6 +13,7 @@
      int maxAddr, stackPtrOffset;
      UserThreadParams *userThreadParams = (UserThreadParams*) threadParams;
 
+
      currentThread->space->InitRegisters();
      currentThread->space->RestoreState();
 
@@ -25,14 +26,16 @@
      stackPtrOffset = (currentThread->getStackBitmapIndex() * NumPagesPerStack * PageSize);
      machine->WriteRegister (StackReg, maxAddr - stackPtrOffset);
 
-     /* Sauvegarde de l'ancienne valeur de PC pour le retour de la fonction. */
-     machine->WriteRegister (PrevPCReg, machine->ReadRegister (PCReg));
+     /* On place l'addresse de la fonction UserThreadexit dans le registre RetAddrReg,
+        pour qu'elle soit appellée à la terminaison de la fonction f*/
+     machine->WriteRegister (RetAddrReg, userThreadParams->addrExit);
      /* Place dans PC la prochaine instruction à exécuter -> f */
      machine->WriteRegister (PCReg, userThreadParams->f);
      /* Place dans NextPcreg l'instruction suivante */
      machine->WriteRegister (NextPCReg, userThreadParams->f+4);
      /* Place les paramètres de la fonction dans le registre 4. */
      machine->WriteRegister (4, userThreadParams->arg);
+
      /* Libère l'espace mémoire allouée à la structure threadparams. */
      free(userThreadParams);
      /* Lance l'interpréteur mips -> branchement vers f. */
@@ -45,15 +48,16 @@
  * la fonction f et les paramètres arg sont passés à l'appel Fork à par le biais d'une structure
  * de donnée de type UserThreadParams.
  */
-extern int do_UserThreadCreate(int f, int arg) {
+extern int do_UserThreadCreate() {
     Thread *t;
     if ((t = new Thread ("UserThread")) == NULL) {
       return -1;
     }
 
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
-    threadParams->f = f;
-    threadParams->arg = arg;
+    threadParams->f = machine->ReadRegister(4);
+    threadParams->arg = machine->ReadRegister(5);
+    threadParams->addrExit = machine->ReadRegister(6);
 
     t->Fork(StartUserThread,(int) threadParams);
     return t->getTid();

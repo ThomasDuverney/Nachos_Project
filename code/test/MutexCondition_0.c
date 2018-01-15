@@ -30,7 +30,6 @@ void g(void *arg) {
   CondSignal(cond);
   MutexUnlock(mutex);
   PutInt(89);
-  UserThreadExit();
 }
 
 int main(){

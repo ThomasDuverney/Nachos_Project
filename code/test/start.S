@@ -181,8 +181,9 @@ GetInt:
 	.ent    UserThreadCreate
 UserThreadCreate:
 	addiu $2,$0,SC_UserThreadCreate
-	syscall
-	j	$31
+	addiu $6,$0,UserThreadExit
+    syscall
+    j   $31
 	.end UserThreadCreate
 
     .globl UserThreadExit

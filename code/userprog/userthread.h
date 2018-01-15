@@ -5,6 +5,7 @@
 typedef struct _userThreadParams {
   int f;
   int arg;
+  int addrExit;
 }UserThreadParams;
 
 /*
@@ -16,7 +17,7 @@ typedef struct _userThreadParams {
  * Valeur de retour:
  *   l'adresse du thread propulseur, NULL si la création du thread a échoué.
  */
-extern int do_UserThreadCreate(int f, int arg);
+extern int do_UserThreadCreate();
 
 /*
  * Spécification: extern void do_UserThreadExit()
