@@ -46,6 +46,9 @@ void SynchConsole::SynchPutString(const char *s) {
         console->PutChar(s[i]);
         writeDone->P();
         i++;
+    } if (s[i] == '\n') {
+        console->PutChar(s[i]);
+        writeDone->P();
     }
     semWrite->V();
 }
