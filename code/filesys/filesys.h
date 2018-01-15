@@ -52,7 +52,7 @@ class FileSystem {
 	Close(fileDescriptor); 
 	return TRUE; 
 	}
-
+ef FILESYS_STUB ef FILESYS_STUB 
     OpenFile* Open(char *name) {
 	  int fileDescriptor = OpenForReadWrite(name, FALSE);
 
@@ -80,7 +80,6 @@ class FileSystem {
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
 
     bool CreateDirectory(const char *name);
-    bool RemoveDirectory(const char *name);
 
 
     bool Remove(const char *name); 	// Delete a file (UNIX unlink)

@@ -197,7 +197,11 @@ FileSystem::Create(const char *name, int initialSize)
         sector = freeMap->Find();	// find a sector to hold the file header
     	if (sector == -1) 		
             success = FALSE;		// no free block for file header 
+        #ifdef FILESYS
+        else if (!directory->Add(name, sector, FALSE))
+        #else
         else if (!directory->Add(name, sector))
+        #endif
             success = FALSE;	// no space in directory
     	else {
         	    hdr = new FileHeader;
@@ -262,8 +266,12 @@ bool FileSystem::CreateDirectory(const char *name){
 
             DEBUG('f', "Sector for directory %s: %d\n", name, sector);
 
-            /* On ajoute la nouvelle entrée dans le repertoire courant */
+            /* On ajoute l'entrée du nouveau répertoire dans le repertoire courant */
+            #ifdef FILESYS
+            currentDirectory->Add(name, sector, TRUE);
+            #else
             currentDirectory->Add(name, sector);
+            #endif
 
             /* Création d'un FileHeader pour le nouveau repertoire */
             directoryFileHeader = new FileHeader;
@@ -309,15 +317,6 @@ bool FileSystem::CreateDirectory(const char *name){
     return success;
 
 
-}
-
-bool FileSystem::RemoveDirectory(const char *name){
-
-    bool success = FALSE;
-
-    /// TODO
-
-    return success;
 }
 
 //----------------------------------------------------------------------
