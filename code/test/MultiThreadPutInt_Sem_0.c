@@ -8,15 +8,15 @@
  * l'utilisation concurrente de synchconsole
  */
 
-Mutex_t mutex;
+unsigned int sem;
 
 void g(void *arg) {
+  SemWait(sem);
   int i = 0;
-  MutexLock(mutex);
-  for(i = 0; i<NB; i++){
+  for(i = 0; i < NB; i++){
     PutInt(*(int *)arg);
   }
-  MutexUnlock(mutex);
+  SemPost(sem);
   UserThreadExit();
 }
 
@@ -25,7 +25,7 @@ int main(){
   int tab[NB];
   int i;
   int tid[NB];
-  mutex = MutexCreate();
+  sem = SemCreate(1);
   for(i=0; i<NB; i++){
     tab[i] = i;
     tid[i] = UserThreadCreate(g,(void*) (tab+i));
@@ -34,6 +34,6 @@ int main(){
   for(i=0; i<NB; i++){
     UserThreadJoin(tid[i]);
   }
-  MutexDestroy(mutex);
+  SemDestroy(sem);
   return 0;
 }
