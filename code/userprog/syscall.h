@@ -230,30 +230,30 @@ int ForkExec(char * fileName);
 typedef int Mutex_t;
 
 /*
- * int MutexCreate()
+ * Mutex_t MutexCreate()
  * Sémantique: Crée un mutex et retourne un numéro d'identifiant
  */
 
 Mutex_t MutexCreate();
 
 /*
- * void MutexLock(int mutexId)
+ * void MutexLock(Mutex_t mutex)
  * Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
  */
-void MutexLock(Mutex_t mutexId);
+void MutexLock(Mutex_t mutex);
 
 
 /*
- * void MutexUnlock(int mutexId)
+ * void MutexUnlock(Mutex_t mutex)
  * Sémantique: Relache le vérrou dont l'identifiant est mutexId
  */
-void MutexUnlock(Mutex_t mutexId);
+void MutexUnlock(Mutex_t mutex);
 
 /*
- * void MutexDestroy(int mutexId)
+ * void MutexDestroy(Mutex_t mutex)
  * Sémantique: Détruit le vérrou dont l'identifiant est mutexId
  */
-void MutexDestroy(Mutex_t mutexId);
+void MutexDestroy(Mutex_t mutex);
 
 typedef int Sem_t;
 
@@ -267,7 +267,7 @@ void SemDestroy(Sem_t semaphore);
 
 typedef int Cond_t;
 
-int CondCreate();
+Cond_t CondCreate();
 
 void CondWait(Cond_t condId, Mutex_t mutedId);
 
