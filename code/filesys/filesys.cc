@@ -145,6 +145,11 @@ FileSystem::FileSystem(bool format)
     // on demarre le systeme de fichier toujours à la racine
     currentDirectorySector = DirectorySector;
     currentDirectoryFile = new OpenFile(currentDirectorySector);
+
+    // quand on démarre le système de fichier on a aucun fichier ouvert
+    for(int i=0; i<NBFILEOPENED; i++){
+        fileOpened[i] = -1;
+    }
 }
 
 
@@ -285,8 +290,9 @@ bool FileSystem::CreateDirectory(const char *name){
                 success = FALSE;
             } else {
 
-                /* Ecriture des données du nouveau répertoire sur le disque :
-                *  Ecriture du Fileheader du nouveau repertoire
+                /* 
+                * Ecriture des données du nouveau répertoire sur le disque :
+                * Ecriture du Fileheader du nouveau repertoire
                 * lecture des entrées depuis le fileHeader et écriture des entrées.
                 */
                 directoryFileHeader->WriteBack(sector); 
@@ -332,20 +338,53 @@ bool FileSystem::CreateDirectory(const char *name){
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile *
-FileSystem::Open(const char *name)
-{ 
-    Directory *directory = new Directory(NumDirEntries);
-    OpenFile *openFile = NULL;
-    int sector;
+OpenFile * FileSystem::Open(const char *name){
+ 
+    int i = 0, j;
 
-    DEBUG('f', "Opening file %s\n", name);
-    directory->FetchFrom(currentDirectoryFile);
-    sector = directory->Find(name); 
-    if (sector >= 0) 		
-	openFile = new OpenFile(sector);	// name was found in directory 
-    delete directory;
-    return openFile;				// return NULL if not found
+    while(i < NBFILEOPENED && fileOpened[i] == -1){ i++; }
+
+    if(i >= 0){ // il n'y a plus de place dans le tableau des fichiers ouverts
+        printf("Error couldn't open file %s, too much opened file\n", name);
+        return NULL;
+    } else {
+
+        Directory *directory = new Directory(NumDirEntries);
+        OpenFile *openFile = NULL;
+        int sector;
+
+        DEBUG('f', "Opening file %s\n", name);
+        directory->FetchFrom(currentDirectoryFile);
+        sector = directory->Find(name); 
+        if (sector >= 0) {
+            
+            j = 0;
+            while(j < NBFILEOPENED && fileOpened[j] != sector){ j++; }
+
+            if(j >= 0){
+                printf("File %s already opened\n", name);
+            } else {
+                openFile = new OpenFile(sector);	// name was found in directory 
+                fileOpened[i] = sector;
+            }
+        }
+        delete directory;
+        return openFile;				// return NULL if not found
+    }
+
+}
+
+void FileSystem::Close(int sector){
+
+    int i = 0;
+
+    while(i < NBFILEOPENED && fileOpened[i] != sector){ i++; }
+
+    if(i >= NBFILEOPENED){
+        printf("Error file not opened or not found\n");
+    } else {
+        fileOpened[i] = -1;
+    }
 }
 
 //----------------------------------------------------------------------
@@ -377,6 +416,14 @@ FileSystem::Remove(const char *name)
        delete directory;
        return FALSE;			 // file not found 
     }
+
+    int i = 0;
+    while(i < NBFILEOPENED && fileOpened[i] != sector){i++;}
+
+    if(fileOpened[i] == sector){
+        printf("Couldn't remove this file, opened in a process\n");
+    }
+
     fileHdr = new FileHeader;
     fileHdr->FetchFrom(sector);
 
@@ -424,6 +471,8 @@ void FileSystem::ChangeDirectory(const char *name){
     }
     delete currentDirectory;
 }
+
+
 
 
 

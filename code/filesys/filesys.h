@@ -65,6 +65,9 @@ class FileSystem {
 };
 
 #else // FILESYS
+
+#define NBFILEOPENED 10
+
 class FileSystem {
   public:
     FileSystem(bool format);		// Initialize the file system.
@@ -78,6 +81,7 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    void Close(int sector);
 
     bool CreateDirectory(const char *name);
 
@@ -101,7 +105,9 @@ class FileSystem {
 
    int currentDirectorySector;
    OpenFile* currentDirectoryFile;
-   
+
+
+   int fileOpened[NBFILEOPENED];
 
 };
 
