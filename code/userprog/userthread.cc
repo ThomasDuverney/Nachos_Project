@@ -43,9 +43,10 @@
  }
 
 /*
- * Crée un thread noyau (propulseur) qui permet le lancement d'un thread utilisateur exécutant la fonction
- * dont l'adresse est f et dont les paramètres sont fournis à l'adresse arg.
- * la fonction f et les paramètres arg sont passés à l'appel Fork à par le biais d'une structure
+ * Spécification: extern int do_UserThreadCreate()
+ * Sémantique: Crée un thread noyau (propulseur) qui permet le lancement d'un thread utilisateur
+ * exécutant la fonction dont l'adresse est f et dont les paramètres sont fournis à l'adresse arg.
+ * La fonction f et les paramètres arg sont passés à l'appel Fork à par le biais d'une structure
  * de donnée de type UserThreadParams.
  */
 extern int do_UserThreadCreate() {
@@ -65,8 +66,7 @@ extern int do_UserThreadCreate() {
 
 /*
  * Spécification: extern void do_UserThreadExit()
- * Sémantique:
- * Lorsqu'un Thread T termine, il regarde si des Threads Ti l'attendent.
+ * Sémantique: Lorsqu'un Thread T termine, il regarde si des Threads Ti l'attendent.
  * Avant de quitter le thread courant remet les éventuels Ti en sommeil dans la ready list du scheduler.
  */
 extern void do_UserThreadExit() {
