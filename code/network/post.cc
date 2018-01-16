@@ -329,6 +329,13 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     mailHdr.ack = ackSelfByBoxes[mailHdr.from];
     mailHdr.type = 0;
 
+    MailTempoParams *params = (MailTempoParams*) malloc(sizeof(MailTempoParams));
+    params->data = new char[mailHdr.length];
+    for (unsigned i=0; i<mailHdr.length; i++){
+        params->data[i] = data[i];
+    }
+    //memcpy(params->data, data, mailHdr.length);
+
     // concatenate MailHeader and data
     bcopy(&mailHdr, buf, sizeof(MailHeader));
     bcopy(data, buf + sizeof(MailHeader), mailHdr.length);
@@ -343,11 +350,8 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     }
 
     sendLock->Acquire();   		// only one message can be sent to the network at any one time
-    MailTempoParams *params = (MailTempoParams*) malloc(sizeof(MailTempoParams));
     params->pktHdr = pktHdr;
     params->mailHdr = mailHdr;
-    params->data = (char*) malloc(sizeof(mailHdr.length));
-    //memcpy(params->data, data, mailHdr.length);
 
     params->totalTicksStart = (int*) malloc(sizeof(int));
     *params->totalTicksStart = stats->totalTicks;
@@ -361,6 +365,8 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     messageSent->P();			// wait for interrupt to tell us
 					            // ok to send the next message
     sendLock->Release();
+
+    printf("param=%s\n", params->data);
 
     delete [] buf;			// we've sent the message, so
 					            // we can delete our buffer
