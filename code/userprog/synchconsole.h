@@ -12,18 +12,26 @@ class SynchConsole {
 
         ~SynchConsole();                    // clean up console emulation
 
-        void SynchPutChar(const char ch);   // Unix putchar(3S)
+        /* Écrit le caractère c sur la sortie standard. */
+        void SynchPutChar(const char ch);
 
-        char SynchGetChar();                // Unix getchar(3S)
+        /* Lit un caractère depuis l'entrée standard et retourne le caractère lu. */
+        char SynchGetChar();
 
-        void SynchPutString(const char *s); // Unix puts(3S)
+        /* Écrit la chaîne de caractères lue à l'adresse s. */
+        void SynchPutString(const char *s);
 
-        void SynchGetString(char *s, int n);       // Unix fgets(3S)
+        /* Lit une chaîne de caractères de longueur maximale égale à n depuis l'entrée standard et
+           l'écrit à l'adresse s */
+        void SynchGetString(char *s, int n);
 
+        /* Écrit l'entier n sur la sortie standard. */
         void SynchPutInt(int n);
 
+        /* Lit un entier depuis l'entrée standard et l'écrit à l'adresse n */
         void SynchGetInt(int *n);
 
+        /* Vide le contenu de l'entrée standard */
         void Flush();
     private:
         Console *console;
