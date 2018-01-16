@@ -171,23 +171,7 @@ main (int argc, char **argv)
 		fileSystem->ListCurrentDirectory();
 		argCount = 2;
 	   }
-	   else if(!strcmp(*argv, "-test2"))
-	   {			// changement de repertoire
-			fileSystem->ChangeDirectoryPath("newDir/newDir2/..");
-			fileSystem->ListCurrentDirectory();
-	   }
 
-	   else if(!strcmp(*argv, "-test"))
-	   {			// changement de repertoire
-	   	
-	   	fileSystem->ListCurrentDirectory();
-		fileSystem->CreateDirectory("newDir");
-		fileSystem->ListCurrentDirectory();
-		fileSystem->ChangeDirectory("newDir");
-		fileSystem->CreateDirectory("newDir2");
-		fileSystem->ChangeDirectory("newDir2");
-		fileSystem->Create("fichier", 128);
-	   }
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))
