@@ -58,6 +58,13 @@ extern int do_UserThreadCreate() {
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
     threadParams->f = machine->ReadRegister(4);
     threadParams->arg = machine->ReadRegister(5);
+    /*
+     * Pour la terminaison automatique des threads:
+     * Lors de l'appel système UserThreadCreate, on place dans le registre 6
+     * l'adresse de l'instruction UserThreadexit.
+     * On peut ainsi passer en paramètres l'adresse de UserThreadexit au thread propulseur.
+     * Lors de StartUserThead on place dans le registre de la machine retAdrReg cette adresse.
+     */
     threadParams->addrExit = machine->ReadRegister(6);
 
     t->Fork(StartUserThread,(int) threadParams);
@@ -66,8 +73,10 @@ extern int do_UserThreadCreate() {
 
 /*
  * Spécification: extern void do_UserThreadExit()
- * Sémantique: Lorsqu'un Thread T termine, il regarde si des Threads Ti l'attendent.
- * Avant de quitter le thread courant remet les éventuels Ti en sommeil dans la ready list du scheduler.
+ * Sémantique: Termine l'execution du thread courant.
+ * Remarque: Lorsqu'un Thread T termine, il regarde si des Threads Ti l'attendent.
+ * Au moment de quitter le thread courant remet les éventuels Ti en sommeil dans la ready list du scheduler
+ * et met à jour la joinMap.
  */
 extern void do_UserThreadExit() {
     std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(currentThread->getTid());
