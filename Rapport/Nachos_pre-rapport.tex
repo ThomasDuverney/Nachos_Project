@@ -74,86 +74,188 @@ une partie plus "scolaire" où vous décrivez l'organisation de votre travail (p
 
 Les 3 premières parties s'adressent à un utilisateur de votre système. La 4ième partie s'adresse à un développeur qui voudrait continuer à développer votre système. Si vous avez bien travaillé sur les spécifications comme demandé, ces parties techniques seront faciles à écrire.
 
+\section{Fonctionnalités}
 
-
-
-
-
-
-
+Environnement utilisateur multi-processus avec espaces d'adressages et memoire virtuelle.
+Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, variables-conditions).
+Gestion des entrées-sorties (GetInt, PutInt, GetChar, PutChar, GetString, Putstring).
+Système de fichier type FAT.
+Protocole réseau avec envoi fiable de données.
 
 \section{Spécifications}
 \subsection{Entrées-Sorties}
 
 \subsubsection{\texttt{void PutChar(char c)}}
 \begin{itemize}
-\item[-] Spécifications: Prends en paramètre un caractère c.
 \item[-] Sémantique: Écrit le caractère c sur la sortie standard.
 \end{itemize}
 
 \subsubsection{\texttt{void PutString(const char *s);}}
 \begin{itemize}
-\item[-] Spécifications: Prends en paramètre un pointeur de caractère \texttt{s}.
-\item[-] Sémantique:
-  Écrit la chaîne de caractères lue à l'adresse \texttt{s}, sur la sortie standard.
-  La lecture s'arrête quand on rencontre le caractère '\\0'.
+\item[-] Sémantique: Écrit la chaîne de caractères lue à l'adresse \texttt{s}.
 \end{itemize}
 
 \subsubsection{\texttt{char GetChar()}}
 \begin{itemize}
-\item[-] Sémantique: Lit un caractère depuis l'entrée standard.
-\item[-] Valeur de retour: Retourne le caractère lu.
+\item[-] Sémantique: Lit un caractère depuis l'entrée standard et retourne le caractère lu.
 \end{itemize}
 
 \subsubsection{\texttt{void GetString(char *s, int n)}}
 \begin{itemize}
-\item[-] Spécifications:Prends en paramètre un pointeur de caractère \texttt{s} et un entier \texttt{n}.
 \item[-] Sémantique:
   Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
   l'écrit à l'adresse de \texttt{s}.
-\item[-] Pré-Conditions:
-  L'adresse \texttt{s} fournie en paramètre pointe une zone mémoire suffisamment large pour stocker
-  \texttt{n} caractères.
+\item[-] Pré-Conditions: L'adresse \texttt{s} est valide.
 \end{itemize}
 
 \subsubsection{void PutInt(int n)}
 \begin{itemize}
-\item[-] Spécifications: Prends en paramètres un entier \texttt{n}.
 \item[-] Sémantique: Écrit l'entier \texttt{n} sur la sortie standard.
 \end{itemize}
 
 \subsubsection{\texttt{void GetInt(int *n)}}
 \begin{itemize}
-\item[-] Spécifications: Prends en paramètres un pointeur d'entier \texttt{n}.
 \item[-] Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse \texttt{n}.
-\item[-] Pré-Conditions:
-  \texttt{n} doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
+\item[-] Pré-Conditions: L'adresse \texttt{n} est valide.
 \end{itemize}
 
+\subsection{Processus et Threads}
 
-
-
-
-\subsection{Threads}
+\subsubsection{\texttt{int ForkExec(char * fileName)}}
+ \begin{itemize}
+ \item[-] Sémantique: Crée un nouveau processus qui éxécute le fichier donné en paramètre
+ \end{itemize}
 
 \subsubsection{\texttt{int UserThreadCreate(void f(void* arg), void* arg)}}
 \begin{itemize}
-\item[-] Spécifications: Prends en paramètres un pointeur de fonction \texttt{f} de valeur de retour
-  void et un pointeur \texttt{arg}.
-\item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction f(arg).
+\item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction \texttt{f(arg)}.
 \item[-] Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
-  pile du thread à créer, dans le cas contraire le système s'arrête avec le message:
-  La création du thread a échoué.
-\item[-] Post-Conditions: 
-\item[-] Valeur de retour: retourne l'identficateur du thread crée. -1 si une erreur s'est produite lors de
+  pile du thread à créer. 
+\item[-] Valeur de retour: retourne l'identficateur du thread crée, $-1$ si une erreur s'est produite lors de
   la création.
 \end{itemize}
 
 \subsubsection{\texttt{void UserThreadExit()}}
 \begin{itemize}
-\item[-] Sémantique: Termine le threadUser courant.
-\item[-] Post-Conditions: 
+\item[-] Sémantique: Termine le thread courant.
 \end{itemize}
+
+\subsubsection{\texttt{int UserThreadJoin(int tid)}}
+\begin{itemize}
+\item[-] Sémantique: Attends la terminaison du Thread $tid$, renvoie $-1$
+ si le thread est déjà terminé, $0$ sinon.
+\end{itemize}
+
+\subsection{Synchronisation}
+\subsubsection{\texttt{int MutexCreate()}}
+\begin{itemize}
+\item[-]Sémantique: Crée un mutex et retourne un numéro d'identifiant
+\end{itemize}
+
+\subsubsection{\texttt{void MutexLock(int mutexId)}}
+\begin{itemize}
+\item[-]Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
+\end{itemize}
+
+\subsubsection{\texttt{void MutexUnlock(int mutexId)}}
+\begin{itemize}
+\item[-]Sémantique: Relache le vérrou dont l'identifiant est mutexId
+\end{itemize}
+
+\subsubsection{\texttt{void MutexDestroy(int mutexId)}}
+\begin{itemize}
+\item[-]Sémantique: Détruit le vérrou dont l'identifiant est mutexId
+\end{itemize}
+
+\subsubsection{\texttt{Sem\_t SemCreate(int initialValue)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{Sem\_t SemCreate(int initialValue)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void SemPost(Sem\_t semaphore)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void SemDestroy(Sem\_t semaphore)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{int CondCreate()}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void CondWait(Cond\_t condId, Mutex\_t mutedId)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void CondSignal(Cond\_t condId)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void CondBroadCast(Cond\_t condId)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+\subsubsection{\texttt{void CondDestroy(Cond\_t condId)}}
+\begin{itemize}
+\item[-]Sémantique: 
+\end{itemize}
+
+
+
+
+\section{Implémentation}
+\subsection{Passage de paramètres}
+Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
+Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables locales à la fonction.
+
+\subsection{Processus et Threads}
+On identifie un Processus à un espace d'adressage, i.e. un objet \texttt{AddrSpace}.
+
+Chaque objet \texttt{Thread} possède:
+\begin{itemize}
+\item[-] Une référence vers son espace d'adressage \texttt{space}.
+\item[-] Un identifiant unique sur l'ensemble du sytème \texttt{tid} de type \texttt{int} (compteur du nombre
+  total de threads crées).
+\end{itemize}
+
+\subsubsection{Piles des threads}
+Afin d'acceuillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace}
+en blocs de pages, de taille \texttt{NumPagesPerStack}.
+Une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacement libres pour les piles.
+
+\subsubsection{Terminaison automatique des threads}
+Dans \texttt{Start.S} lors de l'appel système \texttt{UserThreadCreate}, on place dans le registre 6 de la machine mips l'adresse de l'instruction \texttt{UserThreadExit}.
+Lors de la création du nouveau thread au niveau noyau avec \texttt{do\_UserThreadcreate} on réccupère
+cette adresse depuis \texttt{r6} et au moment de \texttt{Fork}, avant de brancher la machine \texttt{MIPS} sur
+le nouveau thread utilisateur on place cette adresse dans le registre \texttt{RetAddrReg}.
+
+\subsubsection{Thread Join}
+Au sein d'un processus, un thread peut utiliser la fonction join pour attendre la terminaison d'un autre thread.
+On maintient dans chaque \texttt{addressSpace} une structure \texttt{joinMap}.
+La Map associe à un \texttt{tid} une liste de Threads.
+Lorsqu'un Thread $t1$ fait un \texttt{join} sur un Thread $t2$ on ajoute dans \texttt{joinMap}
+l'association $(t2, [t1])$. Cette association signifie que $t2$ est attendu par $t1$.
+Le Thread $t1$ se met allors en sommeil avec \texttt{Sleep()}. 
+Si $t3$ fait un join sur $t2$ la \texttt{joinMap} est dans l'état $(t2, [t1,t3])$ et $t3$ est mis en sommeil.
+Lorsque $t2$ termine son execution il place $t1$ et $t3$ dans la readylist du scheduler.
+
+On maintient une liste \texttt{threadList} des threads actifs dans un espace d'adressage.
+Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
+Un thread peut être attendu par deux threads différents.
+
+\subsubsection{Fermeture d'un processus}
 
 
 
@@ -211,36 +313,6 @@ les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui
   puis \texttt{PutString}.
 \item[-] \texttt{MultithreadPutString\_0}: Création de plusieurs threads exécutant \texttt{PutString}.
 \end{itemize}
-
-
-
-
-
-
-\section{Implémentation}
-\subsection{Passage de paramètres}
-Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
-Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables locales à la fonction.
-
-\subsection{Entrées-Sorties}
-\subsubsection{GetString}
-Flush de la sortie standard.
-
-\subsection{Threads}
-\subsubsection{Espace mémoire et piles des threads}
-On appelle espace mémoire libre, l'espace mémoire situé après la section code et data d'un processus.
-Cet espace contient, suite à la création du processus, une seule pile: celle du thread parent (main).
-On divise cet espace en blocs de pages, de taille \texttt{NumPagesPerStack}, destinés à contenir les piles des sous-threads du processus.
-Une bitmap \texttt{stackBitmap} mémorise l'état courant des blocs de piles libres. Lors de la création d'un thread, on cherche dans la bitmap le premier bloc libre, le premier indice de bloc libre trouvé devient l'identifiant du thread.
-Lorsque le thread quitte on libère l'espace de sa pile dans la mémoire (on met à jour \texttt{stackbitmap}).
-Cette implémentation n'offre aucune sécurité concernant le dépassement, l'identficateur du thread, ne reflète pas l'ordre chronologique de sa création mais la place de sa pile en mémoire.
-
-\subsubsection{Fermeture d'un processus et semExitProcess}
-Afin de garantir que les sous-threads d'un processus puissent mener leur exécutions à terme, on empêche
-le processus père d'appeler \texttt{SC\_EXIT} tant qu'un sous-thread est actif. L'appel à \texttt{SC\_EXIT} est protégé par la sémaphore binaire.
-Lorsqu'un que le premier sous-thread d'un processus est crée, il verrouille semExitprocess, lorsque le dernier thread termine il relâche semexitprocess.
-On ne protège pas les appels à \texttt{HALT}, on considère qu'une demande d'arrêt de la machine doit être satisfaite quelque-soit le nombre de thread ou processus actifs.
-
 
 
 
