@@ -36,6 +36,10 @@
 // A mailbox is just a place for temporary storage for messages.
 typedef int MailBoxAddress;
 
+#define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
+#define TEMPO 100000000
+#define MAXREEMISSIONS 20
+
 // The following class defines part of the message header.
 // This is prepended to the message by the PostOffice, before the message
 // is sent to the Network.
@@ -54,17 +58,13 @@ typedef struct _mailTempoParams{
     int *totalTicksStart;
     PacketHeader pktHdr;
     MailHeader mailHdr;
-    char* data;
+    char *data;
     Timer *timer;
     int *nbEnvoi;
 } MailTempoParams;
 
 // Maximum "payload" -- real data -- that can included in a single message
 // Excluding the MailHeader and the PacketHeader
-
-#define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-#define TEMPO 100000000
-#define MAXREEMISSIONS 20
 
 
 // The following class defines the format of an incoming/outgoing

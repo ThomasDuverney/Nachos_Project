@@ -152,8 +152,6 @@ static void interruptTimer(int params){
         if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
-        // delete &mailTempoParams->pktHdr;
-        // delete &mailTempoParams->mailHdr;
         free(mailTempoParams);
         return;
     }
@@ -172,7 +170,7 @@ static void interruptTimer(int params){
         *mailTempoParams->totalTicksStart = stats->totalTicks;
         (*mailTempoParams->nbEnvoi)++;
         postOffice->network->Send(mailTempoParams->pktHdr, buffer);
-        //postOffice->messageSent->P();
+        postOffice->messageSent->P();
         postOffice->sendLock->Release();
         delete [] buffer;
     }
@@ -288,7 +286,7 @@ void PostOffice::PostalDelivery() {
 
                 sendLock->Acquire();
                 network->Send(outPktHdr, bufout);
-                //messageSent->P();
+                messageSent->P();
                 sendLock->Release();
 
                 if (DebugIsEnabled('n')) {
@@ -323,7 +321,7 @@ void PostOffice::PostalDelivery() {
 //----------------------------------------------------------------------
 
 void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char* data) {
-    char* buffer = new char[MaxPacketSize];	// space to hold concatenated mailHdr + data
+    char* buf = new char[MaxPacketSize];	// space to hold concatenated mailHdr + data
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
 
@@ -332,8 +330,8 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     mailHdr.type = 0;
 
     // concatenate MailHeader and data
-    bcopy(&mailHdr, buffer, sizeof(MailHeader));
-    bcopy(data, buffer + sizeof(MailHeader), mailHdr.length);
+    bcopy(&mailHdr, buf, sizeof(MailHeader));
+    bcopy(data, buf + sizeof(MailHeader), mailHdr.length);
 
     // fill in pktHdr, for the Network layer
     pktHdr.from = netAddr;
@@ -349,7 +347,7 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     params->pktHdr = pktHdr;
     params->mailHdr = mailHdr;
     params->data = (char*) malloc(sizeof(mailHdr.length));
-    strcpy(params->data, data);
+    //memcpy(params->data, data, mailHdr.length);
 
     params->totalTicksStart = (int*) malloc(sizeof(int));
     *params->totalTicksStart = stats->totalTicks;
@@ -358,13 +356,13 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     Timer *t = new Timer(interruptTimer, (int) params, false);
     params->timer = t;
 
-    network->Send(pktHdr, buffer);
+    network->Send(pktHdr, buf);
     seqByBoxes[mailHdr.from] += mailHdr.length;
-    //messageSent->P();			// wait for interrupt to tell us
+    messageSent->P();			// wait for interrupt to tell us
 					            // ok to send the next message
     sendLock->Release();
 
-    delete [] buffer;			// we've sent the message, so
+    delete [] buf;			// we've sent the message, so
 					            // we can delete our buffer
 }
 
