@@ -60,7 +60,7 @@ extern int do_UserThreadCreate() {
     threadParams->arg = machine->ReadRegister(5);
     /*
      * Pour la terminaison automatique des threads:
-     * Lors de l'appel système UserThreadCreate, on place dans le registre 6
+     * Lors de l'appel système UserThreadCreate, on place dans le registre 6 de la machine mips
      * l'adresse de l'instruction UserThreadexit.
      * On peut ainsi passer en paramètres l'adresse de UserThreadexit au thread propulseur.
      * Lors de StartUserThead on place dans le registre de la machine retAdrReg cette adresse.
@@ -98,19 +98,20 @@ extern void do_UserThreadExit() {
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
 extern int do_UserThreadJoin(int tid) {
-    if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
-        return -1;
-    }
-    interrupt->SetLevel (IntOff);
-    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
-    std::list<Thread*>* tempThreadList;
-    if (it == currentThread->space->joinMap->end()){
-        tempThreadList = new std::list<Thread*>();
-        currentThread->space->joinMap->insert(std::make_pair(tid, tempThreadList));
-    } else {
-        tempThreadList = it->second;
-    }
-    tempThreadList->push_back(currentThread);
-    currentThread->Sleep();
-    return 0;
+  /* Vérifie que le thread tid est actif */
+  if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
+    return -1;
+  }
+  interrupt->SetLevel (IntOff);
+  std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
+  std::list<Thread*>* tempThreadList;
+  if (it == currentThread->space->joinMap->end()){
+    tempThreadList = new std::list<Thread*>();
+    currentThread->space->joinMap->insert(std::make_pair(tid, tempThreadList));
+  } else {
+    tempThreadList = it->second;
+  }
+  tempThreadList->push_back(currentThread);
+  currentThread->Sleep();
+  return 0;
 }
