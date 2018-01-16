@@ -31,8 +31,10 @@ extern int do_UserProcessCreate(char *filename){
   return 1;
 }
 
-/* Supprimer l'espace d'adressage du thread courant ne semble pas avisé
-   il faut déléguer la tache à un autre thread comme pour la méthode finish()*/
+/*
+ * Supprimer l'espace d'adressage du thread courant ne semble pas avisé
+ * il faut déléguer la tache à un autre thread comme pour la méthode finish()
+ */
 extern void do_UserProcessFinish(Thread *t) {
   unsigned int i = 0;
   TranslationEntry * pageTable = t->space->getPageTable();
