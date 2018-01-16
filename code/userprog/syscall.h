@@ -153,33 +153,23 @@ void Yield ();
 
 /*
  * void PutChar(char c)
- * Spécifications:
- *   Prends en paramètre un caractère c.
- * Sémantique:
- *   Ecrit le caractère c sur la sortie standard.
+ * Sémantique: Ecrit le caractère c sur la sortie standard.
  */
 void PutChar(char c);
 
 /* void PutString(const char *s)
- * Spécifications:
- *   Prends en paramètre un pointeur de caractère s.
- * Sémantique:
- *   Ecrit la chaîne de caractères lue à l'adresse s, sur la sortie standard.
- *   La lecture s'arrête quand on rencontre le caractère '\0.
+ * Sémantique: Ecrit la chaîne de caractères lue à l'adresse s, sur la sortie standard.
  */
 void PutString(const char *s);
 
 /*
  * char GetChar()
- * Sémantique:
- *   Lit un caractère depuis l'entrée standard.
+ * Sémantique: Lit un caractère depuis l'entrée standard.
  */
 char GetChar();
 
 /*
  * void GetString(char *s, int n)
- * Spécifications:
- *   Prends en paramètre un pointeur de caractère s et un entier n.
  * Sémantique:
  *   Lit une chaine de caractères de longueur maximale égale à n depuis l'entrée standard et
  *   l'ecrit à l'adresse de s.
@@ -191,21 +181,14 @@ void GetString(char *s, int n);
 
 /*
  * void PutInt(int n)
- * Spécifications:
- *   Prends en paramètres un entier n.
- * Sémantique:
- *   Ecrit l'entier n sur la sortie standard.
+ * Sémantique: Ecrit l'entier n sur la sortie standard.
  */
 void PutInt(int n);
 
 /*
  * void GetInt(int *n)
- * Spécifications:
- *   Prends en paramètres un pointeur d'entier n.
- * Sémantique:
- *   Lit un entier depuis l'entrée standard et l'écrit à l'adresse n.
- * Pré-condition:
- *   n doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
+ * Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse n.
+ * Pré-condition: n doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
  */
 void GetInt(int *n);
 
@@ -224,10 +207,8 @@ int UserThreadCreate(void f(void* arg), void* arg);
 
 /*
  * void UserThreadExit()
- * Sémantique:
- *   Termine le threadUser courant.
- * Post-condition:
- *   L'espace mémoire du threadUser est libéré (zeroed ?).
+ * Sémantique: Termine le threadUser courant.
+ * Post-condition: L'espace mémoire du threadUser est libéré.
  */
 void UserThreadExit();
 
@@ -236,7 +217,7 @@ void UserThreadExit();
  * Sémantique:
  *   Attends la terminaison du threadUser d'id tid, renvoie -1
  si le thread est déjà terminé ou déjà attendu, 0 sinon.
- */
+*/
 int UserThreadJoin(int tid);
 
 /*
