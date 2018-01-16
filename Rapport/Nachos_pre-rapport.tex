@@ -87,7 +87,7 @@ Protocole réseau avec envoi fiable de données.
 
 \subsubsection{\texttt{void PutChar(char c)}}
 \begin{itemize}
-\item[-] Sémantique: Écrit le caractère c sur la sortie standard.
+\item[-] Sémantique: Écrit le caractère \texttt{c} sur la sortie standard.
 \end{itemize}
 
 \subsubsection{\texttt{void PutString(const char *s);}}
@@ -104,7 +104,7 @@ Protocole réseau avec envoi fiable de données.
 \begin{itemize}
 \item[-] Sémantique:
   Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
-  l'écrit à l'adresse de \texttt{s}.
+  l'écrit à l'adresse \texttt{s}.
 \item[-] Pré-Conditions: L'adresse \texttt{s} est valide.
 \end{itemize}
 
@@ -147,24 +147,28 @@ Protocole réseau avec envoi fiable de données.
 \end{itemize}
 
 \subsection{Synchronisation}
-\subsubsection{\texttt{int MutexCreate()}}
+\subsubsection{\texttt{Mutex\_t MutexCreate()}}
 \begin{itemize}
-\item[-]Sémantique: Crée un mutex et retourne un numéro d'identifiant
+\item[-]Sémantique: Initialise une variable de type \texttt{Mutex\_t}.
 \end{itemize}
 
-\subsubsection{\texttt{void MutexLock(int mutexId)}}
+\subsubsection{\texttt{void MutexLock(Mutex\_t mutex)}}
 \begin{itemize}
-\item[-]Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
+\item[-]Sémantique: Acquiert le vérrou \texttt{mutex}. Si le mutex est déverrouillé, il devient verrouillé
+  et possédé par le thread appelant. Si le mutex est déjà verrouillé par un autre thread,
+  le thread appelant est suspendu jusqu'à ce que le mutex soit déverrouillé.
 \end{itemize}
 
-\subsubsection{\texttt{void MutexUnlock(int mutexId)}}
+\subsubsection{\texttt{void MutexUnlock(Mutex\_t mutex)}}
 \begin{itemize}
-\item[-]Sémantique: Relache le vérrou dont l'identifiant est mutexId
+\item[-]Sémantique: Relache le vérrou \texttt{mutex}.
+\item[-]Pré-Condition: Le vérrou est .
 \end{itemize}
 
-\subsubsection{\texttt{void MutexDestroy(int mutexId)}}
+\subsubsection{\texttt{MutexDestroy(Mutex\_t mutex)}}
 \begin{itemize}
-\item[-]Sémantique: Détruit le vérrou dont l'identifiant est mutexId
+\item[-]Sémantique: Détruit le vérrou \texttt{mutex}.
+\item[-]Pré-Condition: Le vérrou est relaché.
 \end{itemize}
 
 \subsubsection{\texttt{Sem\_t SemCreate(int initialValue)}}
@@ -213,12 +217,7 @@ Protocole réseau avec envoi fiable de données.
 \end{itemize}
 
 
-
-
 \section{Implémentation}
-\subsection{Passage de paramètres}
-Pour les fonctions ayant moins de quatre arguments, on suppose que les paramètres sont dans les registres 4 à 7.
-Aussi, la première chose à faire dans le code d' une fonction est de récupérer et sauvegarde ces registres dans des variables locales à la fonction.
 
 \subsection{Processus et Threads}
 On identifie un Processus à un espace d'adressage, i.e. un objet \texttt{AddrSpace}.
@@ -255,9 +254,26 @@ On maintient une liste \texttt{threadList} des threads actifs dans un espace d'a
 Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
 Un thread peut être attendu par deux threads différents.
 
-\subsubsection{Fermeture d'un processus}
+\subsubsection{Terminaison d'un processus}
+Les threads d'un processus on une vie (et une mort) indépendante, on ne considère aucune hiérarchie
+(thread init, threads fils).
+Un processus se termine quand le dernier thread de l'espace d'adressage est détuit par le scheduler.
+
+\subsection{Synchronisation}
 
 
+
+\section{Organisation}
+Pour les premières étapes nous avons travaillé sur un ordinateur commun.
+Cette approche basée sur une communication constante et une implication de tous les membres du groupe
+nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
+nous avions tous une compréhension et vision homogène du fonctionnement de notre code. Nous
+avons adopté un point de vue critique vis à vis du code produit,
+n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
+avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
+tant sur les aspects techniques que dans nos rapport au travail en général.
+
+\section{Annexe}
 
 \section{Tests}
 
@@ -313,21 +329,6 @@ les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui
   puis \texttt{PutString}.
 \item[-] \texttt{MultithreadPutString\_0}: Création de plusieurs threads exécutant \texttt{PutString}.
 \end{itemize}
-
-
-
-
-
-
-\section{Organisation}
-Pour les premières étapes nous avons travaillé sur un ordinateur commun.
-Cette approche basée sur une communication constante et une implication de tous les membres du groupe
-nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
-nous avions tous une compréhension et vision homogène du fonctionnement de notre code. Nous
-avons adopté un point de vue critique vis à vis du code produit,
-n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
-avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
-tant sur les aspects techniques que dans nos rapport au travail en général.
 
 \end{document}
 
