@@ -23,6 +23,7 @@
 #include "post.h"
 #include "interrupt.h"
 #include <unistd.h>
+#include <string>
 
 // Test out message delivery, by doing the following:
 //	1. send a message to the machine with ID "farAddr", at mail box #0
@@ -120,19 +121,20 @@ void MailTestRing(int farAddrPrev, int farAddrNext) {
 
 void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
     const char *token = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    char buffer[40 * MaxMailSize];
+    std::string buffer;
 
     if (farAddrNext == 2){
 
         postOffice->Send(farAddrNext, token);
-        postOffice->Receive(0, buffer);
+        buffer = postOffice->Receive(0);
+        printf("RECU=%s\n", buffer.c_str());
 
     } else {
 
         // Wait for the token from the prev machine
-        postOffice->Receive(0, buffer);
-        printf("RECU =%s\n", buffer);
-        postOffice->Send(farAddrNext, buffer);
+        buffer = postOffice->Receive(0);
+        printf("RECU=%s\n", buffer.c_str());
+        postOffice->Send(farAddrNext, buffer.c_str());
 
     }
 

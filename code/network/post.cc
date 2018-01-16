@@ -157,7 +157,6 @@ static void interruptTimer(int params){
     }
     if(stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO){
         char* buffer = new char[MaxPacketSize];
-        printf("data2=%s\n", mailTempoParams->data);
         bcopy(&(mailTempoParams->mailHdr), buffer, sizeof(MailHeader));
         bcopy(mailTempoParams->data, buffer + sizeof(MailHeader), mailTempoParams->mailHdr.length);
 
@@ -262,9 +261,12 @@ void PostOffice::PostalDelivery() {
 
         mailHdr = *(MailHeader *)bufin;
         if (mailHdr.type == 0){
-            if ((ackSelfByBoxes[mailHdr.to] + mailHdr.length) >= (mailHdr.seq + mailHdr.length)){
-                ackSelfByBoxes[mailHdr.to] += mailHdr.length;
-                ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
+            if (ackSelfByBoxes[mailHdr.to] >= mailHdr.seq){
+                if (ackSelfByBoxes[mailHdr.to] == mailHdr.seq){
+                    ackSelfByBoxes[mailHdr.to] += mailHdr.length;
+                    ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
+                    boxes[mailHdr.to].Put(pktHdr, mailHdr, bufin + sizeof(MailHeader));
+                }
                 outPktHdr.to = pktHdr.from;
                 outMailHdr.to = mailHdr.from;
                 outMailHdr.from = mailHdr.to;
@@ -298,8 +300,6 @@ void PostOffice::PostalDelivery() {
                 ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
                 ASSERT(mailHdr.length <= MaxMailSize);
 
-                // put into mailbox
-                boxes[mailHdr.to].Put(pktHdr, mailHdr, bufin + sizeof(MailHeader));
             }
         } else if(ackOtherByBoxes[mailHdr.to] < mailHdr.ack){
             ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
@@ -366,8 +366,6 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
 					            // ok to send the next message
     sendLock->Release();
 
-    printf("param=%s\n", params->data);
-
     delete [] buf;			// we've sent the message, so
 					            // we can delete our buffer
 }
@@ -407,8 +405,7 @@ void PostOffice::Send(int farAddrNext, const char *data){
 
     while (sizeRemaining > MaxMailSize){
         char buffer[MaxMailSize];
-        memcpy(buffer, data + (cpt * (MaxMailSize - 1)), MaxMailSize - 1);
-        //strncpy(buffer, (data + (cpt * MaxMailSize - 1)), MaxMailSize - 2);
+        memcpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
         outPktHdr.to = farAddrNext;
         outMailHdr.to = 0;
         outMailHdr.from = 1;
@@ -420,12 +417,11 @@ void PostOffice::Send(int farAddrNext, const char *data){
         }
         postOffice->SendPrivate(outPktHdr, outMailHdr, buffer);
         cpt++;
-        sizeRemaining -= (MaxMailSize - 1);
+        sizeRemaining -= MaxMailSize;
     }
     int size = strlen((char*)(data + (cpt * MaxMailSize)));
     char buffer[size];
     memcpy(buffer, data + (cpt * MaxMailSize), size);
-    //strncpy(buffer, data + (cpt * MaxMailSize), size);
     outPktHdr.to = farAddrNext;
     outMailHdr.to = 0;
     outMailHdr.from = 1;
@@ -438,23 +434,25 @@ void PostOffice::Send(int farAddrNext, const char *data){
     postOffice->SendPrivate(outPktHdr, outMailHdr, buffer);
 }
 
-void PostOffice::Receive(int box, char *data){
+std::string PostOffice::Receive(int box){
+    std::string data;
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
     char buffer[MaxMailSize];
-    int cpt = 0;
 
-    printf("Got \"");
     postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
     while(strlen(buffer) == MaxMailSize){
-        printf("%s", buffer);
-        strncpy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
+        data += buffer;
+        memset(buffer, 0, MaxMailSize);
         postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
     }
-    strncpy(data + (cpt * MaxMailSize), buffer, strlen(buffer));
-    *(data + (cpt * MaxMailSize) + strlen(buffer)) = '\0';
-    printf("%s from %d, box %d , %s\n", buffer, inPktHdr.from, inMailHdr.from, data);
-    fflush(stdout);
+    data += buffer;
+
+    if (DebugIsEnabled('n')) {
+        printf("RECEIVE %s\n", data.c_str());
+        fflush(stdout);
+    }
+    return data;
 }
 
 //----------------------------------------------------------------------

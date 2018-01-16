@@ -31,6 +31,7 @@
 #include "network.h"
 #include "synchlist.h"
 #include "timer.h"
+#include <string>
 
 // Mailbox address -- uniquely identifies a mailbox on a given machine.
 // A mailbox is just a place for temporary storage for messages.
@@ -121,7 +122,7 @@ class PostOffice {
 
 
         void Send(int farAddrNext, const char *data);
-        void Receive(int box, char *data);
+        std::string Receive(int box);
 
         void PostalDelivery();	// Wait for incoming messages,
     				// and then put them in the correct mailbox
