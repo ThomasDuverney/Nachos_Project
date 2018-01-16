@@ -1,8 +1,8 @@
 #include "syscall.h"
 
-#define NB_ITERATIONS 1;
+#define NB_ITERATIONS 3;
 #define NB_LECTEURS 3;
-#define NB_REDACTEURS 1;
+#define NB_REDACTEURS 3;
 
 int nbLs;
 int nbLa;
@@ -19,7 +19,6 @@ void debut_redaction() {
   }
   enEcriture = 1;
   MutexUnlock(mutex);
-  //return;
 }
 
 void debut_lecture() {
@@ -31,7 +30,6 @@ void debut_lecture() {
   nbLs--;
   nbLa++;
   MutexUnlock(mutex);
-  //return;
 }
 
 void fin_redaction() {
@@ -43,7 +41,6 @@ void fin_redaction() {
     CondBroadCast(fileL);
   }
   MutexUnlock(mutex);
-  //return;
 }
 
 void fin_lecture(){
@@ -53,7 +50,6 @@ void fin_lecture(){
     CondSignal(fileR);
   }
   MutexUnlock(mutex);
-  //return;
 }
 
 void lecteur(void *args) {
