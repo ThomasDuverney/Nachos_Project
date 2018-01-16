@@ -1,8 +1,15 @@
 #include "syscall.h"
 #define NB 5
 
+Mutex_t mutex;
+
 void g(void *arg) {
-	PutInt(*(int *)arg);
+	int i = 0;
+	MutexLock(mutex);
+	for( i = 0; i<NB; i++){
+		PutInt(*(int *)arg);
+	}
+	MutexUnlock(mutex);
 	UserThreadExit();
 }
 
@@ -11,11 +18,13 @@ int main(){
 	int i;
 	int tid[NB];
 
+	mutex = MutexCreate();
+
 	PutString("MainDebut");
 	ForkExec("ForkExec_3");
 
 	for(i=0; i<NB; i++){
-		tab[i] = i;
+		tab[i] = i+5;
 		tid[i] = UserThreadCreate(g,(void*) (tab+i));
 	}
 
@@ -23,5 +32,6 @@ int main(){
 		UserThreadJoin(tid[i]);
 	}
 	PutString("MainFin");
+	MutexDestroy(mutex);
 	return(0);
 }
