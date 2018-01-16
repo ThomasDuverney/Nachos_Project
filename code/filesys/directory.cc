@@ -25,6 +25,10 @@
 #include "filehdr.h"
 #include "directory.h"
 #include "filesys.h"
+#include <stdio.h>
+
+
+#define couleur(param) printf("\033[%sm",param)
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -252,9 +256,23 @@ Directory::Remove(const char *name)
 void
 Directory::List()
 {
-   for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse)
-	    printf("%s\n", table[i].name);
+
+
+    
+   for (int i = 0; i < tableSize; i++){
+        if (table[i].inUse){
+            if(table[i].isDirectory){
+                couleur("34");
+            } else {
+                couleur("32");
+            }
+	       printf("%s\n", table[i].name);
+        }
+    
+   }
+
+
+    couleur("0");
 }
 
 //----------------------------------------------------------------------
