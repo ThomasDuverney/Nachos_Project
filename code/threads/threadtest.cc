@@ -12,6 +12,8 @@
 #include "copyright.h"
 #include "system.h"
 
+int entier = 0;
+
 //----------------------------------------------------------------------
 // SimpleThread
 //      Loop 5 times, yielding the CPU to another ready thread 
@@ -33,19 +35,38 @@ SimpleThread (int which)
       }
 }
 
+
+//----------------------------------------------------------------------
+//MutexThreadTest
+//      Loop 5 times, yielding the CPU to another ready thread
+//      each iteration.
+//
+//      "which" is simply a number identifying the thread, for debugging
+//      purposes.
+//----------------------------------------------------------------------
+
+void MutexThreadTest (int arg){
+
+  for(int i = 0; i<5;i++){
+    printf ("*** Le thread %d Valeur de l'entier %d \n",arg,entier);
+    entier++;
+  }
+
+}
+
 //----------------------------------------------------------------------
 // ThreadTest
 //      Set up a ping-pong between two threads, by forking a thread 
 //      to call SimpleThread, and then calling SimpleThread ourselves.
 //----------------------------------------------------------------------
 
-void
-ThreadTest ()
-{
+void ThreadTest (){
+
     DEBUG ('t', "Entering SimpleTest\n");
+
 
     Thread *t = new Thread ("forked thread");
 
-    t->Fork (SimpleThread, 1);
-    SimpleThread (0);
+    t->Fork (MutexThreadTest, 1);
+    MutexThreadTest (2);
 }

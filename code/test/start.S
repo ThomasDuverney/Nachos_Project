@@ -177,6 +177,146 @@ GetInt:
 	j	$31
 	.end GetInt
 
+    .globl UserThreadCreate
+	.ent    UserThreadCreate
+UserThreadCreate:
+	addiu $2,$0,SC_UserThreadCreate
+	addiu $6,$0,UserThreadExit
+    syscall
+    j   $31
+	.end UserThreadCreate
+
+    .globl UserThreadExit
+	.ent    UserThreadExit
+UserThreadExit:
+	addiu $2,$0,SC_UserThreadExit
+	syscall
+	j	$31
+	.end UserThreadExit
+
+    .globl UserThreadJoin
+    .ent    UserThreadJoin
+UserThreadJoin:
+    addiu $2,$0,SC_UserThreadJoin
+    syscall
+    j	$31
+    .end UserThreadJoin
+
+    .globl 	ForkExec
+    .ent    ForkExec
+ForkExec:
+    addiu $2,$0,SC_ForkExec
+    syscall
+    j	$31
+    .end ForkExec
+
+	.globl 	MutexCreate
+	.ent    MutexCreate
+MutexCreate:
+	 addiu $2,$0,SC_MutexCreate
+	 syscall
+	 j  $31
+	.end 	MutexCreate
+
+
+    .globl 	MutexLock
+	.ent    MutexLock
+MutexLock:
+	 addiu $2,$0,SC_MutexLock
+	 syscall
+	 j  $31
+	.end 	MutexLock
+
+	.globl 	MutexUnlock
+	.ent    MutexUnlock
+MutexUnlock:
+	 addiu $2,$0,SC_MutexUnlock
+	 syscall
+	 j  $31
+	.end 	MutexLock
+
+	.globl 	MutexDestroy
+	.ent    MutexDestroy
+MutexDestroy:
+	 addiu $2,$0,SC_MutexDestroy
+	 syscall
+	 j  $31
+	.end    MutexDestroy
+
+
+	.globl 	SemCreate
+	.ent    SemCreate
+SemCreate:
+	 addiu $2,$0,SC_SemCreate
+	 syscall
+	 j  $31
+	.end    SemCreate
+
+	.globl 	SemWait
+	.ent    SemWait
+SemWait:
+	 addiu $2,$0,SC_SemWait
+	 syscall
+	 j  $31
+	.end    SemWait
+
+	.globl 	SemPost
+	.ent    SemPost
+SemPost:
+	 addiu $2,$0,SC_SemPost
+	 syscall
+	 j  $31
+	.end    SemPost
+
+
+	.globl 	SemDestroy
+	.ent    SemDestroy
+SemDestroy:
+	 addiu $2,$0,SC_SemDestroy
+	 syscall
+	 j  $31
+	.end    SemDestroy
+
+	.globl 	CondCreate
+	.ent    CondCreate
+CondCreate:
+	 addiu $2,$0,SC_CondCreate
+	 syscall
+	 j  $31
+	.end    CondCreate
+
+    .globl 	CondWait
+	.ent    CondWait
+CondWait:
+	 addiu $2,$0,SC_CondWait
+	 syscall
+	 j  $31
+	.end    CondWait
+
+    .globl 	CondSignal
+	.ent    CondSignal
+CondSignal:
+	 addiu $2,$0,SC_CondSignal
+	 syscall
+	 j  $31
+	.end    CondSignal
+
+    .globl 	CondBroadCast
+	.ent    CondBroadCast
+CondBroadCast:
+	 addiu $2,$0,SC_CondBroadCast
+	 syscall
+	 j  $31
+	.end    CondBroadCast
+
+    .globl 	CondDestroy
+	.ent    CondDestroy
+CondDestroy:
+	 addiu $2,$0,SC_CondDestroy
+	 syscall
+	 j  $31
+	.end    CondDestroy
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

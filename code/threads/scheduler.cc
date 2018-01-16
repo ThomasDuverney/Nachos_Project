@@ -1,4 +1,4 @@
-// scheduler.cc 
+// scheduler.cc
 //      Routines to choose the next thread to run, and to dispatch to
 //      that thread.
 //
@@ -7,20 +7,21 @@
 //      (since we are on a uniprocessor).
 //
 //      NOTE: We can't use Locks to provide mutual exclusion here, since
-//      if we needed to wait for a lock, and the lock was busy, we would 
-//      end up calling FindNextToRun(), and that would put us in an 
+//      if we needed to wait for a lock, and the lock was busy, we would
+//      end up calling FindNextToRun(), and that would put us in an
 //      infinite loop.
 //
 //      Very simple implementation -- no priorities, straight FIFO.
 //      Might need to be improved in later assignments.
 //
 // Copyright (c) 1992-1993 The Regents of the University of California.
-// All rights reserved.  See copyright.h for copyright notice and limitation 
+// All rights reserved.  See copyright.h for copyright notice and limitation
 // of liability and disclaimer of warranty provisions.
 
 #include "copyright.h"
 #include "scheduler.h"
 #include "system.h"
+#include "userprocess.h"
 
 //----------------------------------------------------------------------
 // Scheduler::Scheduler
@@ -54,7 +55,6 @@ void
 Scheduler::ReadyToRun (Thread * thread)
 {
     DEBUG ('t', "Putting thread %s on ready list.\n", thread->getName ());
-
     thread->setStatus (READY);
     readyList->Append ((void *) thread);
 }
@@ -67,10 +67,8 @@ Scheduler::ReadyToRun (Thread * thread)
 //      Thread is removed from the ready list.
 //----------------------------------------------------------------------
 
-Thread *
-Scheduler::FindNextToRun ()
-{
-    return (Thread *) readyList->Remove ();
+Thread * Scheduler::FindNextToRun () {
+  return (Thread *) readyList->Remove ();   
 }
 
 //----------------------------------------------------------------------
@@ -97,6 +95,7 @@ Scheduler::Run (Thread * nextThread)
     // End of addition
 
 #ifdef USER_PROGRAM		// ignore until running user programs
+
     if (currentThread->space != NULL)
       {				// if this thread is a user program,
 	  currentThread->SaveUserState ();	// save the user's CPU registers
@@ -113,7 +112,7 @@ Scheduler::Run (Thread * nextThread)
     DEBUG ('t', "Switching from thread \"%s\" to thread \"%s\"\n",
 	   oldThread->getName (), nextThread->getName ());
 
-    // This is a machine-dependent assembly language routine defined 
+    // This is a machine-dependent assembly language routine defined
     // in switch.s.  You may have to think
     // a bit to figure out what happens after this, both from the point
     // of view of the thread and from the perspective of the "outside world".
@@ -126,10 +125,21 @@ Scheduler::Run (Thread * nextThread)
     // we need to delete its carcass.  Note we cannot delete the thread
     // before now (for example, in Thread::Finish()), because up to this
     // point, we were still running on the old thread's stack!
+
     if (threadToBeDestroyed != NULL)
       {
-	  delete threadToBeDestroyed;
-	  threadToBeDestroyed = NULL;
+        #ifdef USER_PROGRAM
+        /*
+          Si threadTobedestroyed était le dernier thread d'un processus
+          on libère l'espace mémoire de ce processus avec do_UserProcessfinish
+        */
+        if (threadToBeDestroyed->space->getNbThread() == 0) {
+          do_UserProcessFinish(threadToBeDestroyed);
+        }
+        #endif
+
+        delete threadToBeDestroyed;
+        threadToBeDestroyed = NULL;
       }
 
 #ifdef USER_PROGRAM

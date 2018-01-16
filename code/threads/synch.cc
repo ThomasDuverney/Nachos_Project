@@ -33,8 +33,7 @@
 //      "initialValue" is the initial value of the semaphore.
 //----------------------------------------------------------------------
 
-Semaphore::Semaphore (const char *debugName, int initialValue)
-{
+Semaphore::Semaphore (const char *debugName, int initialValue){
     name = debugName;
     value = initialValue;
     queue = new List;
@@ -46,8 +45,7 @@ Semaphore::Semaphore (const char *debugName, int initialValue)
 //      is still waiting on the semaphore!
 //----------------------------------------------------------------------
 
-Semaphore::~Semaphore ()
-{
+Semaphore::~Semaphore (){
     delete queue;
 }
 
@@ -61,9 +59,7 @@ Semaphore::~Semaphore ()
 //      when it is called.
 //----------------------------------------------------------------------
 
-void
-Semaphore::P ()
-{
+void Semaphore::P(){
     IntStatus oldLevel = interrupt->SetLevel (IntOff);	// disable interrupts
 
     while (value == 0)
@@ -85,9 +81,7 @@ Semaphore::P ()
 //      are disabled when it is called.
 //----------------------------------------------------------------------
 
-void
-Semaphore::V ()
-{
+void Semaphore::V(){
     Thread *thread;
     IntStatus oldLevel = interrupt->SetLevel (IntOff);
 
@@ -101,40 +95,73 @@ Semaphore::V ()
 // Dummy functions -- so we can compile our later assignments 
 // Note -- without a correct implementation of Condition::Wait(), 
 // the test case in the network assignment won't work!
-Lock::Lock (const char *debugName)
-{
+Lock::Lock (const char *debugName){
+    value = 0;
+    name = debugName;
+    queue = new List();
 }
 
-Lock::~Lock ()
-{
-}
-void
-Lock::Acquire ()
-{
-}
-void
-Lock::Release ()
-{
+Lock::~Lock (){
+    delete queue;
 }
 
-Condition::Condition (const char *debugName)
-{
+void Lock::Acquire (){
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    while(value == 1){
+        queue->Append((void *) currentThread);
+        currentThread->Sleep();
+    }
+    value = 1;
+    (void) interrupt->SetLevel (oldLevel);
 }
 
-Condition::~Condition ()
-{
-}
-void
-Condition::Wait (Lock * conditionLock)
-{
-    ASSERT (FALSE);
+void Lock::Release (){
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    ASSERT(value == 1);
+    thread = (Thread *) queue->Remove ();
+    if (thread != NULL)		// make thread ready, consuming the V immediately
+        scheduler->ReadyToRun (thread);
+    value = 0;
+    (void) interrupt->SetLevel (oldLevel);
 }
 
-void
-Condition::Signal (Lock * conditionLock)
-{
+Condition::Condition (const char *debugName){
+    name = debugName;
+    queue = new List();
 }
-void
-Condition::Broadcast (Lock * conditionLock)
-{
+
+Condition::~Condition (){
+    delete queue;
+}
+
+void Condition::Wait(Lock * conditionLock){
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    queue->Append ((void *) currentThread);
+    conditionLock->Release();
+    currentThread->Sleep();
+    conditionLock->Acquire();
+    (void) interrupt->SetLevel (oldLevel);
+
+}
+
+void Condition::Signal(){
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    thread = (Thread *) queue->Remove();
+    if (thread != NULL){
+        scheduler->ReadyToRun(thread);
+    }
+    (void) interrupt->SetLevel (oldLevel);
+}
+
+void Condition::Broadcast(){
+    Thread *thread;
+    IntStatus oldLevel = interrupt->SetLevel (IntOff);
+    thread = (Thread *) queue->Remove();
+    while(thread != NULL){
+        scheduler->ReadyToRun(thread);
+        thread = (Thread *) queue->Remove();
+    }
+    (void) interrupt->SetLevel (oldLevel);
 }

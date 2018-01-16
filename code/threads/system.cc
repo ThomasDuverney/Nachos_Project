@@ -11,6 +11,7 @@
 // This defines *all* of the global data structures used by Nachos.
 // These are all initialized and de-allocated by this file.
 
+
 Thread *currentThread;		// the thread we are running now
 Thread *threadToBeDestroyed;	// the thread that just finished
 Scheduler *scheduler;		// the ready list
@@ -18,6 +19,17 @@ Interrupt *interrupt;		// interrupt status
 Statistics *stats;		// performance metrics
 Timer *timer;			// the hardware timer device,
 					// for invoking context switche
+
+unsigned int threadCounter; //Nb total de thread Crées -> ThreadId
+unsigned int nbThreadActifs; // Nb Total de thread actifs du système
+unsigned int mutexCounter; // Nb Total de mutex créés -> mutexId
+std::map<int,Lock * > * mutexMap;
+
+unsigned int semCounter; // Nb Total de sémaphore créées -> semId
+std::map<int,Semaphore * > * semMap;
+
+unsigned int condCounter; // Nb Total de condtionMutex créées -> condId
+std::map<int,Condition * > * condMap;
 
 #ifdef FILESYS_NEEDED
 FileSystem *fileSystem;
@@ -30,6 +42,7 @@ SynchDisk *synchDisk;
 #ifdef USER_PROGRAM		// requires either FILESYS or FILESYS_STUB
 Machine *machine;		// user program memory and registers
 SynchConsole *synchconsole; //SynchPutChar SynchGetChar
+FrameProvider *frameProvider; // Allocateur de cadres de pages physiques
 #endif
 
 #ifdef NETWORK
@@ -86,6 +99,7 @@ Initialize (int argc, char **argv)
     bool debugUserProg = FALSE;	// single step user program
     char* in = NULL;
     char* out = NULL;
+
 #endif
 #ifdef FILESYS_NEEDED
     bool format = FALSE;	// format disk
@@ -152,12 +166,19 @@ Initialize (int argc, char **argv)
 	timer = new Timer (TimerInterruptHandler, 0, randomYield);
 
     threadToBeDestroyed = NULL;
+    threadCounter = 0;  // Nombre de threads crées depuis le démarage du système
+    nbThreadActifs = 0; // Nombre de threads actifs dans le système
+    mutexCounter = 0;
+    mutexMap = new std::map<int, Lock *>();
 
-    // We didn't explicitly allocate the current thread we are running in.
-    // But if it ever tries to give up the CPU, we better have a Thread
-    // object to save its state.
-    currentThread = new Thread ("main");
-    currentThread->setStatus (RUNNING);
+    semCounter = 0;
+    semMap = new std::map<int, Semaphore *>();
+
+    condCounter = 0;
+    condMap = new std::map<int, Condition *>();
+
+    currentThread = new Thread("main");
+    currentThread->setStatus(RUNNING);
 
     interrupt->Enable ();
     CallOnUserAbort (Cleanup);	// if user hits ctl-C
@@ -165,6 +186,7 @@ Initialize (int argc, char **argv)
 #ifdef USER_PROGRAM
     machine = new Machine (debugUserProg);	// this must come first
     synchconsole = new SynchConsole(in, out);
+    frameProvider = new FrameProvider();
 #endif
 
 #ifdef FILESYS
@@ -195,6 +217,7 @@ Cleanup ()
 #ifdef USER_PROGRAM
     delete synchconsole;
     delete machine;
+    delete frameProvider;
 #endif
 
 #ifdef FILESYS_NEEDED
@@ -204,7 +227,6 @@ Cleanup ()
 #ifdef FILESYS
     delete synchDisk;
 #endif
-
     delete timer;
     delete scheduler;
     delete interrupt;

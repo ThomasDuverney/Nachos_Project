@@ -86,6 +86,8 @@ class Lock
     // Condition variable ops below.
 
   private:
+    int value;
+    List * queue;
     const char *name;		// for debugging
     // plus some other stuff you'll need to define
 };
@@ -133,15 +135,16 @@ class Condition
 	return (name);
     }
 
-    void Wait (Lock * conditionLock);	// these are the 3 operations on 
+    void Wait(Lock * conditionLock);	// these are the 3 operations on
     // condition variables; releasing the 
     // lock and going to sleep are 
     // *atomic* in Wait()
-    void Signal (Lock * conditionLock);	// conditionLock must be held by
-    void Broadcast (Lock * conditionLock);	// the currentThread for all of 
+    void Signal();	// conditionLock must be held by
+    void Broadcast();	// the currentThread for all of
     // these operations
 
   private:
+    List * queue;
     const char *name;
     // plus some other stuff you'll need to define
 };

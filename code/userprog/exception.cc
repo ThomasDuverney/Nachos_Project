@@ -24,7 +24,9 @@
 #include "copyright.h"
 #include "system.h"
 #include "syscall.h"
-
+#include "userthread.h"
+#include "userprocess.h"
+#include "usersynchro.h"
 void copyStringFromMachine(int from, char *to, unsigned size){
     unsigned int i=0;
     int c;
@@ -77,8 +79,10 @@ void ExceptionHandler (ExceptionType which){
     type = machine->ReadRegister (2);
     reg4 = machine->ReadRegister (4);
     reg5 = machine->ReadRegister (5);
-    char c;
 
+
+    char c;
+    char * buff;
 
     if (which == SyscallException) {
         switch (type) {
@@ -103,10 +107,19 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_GetString:
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
-
                 // reg4 = adresse du tableau de la string (memoire virtuelle)
-                // reg5 = taille max 
-                synchconsole->SynchGetString(&machine->mainMemory[reg4], reg5);
+                // reg5 = taille max
+                // On écrit la valeur de GetString en mémoire
+                buff = (char*) malloc(reg5 * sizeof(char));
+                synchconsole->SynchGetString(buff, reg5);
+                int h;
+                h = 0;
+                while(h < reg5){
+                    if(!machine->WriteMem(reg4++, 1, buff[h++])){
+                      DEBUG('f', "Error translation virtual address 0x%x.\n", reg4-1);
+                    }
+                }
+                free(buff);
                 break;
             case SC_PutInt:
                 DEBUG('a', "SynchPutInt, initiated by user program.\n");
@@ -118,11 +131,73 @@ void ExceptionHandler (ExceptionType which){
                 synchconsole->SynchGetInt(&val);
                 machine->WriteMem(reg4, 4, val);
                 break;
-            case SC_Exit:
-                // la valeur de retour du main ou exit est dans le registre 4
-                //synchconsole->Flush(); Appophinai
-                DEBUG('a', "Exit, initiated by user program.\n");
+            case SC_UserThreadCreate:
+                DEBUG('a', "UserThreadCreate, initiated by user program.\n");
+                int threadId;
+                threadId = do_UserThreadCreate();
+                // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
+                machine->WriteRegister(2,threadId);
                 break;
+            case SC_UserThreadExit:
+                DEBUG('a', "UserThreadExit, initiated by user program.\n");
+                do_UserThreadExit();
+                break;
+            case SC_UserThreadJoin:
+                DEBUG('a', "UserThreadJoin, initiated by user program.\n");
+                int returnValue;
+                returnValue = do_UserThreadJoin(reg4);
+                machine->WriteRegister(2,returnValue);
+                break;
+            case SC_Exit:
+                DEBUG('a', "Exit, initiated by user program.\n");
+                currentThread->Finish();
+                break;
+            case SC_ForkExec:
+                DEBUG('a', "Syscall ForkExec");
+                char * executableName;
+                executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+                copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
+                do_UserProcessCreate(executableName);
+                break;
+            case SC_MutexCreate:
+                do_UserMutexCreate();
+                break;
+            case SC_MutexLock:
+                do_UserMutexLock();
+                break;
+            case SC_MutexUnlock:
+                do_UserMutexUnlock();
+                break;
+            case SC_MutexDestroy:
+                do_UserMutexDestroy();
+                break;
+            case SC_SemCreate:
+                do_UserSemCreate();
+                break;
+            case SC_SemWait:
+                do_UserSemWait();
+                break;
+            case SC_SemPost:
+                do_UserSemPost();
+                break;
+            case SC_SemDestroy:
+                do_UserSemDestroy();
+                break;
+            case SC_CondCreate:
+                 do_UserCondCreate();
+                 break;
+            case SC_CondWait:
+                 do_UserCondWait();
+                 break;
+            case SC_CondSignal:
+                 do_UserCondSignal();
+                 break;
+            case SC_CondBroadCast:
+                 do_UserCondBroadCast();
+                 break;
+            case SC_CondDestroy:
+                 do_UserCondDestroy();
+                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

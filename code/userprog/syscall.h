@@ -18,23 +18,40 @@
 /* system call codes -- used by the stubs to tell the kernel which system call
  * is being asked for
  */
-#define SC_Halt			0
-#define SC_Exit			1
-#define SC_Exec			2
-#define SC_Join			3
-#define SC_Create		4
-#define SC_Open			5
-#define SC_Read			6
-#define SC_Write		7
-#define SC_Close		8
-#define SC_Fork			9
-#define SC_Yield		10
-#define SC_PutChar  	11
-#define SC_PutString 	12
-#define SC_GetChar  	13
-#define SC_GetString 	14
-#define SC_PutInt   	15
-#define SC_GetInt   	16
+#define SC_Halt             0
+#define SC_Exit	            1
+#define SC_Exec             2
+#define SC_Join	            3
+#define SC_Create           4
+#define SC_Open	            5
+#define SC_Read	            6
+#define SC_Write            7
+#define SC_Close            8
+#define SC_Fork	            9
+#define SC_Yield            10
+#define SC_PutChar          11
+#define SC_PutString        12
+#define SC_GetChar          13
+#define SC_GetString        14
+#define SC_PutInt           15
+#define SC_GetInt           16
+#define SC_UserThreadCreate 17
+#define SC_UserThreadExit   18
+#define SC_UserThreadJoin   19
+#define SC_ForkExec         20
+#define SC_MutexCreate      21
+#define SC_MutexLock        22
+#define SC_MutexUnlock      23
+#define SC_MutexDestroy     24
+#define SC_SemCreate        25
+#define SC_SemWait          26
+#define SC_SemPost          27
+#define SC_SemDestroy       28
+#define SC_CondCreate       29
+#define SC_CondWait         30
+#define SC_CondSignal       31
+#define SC_CondBroadCast    32
+#define SC_CondDestroy      33
 
 #ifdef IN_USER_MODE
 
@@ -135,34 +152,149 @@ void Fork (void (*func) ());
 void Yield ();
 
 /*
-* Ecrit un caractère
-*/
+ * void PutChar(char c)
+ * Spécifications:
+ *   Prends en paramètre un caractère c.
+ * Sémantique:
+ *   Ecrit le caractère c sur la sortie standard.
+ */
 void PutChar(char c);
 
-/*
-* Ecrit une chaine de caractères
-*/
-void PutString(const char s[]);
+/* void PutString(const char *s)
+ * Spécifications:
+ *   Prends en paramètre un pointeur de caractère s.
+ * Sémantique:
+ *   Ecrit la chaîne de caractères lue à l'adresse s, sur la sortie standard.
+ *   La lecture s'arrête quand on rencontre le caractère '\0.
+ */
+void PutString(const char *s);
 
 /*
-* Lit un caractère
-*/
+ * char GetChar()
+ * Sémantique:
+ *   Lit un caractère depuis l'entrée standard.
+ */
 char GetChar();
 
 /*
-* Lit une chaine de caractères
-*/
+ * void GetString(char *s, int n)
+ * Spécifications:
+ *   Prends en paramètre un pointeur de caractère s et un entier n.
+ * Sémantique:
+ *   Lit une chaine de caractères de longueur maximale égale à n depuis l'entrée standard et
+ *   l'ecrit à l'adresse de s.
+ * Pré-condition:
+ *   L'adresse s fournie en paramètre pointe une zone mémoire suffisament large pour stocker
+ *   n caractères.
+ */
 void GetString(char *s, int n);
 
 /*
-* Ecrit un int
-*/
+ * void PutInt(int n)
+ * Spécifications:
+ *   Prends en paramètres un entier n.
+ * Sémantique:
+ *   Ecrit l'entier n sur la sortie standard.
+ */
 void PutInt(int n);
 
 /*
-* Lit un int
-*/
+ * void GetInt(int *n)
+ * Spécifications:
+ *   Prends en paramètres un pointeur d'entier n.
+ * Sémantique:
+ *   Lit un entier depuis l'entrée standard et l'écrit à l'adresse n.
+ * Pré-condition:
+ *   n doit être un pointeur vers un emplacement mémoire assez large pour stocker un entier.
+ */
 void GetInt(int *n);
+
+/*
+ * int UserThreadCreate(void f(void* arg), void* arg)
+ * Spécifications: Prends en paramètres un pointeur de fonction f de valeur de retour
+ *   void et un pointeur arg.
+ * Sémantique: Crée un nouveau thread utilisateur qui éxécute la fonction f(arg).
+ * Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
+ *   pile du thread à créer, dans le cas contraire le système s'arrete avec le message:
+ *   La création du thread a échoué.
+ * Valeur de retour: retourne le champ Id du thread crée. -1 si une erreur s'est produite lors de
+ *   la création.
+ */
+int UserThreadCreate(void f(void* arg), void* arg);
+
+/*
+ * void UserThreadExit()
+ * Sémantique:
+ *   Termine le threadUser courant.
+ * Post-condition:
+ *   L'espace mémoire du threadUser est libéré (zeroed ?).
+ */
+void UserThreadExit();
+
+/*
+ * int UserThreadJoin(int tid)
+ * Sémantique:
+ *   Attends la terminaison du threadUser d'id tid, renvoie -1
+ si le thread est déjà terminé ou déjà attendu, 0 sinon.
+ */
+int UserThreadJoin(int tid);
+
+/*
+ * int ForkExec(char * fileName)
+ * Sémantique:
+ *   Crée un nouveau processus qui éxécute le fichier donné en paramètre
+ */
+int ForkExec(char * fileName);
+
+typedef int Mutex_t;
+
+/*
+ * int MutexCreate()
+ * Sémantique: Crée un mutex et retourne un numéro d'identifiant
+ */
+
+Mutex_t MutexCreate();
+
+/*
+ * void MutexLock(int mutexId)
+ * Sémantique: Acquiert le vérrou dont l'identifiant est mutexId
+ */
+void MutexLock(Mutex_t mutexId);
+
+
+/*
+ * void MutexUnlock(int mutexId)
+ * Sémantique: Relache le vérrou dont l'identifiant est mutexId
+ */
+void MutexUnlock(Mutex_t mutexId);
+
+/*
+ * void MutexDestroy(int mutexId)
+ * Sémantique: Détruit le vérrou dont l'identifiant est mutexId
+ */
+void MutexDestroy(Mutex_t mutexId);
+
+typedef int Sem_t;
+
+Sem_t SemCreate(int initialValue);
+
+void SemWait(Sem_t semaphore);
+
+void SemPost(Sem_t semaphore);
+
+void SemDestroy(Sem_t semaphore);
+
+typedef int Cond_t;
+
+int CondCreate();
+
+void CondWait(Cond_t condId, Mutex_t mutedId);
+
+void CondSignal(Cond_t condId);
+
+void CondBroadCast(Cond_t condId);
+
+void CondDestroy(Cond_t condId);
 
 #endif // IN_USER_MODE
 
