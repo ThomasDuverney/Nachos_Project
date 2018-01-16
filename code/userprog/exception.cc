@@ -27,6 +27,8 @@
 #include "userthread.h"
 #include "userprocess.h"
 #include "usersynchro.h"
+#include "userfilesys.h"
+
 void copyStringFromMachine(int from, char *to, unsigned size){
     unsigned int i=0;
     int c;
@@ -198,6 +200,27 @@ void ExceptionHandler (ExceptionType which){
             case SC_CondDestroy:
                  do_UserCondDestroy();
                  break;
+            case SC_CreateDirectory:
+                char * nameDirectory;
+                nameDirectory = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+                copyStringFromMachine(reg4, nameDirectory, MAX_STRING_SIZE);
+                do_UserCreateDirectory(nameDirectory);
+                break;
+            case SC_ChangeDirectoryPath:
+                char * nameDirector;
+                nameDirector = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+                copyStringFromMachine(reg4, nameDirector, MAX_STRING_SIZE);
+                do_UserChangeDirectoryPath(nameDirector);
+                break;
+            case SC_ListCurrentDirectory:
+                do_UserListCurrentDirectory();
+                break;
+            case SC_Remove:
+                char * name;
+                name = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+                copyStringFromMachine(reg4, name, MAX_STRING_SIZE);
+                do_UserRemove(name);
+                break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);
