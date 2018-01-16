@@ -145,20 +145,19 @@ AddrSpace::AddrSpace (OpenFile * executable) {
     }
 
     /* Allocation de(s) page(s) pour les threads */
-    /* Nombre de pages dans l'espage d'adressage libre après les zones initdata et uninitdata */
-      numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
-      /* Nombre de piles que l'on peut stocker dans l'espace disponible */
-      numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
-      /* Tableau des emplacements pour piles disponibles */
-      stackBitmap = new BitMap(numStackPerAddrSpace);
-      /* Le main occupe le première emplacement de pile */
-      stackBitmap->Mark(0);
-      /* Initialise la sémaphore pour bloquer la terminaison d'un processus */
-      this->nbThread = 1;
-      /* init joinMap */
-      joinMap = new std::map<int, std::list<Thread*>* >();
-      /* init threadList */
-      threadList = new std::list<int>();
+    /* Nombre de pages dans l'espage d'adressage libre après les zones code et data */
+    numPagesPerAddrSpace = divRoundDown(UserStackSize, PageSize);
+    /* Nombre de piles que l'on peut stocker dans l'espace disponible */
+    numStackPerAddrSpace = divRoundDown(numPagesPerAddrSpace, NumPagesPerStack);
+    /* Tableau des emplacements pour piles disponibles */
+    stackBitmap = new BitMap(numStackPerAddrSpace);
+    /* Le main occupe le premier emplacement de pile (fin de l'espace d'adressage) */
+    stackBitmap->Mark(0);
+    this->nbThread = 1;
+    /* init joinMap */
+    joinMap = new std::map<int, std::list<Thread*>* >();
+    /* init threadList */
+    threadList = new std::list<int>();
 }
 
 //----------------------------------------------------------------------
