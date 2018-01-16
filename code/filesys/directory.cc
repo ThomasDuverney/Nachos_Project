@@ -261,18 +261,18 @@ Directory::List()
     
    for (int i = 0; i < tableSize; i++){
         if (table[i].inUse){
-            if(table[i].isDirectory){
+            /*if(table[i].isDirectory){
                 couleur("34");
             } else {
                 couleur("32");
-            }
+            }*/
 	       printf("%s\n", table[i].name);
         }
     
    }
 
 
-    couleur("0");
+    // couleur("30");
 }
 
 //----------------------------------------------------------------------
