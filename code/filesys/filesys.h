@@ -64,9 +64,11 @@ class FileSystem {
 
 };
 
+
 #else // FILESYS
 
 #define NBFILEOPENED 10
+
 
 class FileSystem {
   public:
@@ -94,6 +96,7 @@ class FileSystem {
 
     void List();			// List all the files in the file system
     void ListCurrentDirectory();
+    void ListOpenedFiles();
 
     void Print();			// List all the files and their contents
 

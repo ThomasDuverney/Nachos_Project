@@ -342,9 +342,12 @@ OpenFile * FileSystem::Open(const char *name){
  
     int i = 0, j;
 
-    while(i < NBFILEOPENED && fileOpened[i] == -1){ i++; }
 
-    if(i >= 0){ // il n'y a plus de place dans le tableau des fichiers ouverts
+    while(i < NBFILEOPENED && fileOpened[i] != -1){ 
+        i++;
+    }
+
+    if(i >= NBFILEOPENED){ // il n'y a plus de place dans le tableau des fichiers ouverts
         printf("Error couldn't open file %s, too much opened file\n", name);
         return NULL;
     } else {
@@ -361,7 +364,7 @@ OpenFile * FileSystem::Open(const char *name){
             j = 0;
             while(j < NBFILEOPENED && fileOpened[j] != sector){ j++; }
 
-            if(j >= 0){
+            if(fileOpened[j] == sector){
                 printf("File %s already opened\n", name);
             } else {
                 openFile = new OpenFile(sector);	// name was found in directory 
@@ -594,3 +597,11 @@ FileSystem::Print()
     delete freeMap;
     delete directory;
 } 
+
+
+void FileSystem::ListOpenedFiles(){
+    int i;
+    for(i=0; i<NBFILEOPENED; i++){
+        printf("fileOpened[%d] = %d\n", i, fileOpened[i]);
+    }
+}
