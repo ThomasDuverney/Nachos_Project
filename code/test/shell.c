@@ -1,37 +1,42 @@
 #include "syscall.h"
 
-int
-main ()
-{
-    SpaceId newProc;
-    OpenFileId input = ConsoleInput;
-    OpenFileId output = ConsoleOutput;
-    char prompt[2], buffer[60];
-    int i;
+#define IDLE 0
+#define CD 1
+#define RM 2
+#define LS 3
+#define MKDIR 4
 
-    prompt[0] = '-';
-    prompt[1] = '-';
 
-    while (1)
-      {
-	  Write (prompt, 2, output);
 
-	  i = 0;
+int main (){
+  char cmd[100];
+  char buff[30];
+  int i, j;
 
-	  do
-	    {
+  int state;
 
-		Read (&buffer[i], 1, input);
+  while(1){
+      state = IDLE;
+      PutString("Shell>> ");
+      GetString(cmd,100);
+      i=0;
+	  while (cmd[i++] != '\n'){
+          j=0;
+          while(cmd[i++] != ' ' && cmd[i++] != '\n'){
+            buff[j] = cmd[i];
+            j++;
+          }
+          buff[j] = '\0';
 
-	    }
-	  while (buffer[i++] != '\n');
+          switch(state){
+          case IDLE:
+            if(!strcmp(
+            break;
 
-	  buffer[--i] = '\0';
+          }
 
-	  if (i > 0)
-	    {
-		newProc = Exec (buffer);
-		Join (newProc);
-	    }
+
       }
+  }
+  return 0;
 }
