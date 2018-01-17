@@ -97,6 +97,8 @@ extern void do_UserThreadExit() {
  * Ainsi on sait que T2 est attendu par T1.
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
+
+/* TODO: ne pas permetre à un thread de join plusieur fois le même thread sinon il va se retrouver deux fois dans la readylist lors de threadExit */
 extern int do_UserThreadJoin(int tid) {
   /* Vérifie que le thread tid est actif */
   if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
