@@ -684,6 +684,10 @@ FileSystem::Print()
 void FileSystem::ListOpenedFiles(){
     int i;
     for(i=0; i<NBFILEOPENED; i++){
-        printf("fileOpened[%d] sector = %d\n", i, fileOpened[i]->sector);
+        if(fileOpened[i] != NULL){
+            printf("fileOpened[%d] sector = %d\n", i, fileOpened[i]->sector);
+        } else {
+            printf("fileOpened[%d] = NULL\n", i);
+        }
     }
 }
