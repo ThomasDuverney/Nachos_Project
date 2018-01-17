@@ -52,15 +52,22 @@ int main (){
                 } else if(strcmp(buff, "rm") == 1){
                     state = RM;
                 } else if(strcmp(buff, "ls") == 1){
-                    ListCurrentDirectory();
+                    if(cmd[i] == '\n'){
+                        ListDirectory(".");
+                        state = IDLE;
+                        stopped = 1;
+                    } else {
+                        state = LS;
+                    }
+                } else if(strcmp(buff, "exit")){
                     state = IDLE;
-                    stopped = 1;
+                    return 0;
                 } else if(strcmp(buff, "exec") == 1){
                     state =EXEC;
                 } else if(strcmp(buff, "touch") == 1){
                     state =TOUCH;
                 } else {
-                    PutString("Error command not found");
+                    PutString("Error command not found\n");
                 }
                 break;
             case CD:
@@ -72,6 +79,11 @@ int main (){
                 CreateDirectory(buff);
                 stopped = 1;
                 state = IDLE;
+                break;
+            case LS:
+                ListDirectory(buff);
+                stopped = 1;
+                state = IDLE;            
                 break;
             case RM:
                 Remove(buff);
@@ -89,7 +101,7 @@ int main (){
                 state = IDLE;
                 break;
             default:
-                PutString("Error state not found");
+                PutString("Error state not found\n");
                 return 1;
                 break;
             }

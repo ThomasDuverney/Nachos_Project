@@ -187,9 +187,9 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "UserCreateDirectoryPath, initiated by user program.\n");
                 do_UserChangeDirectoryPath();
                 break;
-            case SC_ListCurrentDirectory:
-                DEBUG('a', "UserListCurrentdirectory, initiated by user program.\n");
-                do_UserListCurrentDirectory();
+            case SC_ListDirectory:
+                DEBUG('a', "UserListDirectory, initiated by user program.\n");
+                do_UserListDirectory();
                 break;
             case SC_Remove:
                 DEBUG('a', "UserRemove, initiated by user program.\n");

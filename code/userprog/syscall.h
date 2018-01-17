@@ -54,7 +54,7 @@
 #define SC_CondDestroy      33
 #define SC_CreateDirectory  34
 #define SC_ChangeDirectoryPath  35
-#define SC_ListCurrentDirectory 36
+#define SC_ListDirectory		36
 #define SC_Remove               37
 
 #ifdef IN_USER_MODE
@@ -285,7 +285,7 @@ void CreateDirectory(char * name);
 
 void ChangeDirectoryPath(char * name);
 
-void ListCurrentDirectory();
+void ListDirectory(char * name);
 
 int Remove(char * name);
 

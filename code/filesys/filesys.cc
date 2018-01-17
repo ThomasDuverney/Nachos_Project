@@ -683,7 +683,7 @@ void FileSystem::ChangeDirectoryAndParse(const char *path, char *filename){
 
     /* ne passe pas ici normalement */
 
-
+    ASSERT(FALSE);
 
 }
 
@@ -768,6 +768,19 @@ void FileSystem::ListCurrentDirectory(){
     directory->FetchFrom(currentDirectoryFile);
     directory->List();
     delete directory;
+}
+
+void FileSystem::ListDirectory(const char *path){
+
+    int backUpsector = currentDirectorySector;
+
+    ChangeDirectoryPath(path);
+    ListCurrentDirectory();
+
+    // on remet l'ancien repertoire courant
+    currentDirectorySector = backUpsector;
+    currentDirectoryFile = new OpenFile(currentDirectorySector);
+
 }
 
 //----------------------------------------------------------------------

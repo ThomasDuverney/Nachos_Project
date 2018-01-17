@@ -3,9 +3,9 @@
 int main(){
   CreateDirectory("dossier_temp");
   ChangeDirectoryPath("dossier_temp");
-  ListCurrentDirectory();
+  ListDirectory(".");
   ChangeDirectoryPath("..");
   Remove("dossier_temp");
-  ListCurrentDirectory();
+  ListDirectory(".");
   return 0;
 }
