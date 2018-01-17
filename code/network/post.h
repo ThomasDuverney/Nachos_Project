@@ -121,8 +121,8 @@ class PostOffice {
         ~PostOffice();		// De-allocate Post Office data
 
 
-        void Send(int farAddrNext, const char *data);
-        std::string Receive(int box);
+        void SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, const char *data);
+        std::string ReceiveMessage(int box);
 
         void PostalDelivery();	// Wait for incoming messages,
     				// and then put them in the correct mailbox
@@ -143,12 +143,12 @@ class PostOffice {
         Lock *sendLock;		// Only one outgoing message at a time
         Network *network;		// Physical network connection
     private:
-        void SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
+        void SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char *data);
         // Send a message to a mailbox on a remote
         // machine.  The fromBox in the MailHeader is
         // the return box for ack's.
 
-        void ReceivePrivate(int box, PacketHeader *pktHdr,	MailHeader *mailHdr, char *data);
+        void ReceivePacket(int box, PacketHeader *pktHdr,	MailHeader *mailHdr, char *data);
         // Retrieve a message from "box".  Wait if
         // there is no message in the box.
         NetworkAddress netAddr;	// Network address of this machine
