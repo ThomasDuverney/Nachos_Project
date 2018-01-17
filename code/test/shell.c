@@ -6,6 +6,7 @@
 #define LS 3
 #define MKDIR 4
 #define EXEC  5
+#define TOUCH  6
 
 int strcmp(char *s1, char *s2){
     int i = 0;
@@ -18,8 +19,6 @@ int strcmp(char *s1, char *s2){
 
     return 1;
 }
-
-
 
 int main (){
     char cmd[100];
@@ -58,6 +57,8 @@ int main (){
                     stopped = 1;
                 } else if(strcmp(buff, "exec") == 1){
                     state =EXEC;
+                } else if(strcmp(buff, "touch") == 1){
+                    state =TOUCH;
                 } else {
                     PutString("Error command not found");
                 }
@@ -81,6 +82,12 @@ int main (){
                 ForkExec(buff);
                 stopped = 1;
                 state = IDLE;
+                break;
+            case TOUCH:
+                Create(buff,1);
+                stopped = 1;
+                state = IDLE;
+                break;
             default:
                 PutString("Error state not found");
                 return 1;

@@ -30,6 +30,15 @@ extern void do_UserRemove(){
   machine->WriteRegister(2,checkBool);
 }
 
+extern void do_UserCreate(){
+  int checkBool;
+  int ptrName = machine->ReadRegister(4);
+  int initialSize = machine->ReadRegister(5);
+  char * name = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+  copyStringFromMachine(ptrName,name, MAX_STRING_SIZE);
+  checkBool = fileSystem->Create(name,initialSize);
+  machine->WriteRegister(2,checkBool);
+}
 #else
 
 extern void do_UserCreateDirectory(){
@@ -48,4 +57,7 @@ extern void do_UserRemove(){
 	printf("Remove\n");
 }
 
+extern void do_UserCreate(){
+
+}
 #endif
