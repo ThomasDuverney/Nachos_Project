@@ -7,6 +7,8 @@
 #define MKDIR 4
 #define EXEC  5
 #define TOUCH  6
+#define SEND  7
+#define RECEIVE  8
 
 int strcmp(char *s1, char *s2){
     int i = 0;
@@ -23,24 +25,33 @@ int strcmp(char *s1, char *s2){
 int main (){
     char cmd[100];
     char buff[30];
+    char cmdline[8][40];
     int i,j,state;
     int stopped = 0;
+    int index_cmdline;
 
     while(1){
         state = IDLE;
+        index_cmdline = 0;
         PutString("Shell>> ");
         GetString(cmd,100);
         i=0;
         stopped = 0;
-        while (stopped == 0 && cmd[i] != '\n'){
+
+        while (cmd[i] != '\n'){
             j=0;
 
             // on stocke 
             while(cmd[i] != ' ' && cmd[i] != '\n'){
-                buff[j] = cmd[i];
+                cmdline[index_cmdline][j] = cmd[i];
                 i++;
                 j++;
             }
+            index_cmdline++;
+        }
+
+
+            j++;
             buff[j] = '\0';
 
             switch(state){
@@ -66,6 +77,10 @@ int main (){
                     state =EXEC;
                 } else if(strcmp(buff, "touch") == 1){
                     state =TOUCH;
+                } else if(strcmp(buff, "send") == 1){
+                    state =SEND;
+                } else if(strcmp(buff, "receive") == 1){
+                    state = RECEIVE;
                 } else {
                     PutString("Error command not found\n");
                 }
@@ -83,7 +98,7 @@ int main (){
             case LS:
                 ListDirectory(buff);
                 stopped = 1;
-                state = IDLE;            
+                state = IDLE;
                 break;
             case RM:
                 Remove(buff);
@@ -100,16 +115,23 @@ int main (){
                 stopped = 1;
                 state = IDLE;
                 break;
+            case SEND:
+                Send(,,,1);
+                state = IDLE;
+                break;
+            case RECEIVE:
+                Receive(buff,1);
+                stopped = 1;
+                state = IDLE;
+                break;
             default:
                 PutString("Error state not found\n");
                 return 1;
                 break;
             }
 
-            if(cmd[i] == ' '){
-                i++;
-            }
-        }
+
+
     }
     return 0;
 }
