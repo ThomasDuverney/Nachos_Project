@@ -15,6 +15,7 @@
 #include "filehdr.h"
 #include "openfile.h"
 #include "system.h"
+#include "filesys.h"
 
 #include <strings.h> /* for bzero */
 
@@ -32,6 +33,10 @@ OpenFile::OpenFile(int sector)
     hdr->FetchFrom(sector);
     seekPosition = 0;
     sectorFile = sector;
+
+    if(sectorFile != FreeMapSector && sectorFile != DirectorySector){
+        fileSystem->AddOpenFile(sectorFile, this);
+    }
 }
 
 //----------------------------------------------------------------------
@@ -42,7 +47,9 @@ OpenFile::OpenFile(int sector)
 OpenFile::~OpenFile()
 {
     delete hdr;
-    fileSystem->Close(this->sectorFile);
+    if(sectorFile != FreeMapSector && sectorFile != DirectorySector){
+        fileSystem->Close(this->sectorFile);
+    }
 }
 
 //----------------------------------------------------------------------

@@ -55,8 +55,7 @@
 // Sectors containing the file headers for the bitmap of free sectors,
 // and the directory of files.  These file headers are placed in well-known 
 // sectors, so that they can be located on boot-up.
-#define FreeMapSector 		0
-#define DirectorySector 	1
+
 
 // Initial file sizes for the bitmap and directory; until the file system
 // supports extensible files, the directory size sets the maximum number 
@@ -332,6 +331,21 @@ bool FileSystem::CreateDirectory(const char *name){
 
 }
 
+void FileSystem::AddOpenFile(int sector, OpenFile *file){
+    int i = 0;
+    while(i < NBFILEOPENED && fileOpened[i] != NULL){ 
+        i++;
+    }
+
+    if(i >= NBFILEOPENED){ // il n'y a plus de place dans le tableau des fichiers ouverts
+        printf("[AddOpenFile] Error couldn't open file, too much opened file\n");
+    } else {
+        fileOpened[i] = new fileDescriptor;
+        fileOpened[i]->file = file;
+        fileOpened[i]->sector = sector;
+    }
+}
+
 //----------------------------------------------------------------------
 // FileSystem::Open
 // 	Open a file for reading and writing.  
@@ -447,17 +461,25 @@ int FileSystem::OpenFd(const char* name){
     }
 }
 
+
+
 void FileSystem::Close(int sector){
 
     int i = 0;
 
-    while(i < NBFILEOPENED && fileOpened[i]->sector != sector){ i++; }
+    while(i < NBFILEOPENED){
+        if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
+            break;
+        } else {
+            i++;
+        }
+    }
 
-    if(i >= NBFILEOPENED){
-        printf("Error file not opened or not found\n");
+    if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
+        delete fileOpened[i];
+        fileOpened[i] = NULL;
     } else {
-        fileOpened[i]->sector = -1;
-        fileOpened[i]->file = NULL;
+        printf("Error file not opened or not found\n");
     }
 }
 
@@ -503,9 +525,15 @@ FileSystem::Remove(const char *name)
     }
 
     int i = 0;
-    while(i < NBFILEOPENED && fileOpened[i]->sector != sector){i++;}
+    while(i < NBFILEOPENED){
+        if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
+            break;
+        } else {
+            i++;
+        }
+    }
 
-    if(fileOpened[i]->sector == sector){
+    if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
         printf("Couldn't remove this file, opened in a process\n");
     }
 

@@ -67,6 +67,9 @@ class FileSystem {
 
 #else // FILESYS
 
+#define FreeMapSector       0
+#define DirectorySector     1
+
 #define NBFILEOPENED 10
 
 class fileDescriptor {
@@ -94,6 +97,7 @@ class FileSystem {
     void CloseFd(int fd);
 
     bool CreateDirectory(const char *name);
+    void AddOpenFile(int sector, OpenFile *file);
 
     /* Read/Write from a fileDescriptor */
 
