@@ -58,6 +58,8 @@ int main (){
             continue;
         }
 
+
+
         if(DEBUG){ /* DEBUG parse string */  
             for(z=0; z<index_cmdline; z++){
                 PutString("Arg ");
@@ -73,14 +75,14 @@ int main (){
             /* SWITCH sur les commandes */
 
             if(strcmp(cmdline[0], "mkdir") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
                     CreateDirectory(cmdline[1]);
                 }
             } else if(strcmp(cmdline[0], "cd") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
@@ -88,14 +90,14 @@ int main (){
                 }
 
             } else if(strcmp(cmdline[0], "rm") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
                     Remove(cmdline[1]);
                 }
             } else if(strcmp(cmdline[0], "ls") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     ListDirectory(".");
                 } else {
                     ListDirectory(cmdline[1]);
@@ -103,14 +105,14 @@ int main (){
             } else if(strcmp(cmdline[0], "exit")){
                 return 0;
             } else if(strcmp(cmdline[0], "exec") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
                     ForkExec(cmdline[1]);
                 }
             } else if(strcmp(cmdline[0], "touch") == 1){
-                if(index_cmdline < 1){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
