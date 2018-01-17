@@ -16,6 +16,27 @@ int strcmp(char *s1, char *s2){
     return 1;
 }
 
+int atoi(char * str){
+    int resultat = 0;  // Initialisation du résultat
+    int sign = 1;  // Initialisation du flag signe comme positif
+    int i = 0;
+
+    /* Si le première caractère de la chaine est "-" alors le nombre
+       est négatif */
+    if (str[0] == '-')
+        {
+            sign = -1;
+            i++;
+        }
+
+    /* Itère sur chaque caractère de la chaine et met à jour le résultat */
+    for (; str[i] != '\0'; ++i)
+        resultat = resultat*10 + str[i] - '0';
+
+    // Retourne le résultat avec le signe correspondant
+    return sign*resultat;
+}
+
 int main (){
     char cmd[100];
     char cmdline[NBMAXARGS][MAXLENGTHCMD];
@@ -119,9 +140,21 @@ int main (){
                     Create(cmdline[1],1);
                 }
             } else if(strcmp(cmdline[0], "send") == 1){
-                PutString("Not implemented yet\n");
+                if(index_cmdline < 5){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    SendMessage(atoi(cmdline[1]),atoi(cmdline[2]),atoi(cmdline[3]),cmdline[4]);
+                }
             } else if(strcmp(cmdline[0], "receive") == 1){
-                PutString("Not implemented yet\n");
+                if(index_cmdline < 3){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    char message[50];
+                    ReceiveMessage(message,atoi(cmdline[2]));
+                    PutString(message);
+                }
             } else {
                 PutString("Error command not found\n");
             }
