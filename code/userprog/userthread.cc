@@ -91,24 +91,22 @@ extern void do_UserThreadExit() {
  * Ainsi on sait que T2 est attendu par T1.
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
-extern void do_UserThreadJoin(){
+extern int do_UserThreadJoin(int tid){
 
-    int tid = machine->ReadRegister(4);
-    int error;
-    if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
-        error =  -1;
-    }
-    interrupt->SetLevel (IntOff);
-    std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
-    std::list<Thread*>* tempThreadList;
-    if (it == currentThread->space->joinMap->end()){
-        tempThreadList = new std::list<Thread*>();
-        currentThread->space->joinMap->insert(std::make_pair(tid, tempThreadList));
-    } else {
-        tempThreadList = it->second;
-    }
-    tempThreadList->push_back(currentThread);
-    currentThread->Sleep();
-    error = 0;
-    machine->WriteRegister(2,error);
+  /* Vérifie que le thread tid est actif */
+  if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
+    return -1;
+  }
+  interrupt->SetLevel (IntOff);
+  std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
+  std::list<Thread*>* tempThreadList;
+  if (it == currentThread->space->joinMap->end()){
+    tempThreadList = new std::list<Thread*>();
+    currentThread->space->joinMap->insert(std::make_pair(tid, tempThreadList));
+  } else {
+    tempThreadList = it->second;
+  }
+  tempThreadList->push_back(currentThread);
+  currentThread->Sleep();
+  return 0;
 }
