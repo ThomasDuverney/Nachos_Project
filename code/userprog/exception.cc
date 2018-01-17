@@ -28,16 +28,9 @@
 #include "userprocess.h"
 #include "usersynchro.h"
 #include "userfilesys.h"
+#include "userconsole.h"
+#include "userconsole.h"
 
-void copyStringFromMachine(int from, char *to, unsigned size){
-    unsigned int i=0;
-    int c;
-    while(i<(size-1) && machine->ReadMem(from+i, 1, &c) && (char)c != '\0') {
-        *(to+i) = (char)c;
-        i++;
-    }
-    *(to+i) = '\0';
-}
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -77,14 +70,8 @@ static void UpdatePC (){
 //----------------------------------------------------------------------
 
 void ExceptionHandler (ExceptionType which){
-    int type, reg4, reg5;
-    type = machine->ReadRegister (2);
-    reg4 = machine->ReadRegister (4);
-    reg5 = machine->ReadRegister (5);
-
-
-    char c;
-    char * buff;
+    int type;
+    type = machine->ReadRegister(2);
 
     if (which == SyscallException) {
         switch (type) {
@@ -94,51 +81,31 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_PutChar:
                 DEBUG('a', "PutChar, initiated by user program.\n");
-                synchconsole->SynchPutChar((char)reg4);
+                do_UserPutChar();
                 break;
             case SC_PutString:
                 DEBUG('a', "SynchPutString, initiated by user program.\n");
-                char buf [MAX_STRING_SIZE];
-                copyStringFromMachine(reg4, buf, MAX_STRING_SIZE);
-                synchconsole->SynchPutString(buf);
+                do_UserPutString();
                 break;
             case SC_GetChar:
                 DEBUG('a', "GetChar, initiated by user program.\n");
-                c = synchconsole->SynchGetChar();
-                machine->WriteRegister(2, (int)c);
+                do_UserGetChar();
                 break;
             case SC_GetString:
                 DEBUG('a', "SynchGetString, initiated by user program.\n");
-                // reg4 = adresse du tableau de la string (memoire virtuelle)
-                // reg5 = taille max
-                // On écrit la valeur de GetString en mémoire
-                buff = (char*) malloc(reg5 * sizeof(char));
-                synchconsole->SynchGetString(buff, reg5);
-                int h;
-                h = 0;
-                while(h < reg5){
-                    if(!machine->WriteMem(reg4++, 1, buff[h++])){
-                      DEBUG('f', "Error translation virtual address 0x%x.\n", reg4-1);
-                    }
-                }
-                free(buff);
+                do_UserGetString();
                 break;
             case SC_PutInt:
                 DEBUG('a', "SynchPutInt, initiated by user program.\n");
-                synchconsole->SynchPutInt(reg4);
+                do_UserPutInt();
                 break;
             case SC_GetInt:
                 DEBUG('a', "SynchGetInt, initiated by user program.\n");
-                int val;
-                synchconsole->SynchGetInt(&val);
-                machine->WriteMem(reg4, 4, val);
+                do_UserGetInt();
                 break;
             case SC_UserThreadCreate:
                 DEBUG('a', "UserThreadCreate, initiated by user program.\n");
-                int threadId;
-                threadId = do_UserThreadCreate();
-                // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
-                machine->WriteRegister(2,threadId);
+                do_UserThreadCreate();
                 break;
             case SC_UserThreadExit:
                 DEBUG('a', "UserThreadExit, initiated by user program.\n");
@@ -146,9 +113,7 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadJoin:
                 DEBUG('a', "UserThreadJoin, initiated by user program.\n");
-                int returnValue;
-                returnValue = do_UserThreadJoin(reg4);
-                machine->WriteRegister(2,returnValue);
+                do_UserThreadJoin();
                 break;
             case SC_Exit:
                 DEBUG('a', "Exit, initiated by user program.\n");
@@ -156,70 +121,75 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_ForkExec:
                 DEBUG('a', "Syscall ForkExec");
-                char * executableName;
-                executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
-                copyStringFromMachine(reg4, executableName, MAX_STRING_SIZE);
-                do_UserProcessCreate(executableName);
+                do_UserProcessCreate();
                 break;
             case SC_MutexCreate:
+                DEBUG('a', "UserMutexCreate, initiated by user program.\n");
                 do_UserMutexCreate();
                 break;
             case SC_MutexLock:
+                DEBUG('a', "UserMutexLock, initiated by user program.\n");
                 do_UserMutexLock();
                 break;
             case SC_MutexUnlock:
+                DEBUG('a', "UserMutexUnlock, initiated by user program.\n");
                 do_UserMutexUnlock();
                 break;
             case SC_MutexDestroy:
+                DEBUG('a', "UserMutexDestroy, initiated by user program.\n");
                 do_UserMutexDestroy();
                 break;
             case SC_SemCreate:
+                DEBUG('a', "UserSemCreate, initiated by user program.\n");
                 do_UserSemCreate();
                 break;
             case SC_SemWait:
+                DEBUG('a', "UserSemWait, initiated by user program.\n");
                 do_UserSemWait();
                 break;
             case SC_SemPost:
+                DEBUG('a', "UserSemWait, initiated by user program.\n");
                 do_UserSemPost();
                 break;
             case SC_SemDestroy:
+                DEBUG('a', "UserSemDestroy, initiated by user program.\n");
                 do_UserSemDestroy();
                 break;
             case SC_CondCreate:
-                 do_UserCondCreate();
-                 break;
+                DEBUG('a', "UserCondCreate, initiated by user program.\n");
+                do_UserCondCreate();
+                break;
             case SC_CondWait:
-                 do_UserCondWait();
-                 break;
+                DEBUG('a', "UserCondWait, initiated by user program.\n");
+                do_UserCondWait();
+                break;
             case SC_CondSignal:
-                 do_UserCondSignal();
-                 break;
+                DEBUG('a', "UserCondSignal, initiated by user program.\n");
+                do_UserCondSignal();
+                break;
             case SC_CondBroadCast:
-                 do_UserCondBroadCast();
-                 break;
+                DEBUG('a', "UserCondBroadcast, initiated by user program.\n");
+                do_UserCondBroadCast();
+                break;
             case SC_CondDestroy:
-                 do_UserCondDestroy();
-                 break;
+                DEBUG('a', "UserCondDestroy, initiated by user program.\n");
+                do_UserCondDestroy();
+                break;
             case SC_CreateDirectory:
-                char * nameDirectory;
-                nameDirectory = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
-                copyStringFromMachine(reg4, nameDirectory, MAX_STRING_SIZE);
-                do_UserCreateDirectory(nameDirectory);
+                DEBUG('a', "UserCreateDirectory, initiated by user program.\n");
+                do_UserCreateDirectory();
                 break;
             case SC_ChangeDirectoryPath:
-                char * nameDirector;
-                nameDirector = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
-                copyStringFromMachine(reg4, nameDirector, MAX_STRING_SIZE);
-                do_UserChangeDirectoryPath(nameDirector);
+                DEBUG('a', "UserCreateDirectoryPath, initiated by user program.\n");
+                do_UserChangeDirectoryPath();
                 break;
             case SC_ListCurrentDirectory:
+                DEBUG('a', "UserListCurrentdirectory, initiated by user program.\n");
                 do_UserListCurrentDirectory();
                 break;
             case SC_Remove:
-                char * name;
-                name = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
-                copyStringFromMachine(reg4, name, MAX_STRING_SIZE);
-                do_UserRemove(name);
+                DEBUG('a', "UserRemove, initiated by user program.\n");
+                do_UserRemove();
                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);

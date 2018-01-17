@@ -48,10 +48,11 @@
  * la fonction f et les paramètres arg sont passés à l'appel Fork à par le biais d'une structure
  * de donnée de type UserThreadParams.
  */
-extern int do_UserThreadCreate() {
+extern void do_UserThreadCreate() {
     Thread *t;
+    int tid;
     if ((t = new Thread ("UserThread")) == NULL) {
-      return -1;
+      tid = -1;
     }
 
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
@@ -60,7 +61,9 @@ extern int do_UserThreadCreate() {
     threadParams->addrExit = machine->ReadRegister(6);
 
     t->Fork(StartUserThread,(int) threadParams);
-    return t->getTid();
+    // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
+    tid = t->getTid();
+    machine->WriteRegister(2,tid);
 }
 
 /*
@@ -88,9 +91,12 @@ extern void do_UserThreadExit() {
  * Ainsi on sait que T2 est attendu par T1.
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
-extern int do_UserThreadJoin(int tid) {
+extern void do_UserThreadJoin(){
+
+    int tid = machine->ReadRegister(4);
+    int error;
     if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
-        return -1;
+        error =  -1;
     }
     interrupt->SetLevel (IntOff);
     std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
@@ -103,5 +109,6 @@ extern int do_UserThreadJoin(int tid) {
     }
     tempThreadList->push_back(currentThread);
     currentThread->Sleep();
-    return 0;
+    error = 0;
+    machine->WriteRegister(2,error);
 }

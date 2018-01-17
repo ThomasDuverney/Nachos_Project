@@ -5,6 +5,7 @@
 #define RM 2
 #define LS 3
 #define MKDIR 4
+#define EXEC  5
 
 int strcmp(char *s1, char *s2){
     int i = 0;
@@ -23,14 +24,8 @@ int strcmp(char *s1, char *s2){
 int main (){
     char cmd[100];
     char buff[30];
-    int i; 
-    int j;
-
+    int i,j,state;
     int stopped = 0;
-
-    int state;
-
-    // mkdir Dossier
 
     while(1){
         state = IDLE;
@@ -49,10 +44,6 @@ int main (){
             }
             buff[j] = '\0';
 
-            // PutString(buff);
-            // PutString("\n");
-
-
             switch(state){
             case IDLE:
                 if(strcmp(buff, "mkdir") == 1){
@@ -65,6 +56,8 @@ int main (){
                     ListCurrentDirectory();
                     state = IDLE;
                     stopped = 1;
+                } else if(strcmp(buff, "exec") == 1){
+                    state =EXEC;
                 } else {
                     PutString("Error command not found");
                 }
@@ -84,6 +77,10 @@ int main (){
                 stopped = 1;
                 state = IDLE;
                 break;
+            case EXEC:
+                ForkExec(buff);
+                stopped = 1;
+                state = IDLE;
             default:
                 PutString("Error state not found");
                 return 1;
