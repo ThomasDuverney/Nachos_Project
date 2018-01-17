@@ -199,6 +199,30 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "UserRemove, initiated by user program.\n");
                 do_UserCreate();
                 break;
+            case SC_Open:
+                DEBUG('a', "UserOpen, initiated by user program.\n");
+                do_UserOpen();
+                break;
+            case SC_Close:
+                 DEBUG('a', "UserClose, initiated by user program.\n");
+                 do_UserClose();
+                 break;
+            case SC_Read:
+                 DEBUG('a', "UserRead, initiated by user program.\n");
+                 do_UserRead();
+                 break;
+            case SC_ReadAt:
+                 DEBUG('a', "UserReadAt, initiated by user program.\n");
+                 do_UserReadAt();
+                 break;
+            case SC_Write:
+                 DEBUG('a', "UserWrite, initiated by user program.\n");
+                 do_UserWrite();
+                 break;
+            case SC_WriteAt:
+                 DEBUG('a', "UserWriteAt, initiated by user program.\n");
+                 do_UserWriteAt();
+                 break;
             case SC_SendMessage:
                 DEBUG('a', "UserSendMessage, initiated by user program.\n");
                 do_UserSendMessage();
