@@ -1,14 +1,8 @@
 #include "syscall.h"
 
-#define IDLE 0
-#define CD 1
-#define RM 2
-#define LS 3
-#define MKDIR 4
-#define EXEC  5
-#define TOUCH  6
-#define SEND  7
-#define RECEIVE  8
+#define DEBUG 0
+#define NBMAXARGS 8
+#define MAXLENGTHCMD 40
 
 int strcmp(char *s1, char *s2){
     int i = 0;
@@ -24,114 +18,118 @@ int strcmp(char *s1, char *s2){
 
 int main (){
     char cmd[100];
-    char buff[30];
-    char cmdline[8][40];
-    int i,j,state;
-    int stopped = 0;
+    char cmdline[NBMAXARGS][MAXLENGTHCMD];
+    int i,j;
+    int z;
     int index_cmdline;
 
     while(1){
-        state = IDLE;
         index_cmdline = 0;
         PutString("Shell>> ");
         GetString(cmd,100);
         i=0;
-        stopped = 0;
 
-        while (cmd[i] != '\n'){
+        /* Séparation de la commande entrée par l'utilisateur */
+        while (index_cmdline < NBMAXARGS && cmd[i] != '\n'){
             j=0;
 
             // on stocke 
-            while(cmd[i] != ' ' && cmd[i] != '\n'){
+            while(j < MAXLENGTHCMD - 1 && cmd[i] != ' ' && cmd[i] != '\n'){
                 cmdline[index_cmdline][j] = cmd[i];
                 i++;
                 j++;
             }
+            if(cmd[i] == ' '){
+                i++;
+            } else if(j >= MAXLENGTHCMD -1){
+                PutString("passe\n");
+                break;
+            }
+            cmdline[index_cmdline][j] = '\0';
             index_cmdline++;
         }
 
+        if(index_cmdline >= NBMAXARGS){
+            PutString("Too many arguments\n");
+            continue;
+        }
+        if(j >= MAXLENGTHCMD -1){
+            PutString("args too long\n");
+            continue;
+        }
 
-            j++;
-            buff[j] = '\0';
-
-            switch(state){
-            case IDLE:
-                if(strcmp(buff, "mkdir") == 1){
-                    state = MKDIR;
-                } else if(strcmp(buff, "cd") == 1){
-                    state = CD;
-                } else if(strcmp(buff, "rm") == 1){
-                    state = RM;
-                } else if(strcmp(buff, "ls") == 1){
-                    if(cmd[i] == '\n'){
-                        ListDirectory(".");
-                        state = IDLE;
-                        stopped = 1;
-                    } else {
-                        state = LS;
-                    }
-                } else if(strcmp(buff, "exit")){
-                    state = IDLE;
-                    return 0;
-                } else if(strcmp(buff, "exec") == 1){
-                    state =EXEC;
-                } else if(strcmp(buff, "touch") == 1){
-                    state =TOUCH;
-                } else if(strcmp(buff, "send") == 1){
-                    state =SEND;
-                } else if(strcmp(buff, "receive") == 1){
-                    state = RECEIVE;
-                } else {
-                    PutString("Error command not found\n");
-                }
-                break;
-            case CD:
-                ChangeDirectoryPath(buff);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case MKDIR:
-                CreateDirectory(buff);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case LS:
-                ListDirectory(buff);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case RM:
-                Remove(buff);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case EXEC:
-                ForkExec(buff);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case TOUCH:
-                Create(buff,1);
-                stopped = 1;
-                state = IDLE;
-                break;
-            case SEND:
-                Send(,,,1);
-                state = IDLE;
-                break;
-            case RECEIVE:
-                Receive(buff,1);
-                stopped = 1;
-                state = IDLE;
-                break;
-            default:
-                PutString("Error state not found\n");
-                return 1;
-                break;
+        if(DEBUG){ /* DEBUG parse string */  
+            for(z=0; z<index_cmdline; z++){
+                PutString("Arg ");
+                PutInt(z);
+                PutString(": ");
+                PutString(cmdline[z]);
+                PutChar('\n');
             }
+        }
+
+        if(index_cmdline > 0){
+
+            /* SWITCH sur les commandes */
+
+            if(strcmp(cmdline[0], "mkdir") == 1){
+                if(index_cmdline < 1){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    CreateDirectory(cmdline[1]);
+                }
 
 
+            } else if(strcmp(cmdline[0], "cd") == 1){
+                if(index_cmdline < 1){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    ChangeDirectoryPath(cmdline[1]);
+                }
 
-    }
+            } else if(strcmp(cmdline[0], "rm") == 1){
+                if(index_cmdline < 1){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    Remove(cmdline[1]);
+                }
+            } else if(strcmp(cmdline[0], "ls") == 1){
+                if(index_cmdline < 1){
+                    ListDirectory(".");
+                } else {
+                    ListDirectory(cmdline[1]);
+                }
+            } else if(strcmp(cmdline[0], "exit")){
+                return 0;
+            } else if(strcmp(cmdline[0], "exec") == 1){
+                if(index_cmdline < 1){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    ForkExec(cmdline[1]);
+                }
+            } else if(strcmp(cmdline[0], "touch") == 1){
+                if(index_cmdline < 1){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    Create(cmdline[1],1);
+                }
+            } else if(strcmp(cmdline[0], "send") == 1){
+                PutString("Not implemented yet\n");
+            } else if(strcmp(cmdline[0], "receive") == 1){
+                PutString("Not implemented yet\n");
+            } else {
+                PutString("Error command not found\n");
+            }
+        
+        } /* fin if index_cmdline > 0 */
+        
+    } /* fin while(1) */
+
+
     return 0;
 }
