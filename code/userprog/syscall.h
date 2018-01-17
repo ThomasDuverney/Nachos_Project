@@ -56,6 +56,8 @@
 #define SC_ChangeDirectoryPath  35
 #define SC_ListCurrentDirectory 36
 #define SC_Remove               37
+#define SC_SendMessage          38
+#define SC_ReceiveMessage       39
 
 #ifdef IN_USER_MODE
 
@@ -288,6 +290,10 @@ void ChangeDirectoryPath(char * name);
 void ListCurrentDirectory();
 
 int Remove(char * name);
+
+void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
+
+void ReceiveMessage(char * data, int box);
 
 #endif // IN_USER_MODE
 

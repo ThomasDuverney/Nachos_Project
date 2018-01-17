@@ -351,6 +351,21 @@ Remove:
 	 j  $31
 	.end   	Remove
 
+	.globl 	SendMessage
+	.ent    SendMessage
+SendMessage:
+	 addiu $2,$0,SC_SendMessage
+	 syscall
+	 j  $31
+	.end   	SendMessage
+
+    .globl 	ReceiveMessage
+	.ent    ReceiveMessage
+ReceiveMessage:
+	 addiu $2,$0,SC_ReceiveMessage
+	 syscall
+	 j  $31
+	.end   	ReceiveMessage
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

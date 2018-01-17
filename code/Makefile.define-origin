@@ -43,7 +43,7 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc progtest.cc console.cc \
                         machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc \
-                        frameprovider.cc userprocess.cc usersynchro.cc userfilesys.cc userconsole.cc
+                        frameprovider.cc userprocess.cc usersynchro.cc userfilesys.cc userconsole.cc usernetwork.cc
                         
 
 VM_SRC          :=
@@ -109,10 +109,10 @@ $(eval $(call define-flavor,threads,thread-test))
 # $(eval $(call define-flavor,userprog,userprog filesys-stub))
 
 # if file system done first!
-$(eval $(call define-flavor,userprog,userprog filesys-stub))
+$(eval $(call define-flavor,userprog,userprog filesys-stub network))
 
 ######### filesys
-$(eval $(call define-flavor,filesys,userprog filesys))
+$(eval $(call define-flavor,filesys,userprog filesys network))
 
 # bare bones version
 # $(eval $(call define-flavor,filesys,thread-test filesys))

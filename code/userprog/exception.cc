@@ -30,7 +30,7 @@
 #include "userfilesys.h"
 #include "userconsole.h"
 #include "userconsole.h"
-
+#include "usernetwork.h"
 
 //----------------------------------------------------------------------
 // UpdatePC : Increments the Program Counter register in order to resume
@@ -198,6 +198,14 @@ void ExceptionHandler (ExceptionType which){
             case SC_Create:
                 DEBUG('a', "UserRemove, initiated by user program.\n");
                 do_UserCreate();
+                break;
+            case SC_SendMessage:
+                DEBUG('a', "UserSendMessage, initiated by user program.\n");
+                do_UserSendMessage();
+                break;
+            case SC_ReceiveMessage:
+                DEBUG('a', "UserSendMessage, initiated by user program.\n");
+                do_UserReceiveMessage();
                 break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
