@@ -114,6 +114,7 @@ class FileSystem {
 
     void List();			// List all the files in the file system
     void ListCurrentDirectory();
+    void ListDirectory(const char *path);
     void ListOpenedFiles();
 
     void Print();			// List all the files and their contents
@@ -129,6 +130,8 @@ class FileSystem {
 
 
    fileDescriptor* fileOpened[NBFILEOPENED];
+
+   void ChangeDirectoryAndParse(const char *path, char *filename);
 
 };
 

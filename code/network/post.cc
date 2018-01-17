@@ -152,6 +152,10 @@ static void interruptTimer(int params){
         if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
+        if (mailTempoParams->mailHdr.length != MaxMailSize){
+            postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
+            postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
+        }
         free(mailTempoParams);
         return;
     }
@@ -308,7 +312,7 @@ void PostOffice::PostalDelivery() {
 }
 
 //----------------------------------------------------------------------
-// PostOffice::SendPrivate
+// PostOffice::SendPacket
 // 	Concatenate the MailHeader to the front of the data, and pass
 //	the result to the Network for delivery to the destination machine.
 //
@@ -320,7 +324,7 @@ void PostOffice::PostalDelivery() {
 //	"data" -- payload message data
 //----------------------------------------------------------------------
 
-void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char* data) {
+void PostOffice::SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char* data) {
     char* buf = new char[MaxPacketSize];	// space to hold concatenated mailHdr + data
     ASSERT(mailHdr.length <= MaxMailSize);
     ASSERT(0 <= mailHdr.to && mailHdr.to < numBoxes);
@@ -341,7 +345,6 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
     bcopy(data, buf + sizeof(MailHeader), mailHdr.length);
 
     // fill in pktHdr, for the Network layer
-    pktHdr.from = netAddr;
     pktHdr.length = mailHdr.length + sizeof(MailHeader);
 
     if (DebugIsEnabled('n')) {
@@ -371,7 +374,7 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
 }
 
 //----------------------------------------------------------------------
-// PostOffice::ReceivePrivate
+// PostOffice::ReceivePacket
 // 	Retrieve a message from a specific box if one is available,
 //	otherwise wait for a message to arrive in the box.
 //
@@ -385,14 +388,14 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
 //	"data" -- address to put: payload message data
 //----------------------------------------------------------------------
 
-void PostOffice::ReceivePrivate(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char* data) {
+void PostOffice::ReceivePacket(int box, PacketHeader *pktHdr, MailHeader *mailHdr, char* data) {
     ASSERT((box >= 0) && (box < numBoxes));
 
     boxes[box].Get(pktHdr, mailHdr, data);
     ASSERT(mailHdr->length <= MaxMailSize);
 }
 
-void PostOffice::Send(int farAddrNext, const char *data){
+void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, const char *data){
     int cpt = 0;
     unsigned sizeRemaining = strlen(data);
     PacketHeader outPktHdr;
@@ -402,52 +405,51 @@ void PostOffice::Send(int farAddrNext, const char *data){
     	printf("BEGIN SEND MESSAGE \"%s\"\n", data);
         fflush(stdout);
     }
+    outPktHdr.from = netAddr;
+    outPktHdr.to = addrTo;
+    outMailHdr.to = boxTo;
+    outMailHdr.from = boxFrom;
 
-    while (sizeRemaining > MaxMailSize){
-        char buffer[MaxMailSize];
-        memcpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
-        outPktHdr.to = farAddrNext;
-        outMailHdr.to = 0;
-        outMailHdr.from = 1;
+    while (sizeRemaining >= MaxMailSize){
+        char* buffer = new char[MaxMailSize];
+        bcopy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
         outMailHdr.length = MaxMailSize;
         if (DebugIsEnabled('n')) {
             printf("SEND MSG nb=%d buffer=\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-strlen(buffer));
             printf("Max=%d buffer.length=%d mail.length=%d\n", MaxMailSize, strlen(buffer), outMailHdr.length);
             fflush(stdout);
         }
-        postOffice->SendPrivate(outPktHdr, outMailHdr, buffer);
+        postOffice->SendPacket(outPktHdr, outMailHdr, buffer);
         cpt++;
         sizeRemaining -= MaxMailSize;
+        delete [] buffer;
     }
-    int size = strlen((char*)(data + (cpt * MaxMailSize)));
-    char buffer[size];
-    memcpy(buffer, data + (cpt * MaxMailSize), size);
-    outPktHdr.to = farAddrNext;
-    outMailHdr.to = 0;
-    outMailHdr.from = 1;
-    outMailHdr.length = size;
+    char* buffer = new char[sizeRemaining];
+    bcopy(data + (cpt * MaxMailSize), buffer, sizeRemaining);
+    outMailHdr.length = sizeRemaining;
     if (DebugIsEnabled('n')) {
-        printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-size);
-        printf("Max=%d buffer.length=%d mail.length=%d\n", MaxMailSize, size, outMailHdr.length);
+        printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d\n", cpt, buffer, sizeRemaining);
+        printf("Max=%d buffer.length=%d mail.length=%d\n", MaxMailSize, sizeRemaining, outMailHdr.length);
         fflush(stdout);
     }
-    postOffice->SendPrivate(outPktHdr, outMailHdr, buffer);
+    postOffice->SendPacket(outPktHdr, outMailHdr, buffer);
+    delete [] buffer;
 }
 
-std::string PostOffice::Receive(int box){
+std::string PostOffice::ReceiveMessage(int box){
     std::string data;
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
     char buffer[MaxMailSize];
 
-    postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
-    while(strlen(buffer) == MaxMailSize){
+    postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
+    while(inMailHdr.length == MaxMailSize){
         data += buffer;
         memset(buffer, 0, MaxMailSize);
-        postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
+        postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
     }
     data += buffer;
-
+    ackSelfByBoxes[inMailHdr.to] = 0;
     if (DebugIsEnabled('n')) {
         printf("RECEIVE %s\n", data.c_str());
         fflush(stdout);

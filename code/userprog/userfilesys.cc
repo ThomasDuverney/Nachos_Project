@@ -18,8 +18,12 @@ extern void do_UserChangeDirectoryPath(){
   free(nameDirectory);
 }
 
-extern void do_UserListCurrentDirectory(){
-  fileSystem->ListCurrentDirectory();
+extern void do_UserListDirectory(){
+  int ptrName= machine->ReadRegister(4);
+  char * name = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+  copyStringFromMachine(ptrName,name, MAX_STRING_SIZE);
+  fileSystem->ListDirectory(name);
+  free(name);
 }
 
 extern void do_UserRemove(){
@@ -28,8 +32,19 @@ extern void do_UserRemove(){
   copyStringFromMachine(ptrName,name, MAX_STRING_SIZE);
   int checkBool = fileSystem->Remove(name);
   machine->WriteRegister(2,checkBool);
+  free(name);
 }
 
+extern void do_UserCreate(){
+  int checkBool;
+  int ptrName = machine->ReadRegister(4);
+  int initialSize = machine->ReadRegister(5);
+  char * name = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+  copyStringFromMachine(ptrName,name, MAX_STRING_SIZE);
+  checkBool = fileSystem->Create(name,initialSize);
+  machine->WriteRegister(2,checkBool);
+  free(name);
+}
 #else
 
 extern void do_UserCreateDirectory(){
@@ -40,12 +55,15 @@ extern void do_UserChangeDirectoryPath(){
 	printf("ChangeDirectory\n");
 }
 
-extern void do_UserListCurrentDirectory(){
-	printf("ListCurrentDirectory\n");
+extern void do_UserListDirectory(){
+	printf("ListDirectory\n");
 }
 
 extern void do_UserRemove(){
 	printf("Remove\n");
 }
 
+extern void do_UserCreate(){
+
+}
 #endif

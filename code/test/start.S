@@ -335,13 +335,13 @@ ChangeDirectoryPath:
 	.end   	ChangeDirectoryPath
 
 
-    .globl 	ListCurrentDirectory
-	.ent    ListCurrentDirectory
-ListCurrentDirectory:
-	 addiu $2,$0,SC_ListCurrentDirectory
+    .globl 	ListDirectory
+	.ent    ListDirectory
+ListDirectory:
+	 addiu $2,$0,SC_ListDirectory
 	 syscall
 	 j  $31
-	.end   	ListCurrentDirectory
+	.end   	ListDirectory
 
     .globl 	Remove
 	.ent    Remove
@@ -351,6 +351,21 @@ Remove:
 	 j  $31
 	.end   	Remove
 
+	.globl 	SendMessage
+	.ent    SendMessage
+SendMessage:
+	 addiu $2,$0,SC_SendMessage
+	 syscall
+	 j  $31
+	.end   	SendMessage
+
+    .globl 	ReceiveMessage
+	.ent    ReceiveMessage
+ReceiveMessage:
+	 addiu $2,$0,SC_ReceiveMessage
+	 syscall
+	 j  $31
+	.end   	ReceiveMessage
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

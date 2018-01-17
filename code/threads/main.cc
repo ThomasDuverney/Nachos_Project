@@ -167,6 +167,12 @@ main (int argc, char **argv)
 		fileSystem->CreateDirectory(*(argv+1));
 		argCount = 2;
 	   }
+	   else if(!strcmp(*argv, "-create"))
+	   {			// creation de fichier
+		ASSERT (argc > 1);
+		fileSystem->Create(*(argv+1), 128);
+		argCount = 2;
+	   }
 	   else if(!strcmp(*argv, "-cd"))
 	   {			// changement de repertoire
 		ASSERT (argc > 1);

@@ -125,19 +125,22 @@ void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
 
     if (farAddrNext == 2){
 
-        postOffice->Send(farAddrNext, token);
-        buffer = postOffice->Receive(0);
-        printf("RECU=%s\n", buffer.c_str());
+        postOffice->SendMessage(farAddrNext, 0, 1, token);
+        buffer = postOffice->ReceiveMessage(0);
+        printf("RECU1=%s\n", buffer.c_str());
+        postOffice->SendMessage(farAddrNext, 2, 3, token);
+        buffer = postOffice->ReceiveMessage(2);
+        printf("RECU2=%s\n", buffer.c_str());
 
     } else {
 
         // Wait for the token from the prev machine
-        buffer = postOffice->Receive(0);
-        printf("RECU=%s\n", buffer.c_str());
-        postOffice->Send(farAddrNext, buffer.c_str());
-
+        buffer = postOffice->ReceiveMessage(0);
+        printf("RECU1=%s\n", buffer.c_str());
+        postOffice->SendMessage(farAddrNext, 0, 1, buffer.c_str());
+        buffer = postOffice->ReceiveMessage(2);
+        printf("RECU2=%s\n", buffer.c_str());
+        postOffice->SendMessage(farAddrNext, 2, 3, buffer.c_str());
+        buffer = postOffice->ReceiveMessage(4);
     }
-
-    // Then we're done!
-    //interrupt->Halt();
 }

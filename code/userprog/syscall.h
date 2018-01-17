@@ -54,8 +54,10 @@
 #define SC_CondDestroy      33
 #define SC_CreateDirectory  34
 #define SC_ChangeDirectoryPath  35
-#define SC_ListCurrentDirectory 36
+#define SC_ListDirectory		36
 #define SC_Remove               37
+#define SC_SendMessage          38
+#define SC_ReceiveMessage       39
 
 #ifdef IN_USER_MODE
 
@@ -118,7 +120,7 @@ typedef int OpenFileId;
 #define ConsoleOutput	1
 
 /* Create a Nachos file, with "name" */
-void Create (char *name);
+void Create (char *name, int initialSize);
 
 /* Open the Nachos file "name", and return an "OpenFileId" that can
  * be used to read and write to the file.
@@ -285,9 +287,13 @@ void CreateDirectory(char * name);
 
 void ChangeDirectoryPath(char * name);
 
-void ListCurrentDirectory();
+void ListDirectory(char * name);
 
 int Remove(char * name);
+
+void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
+
+void ReceiveMessage(char * data, int box);
 
 #endif // IN_USER_MODE
 
