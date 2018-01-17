@@ -42,13 +42,10 @@ char SynchConsole::SynchGetChar() {
 void SynchConsole::SynchPutString(const char *s) {
     semWrite->P();
     int i=0;
-    while(s[i] != '\0' && s[i] != '\n' && s[i] != EOF && s[i] != 04){
+    while(s[i] != '\0' && s[i] != EOF && s[i] != 04){
         console->PutChar(s[i]);
         writeDone->P();
         i++;
-    } if (s[i] == '\n') {
-        console->PutChar(s[i]);
-        writeDone->P();
     }
     semWrite->V();
 }
