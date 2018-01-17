@@ -207,7 +207,20 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \item[-]Sémantique: Libère les ressources associées à la variable condition condId. 
 \item[-]Pré-Condition: Aucun thread n'est en attente dans la file associée à la variable.
 \end{itemize}
- 
+
+
+void CreateDirectory(char * name);
+
+void ChangeDirectoryPath(char * name);
+
+void ListDirectory(char * name);
+
+int Remove(char * name);
+
+void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
+
+void ReceiveMessage(char * data, int box);
+
 
 \section{Implémentation}
 
@@ -266,38 +279,23 @@ un objet Condition.
 \end{lstlisting}
 \subsubsection{}
 
-\subsubsection{Memoire virtuelle}
-La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
-de page en mémoire virtuelle et un numéro de page physique. L'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
-Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \texttt{frameprovider} une table temporaire des numéros de cadres de pages libres.
-On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse
-en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
-
 \subsection{Processus et Threads}
-Nous modélisons un Processus par un espace d'adressage, i.e. un objet \texttt{AddrSpace}.
-Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, dans la version originale de nachos, les méthodes relatives à la restoration et la sauvegarde de l'état de la machine \texttt{MIPS} (valeur des registres).
+Nous modélisons un Processus par un objet \texttt{AddrSpace}.
+Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, dans la version originale de nachos, les méthodes relatives, entre autres, à la restoration et la sauvegarde de l'état de la machine \texttt{MIPS} (valeur des registres).
 
 Partant de ce constat nous avons décidé d'étendre encore la sémantique de l'objet \texttt{addrSpace} en ajoutant la liste de threads actifs dans l'espace d'adressage, ainsi que les informations relatives aux jointures entre thread (join).
 
 Nous parlerons par la suite d'espace d'adressage au sens élargi décrit ci-dessus:
-Une entité décrivant à la fois un espace mémoire, l'état de la machine \texttt{MIPS} et
-les informations relatives aux fils d'exécution actifs, c'est à dire un processus.
-
-une bitmap pour la gestion des emplacements des piles des threads.
+Une entité décrivant à la fois un espace mémoire, l'état de la machine \texttt{MIPS} et les informations relatives aux fils d'exécution actifs, c'est à dire un processus.
 
 Nous donnons à chaque objet \texttt{thread} une référence vers son espace d'adressage.
 
-Remarque: Dans une version antérieure de notre projet, il nous avait contre intuitif d'associer a la classe
-\texttt{addrspace} les informations relatives aux fils d'executions. Il nous semblait plus
-cohérant d'un point de vue sémantique de déléguer à addrspace, les méthodes de gestion de la mémoire
-et de créer une classe \texttt{processus} regroupant un espace d'adressage ET les informations relatives aux fil d'executions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des diffultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Il nous a falu modifier la procedure de création du premier thread de la machine. Après plusieur jours d'arêt dans l'avancement.
-
+Remarque: Lors de notre réflèxion sur l'implémentation des processus utilisateur, il nous semblait plus cohérant d'un point de vue sémantique de déléguer à \texttt{addrspace}, les méthodes de gestion de la mémoire
+et de créer une classe \texttt{processus} regroupant un espace d'adressage et les informations relatives aux fil d'executions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des diffultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons abandoné ce modèle au profit de celui décrit plus haut.
 
 \subsubsection{Piles des threads}
-Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace}
-en blocs de pages, de taille \texttt{NumPagesPerStack}.
-Dans chaque espace, une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacement de blocs de
-pages libres pour les piles.
+Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace} en blocs de pages, de taille \texttt{NumPagesPerStack}.
+Dans chaque espace, une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacement de blocs de pages libres pour les piles. 
 
 \subsubsection{Thread Join}
 Au sein d'un processus, un thread peut utiliser la fonction join pour attendre la terminaison d'un autre thread.
@@ -313,6 +311,27 @@ Lorsque $t2$ termine son exécution il place $t1$ et $t3$ dans la \texttt{readyl
 On maintient une liste \texttt{threadList} des threads actifs dans un espace d'adressage.
 Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
 Un thread peut être attendu par plusieurs threads distincts.
+
+\subsubsection{Création d'un thread}
+Toute création de thread utilisateur s'effectue par l'appel système UserTHreadcreate
+depuis un thread en mode utilisateur qui résulte en un passage au niveau noyau
+via l'instruction assembleur syscal qui déclenche un mécanisme de gestion d'exceptionimplémenté dans la méthode \texttt{ExceptionHandler} de la classe  \texttt{exception.cc}.
+
+L'appel système UserThreadCreate mène donc à l'appel au niveau noyau de la méthode do_UserThreadCreate(). Dans cette méthode on crée un nouvel objet thread $t$ (thread noyau propulseur), destiné à configurer et brancher la machine MIPS sur l'execution d'une nouvelle fonction au sein de l'espace d'adressage du thread ayant effectué l'appel système UserThreadcreate.
+
+On commence par réccupérer la fonction utilisateur $f$ à executer et ses arguments $arg$ dans les registres 4 et 5 de la machine MIPS.
+On appelle ensuite la méthode t->Fork(StartUserthead, (f, arg)).
+Dans Fork, on initialise la ``partie noyau'' du thread propulseur $t$ de manière
+à ce qu'il execute, lorsqu'il devriendra le thread courant, la methode
+StartUserThread(f,arg). On donne à $t$ le même espace d'adressage que le
+thread courant (le thread ayant appelé UserThreadcreate). On met à jour
+la liste des thread de l'espace d'adressage, on cherche un emplacement
+libre dans l'espace d'adressage pour la pile du nouveau thread $t$.
+On place ensuite le thread $t$ dans la ready list du scheduler.
+
+Lorsque $t$ sera le thread courant il executera la méthode StartUserThread((f,arg))
+qui se chargera de configurer les registres de la machine MIPS pour l'exectution
+de la fonction utilisateur f(arg) et lancera la machine avec machine->Run(). 
 
 
 \subsubsection{Terminaison d'un thread et d'un processus}
@@ -334,6 +353,13 @@ Dans \texttt{Start.S} lors de l'appel système \texttt{UserThreadCreate}, on pla
 Lors de la création du nouveau thread au niveau noyau avec \texttt{do\_UserThreadcreate} on récupère
 cette adresse depuis \texttt{r6} et au moment de \texttt{Fork}, avant de brancher la machine \texttt{MIPS} sur
 le nouveau thread utilisateur on place cette adresse dans le registre \texttt{RetAddrReg}. Ainsi au moment de terminer son exécution le \texttt{PC} sera branché sur UserThreadExit.
+
+
+\subsubsection{Memoire virtuelle}
+La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
+de page en mémoire virtuelle et un numéro de page physique. Au moment de la création d'un espace d'adressage, l'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
+Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \texttt{frameprovider} une table temporaire des numéros de cadres de pages libres.
+On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Synchronisation}
 
