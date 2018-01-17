@@ -3,7 +3,7 @@
 #include "bitmap.h"
 
 /*
-  Classe pour l'allocation de cadres de pages pour les piles des threads utilisateurs. Les cadres de pages sont alloués par le FrameProvider.
+  Classe pour l'allocation de cadres de pages pour les piles des threads utilisateurs.
   On maintient dans le FrameProvider une bitmap décrivant les cadres de pages libres en mémoire physique.
 */
 
