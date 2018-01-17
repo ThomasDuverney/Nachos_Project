@@ -69,6 +69,12 @@ class FileSystem {
 
 #define NBFILEOPENED 10
 
+class fileDescriptor {
+    public:
+        int sector;
+        OpenFile * file;
+};
+
 
 class FileSystem {
   public:
@@ -83,10 +89,18 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    int OpenFd(const char* name);
     void Close(int sector);
+    void CloseFd(int fd);
 
     bool CreateDirectory(const char *name);
 
+    /* Read/Write from a fileDescriptor */
+
+    int ReadFd(int fd, char*into, int numBytes);
+    int ReadFdAt(int fd, char*into, int numBytes, int position);
+    int WriteFd(int fd, const char*from, int numBytes);
+    int WriteFdAt(int fd, const char*from, int numBytes, int position);
 
 
     bool Remove(const char *name); 	/* supprime un fichier ou un repertoire dans le dossier courant (pas de pathname) */
@@ -110,7 +124,7 @@ class FileSystem {
    OpenFile* currentDirectoryFile;
 
 
-   int fileOpened[NBFILEOPENED];
+   fileDescriptor* fileOpened[NBFILEOPENED];
 
 };
 

@@ -151,7 +151,7 @@ FileSystem::FileSystem(bool format)
 
     // quand on démarre le système de fichier on a aucun fichier ouvert
     for(int i=0; i<NBFILEOPENED; i++){
-        fileOpened[i] = -1;
+        fileOpened[i] = NULL;
     }
 
 }
@@ -347,7 +347,7 @@ OpenFile * FileSystem::Open(const char *name){
     int i = 0, j;
 
 
-    while(i < NBFILEOPENED && fileOpened[i] != -1){ 
+    while(i < NBFILEOPENED && fileOpened[i] != NULL){ 
         i++;
     }
 
@@ -365,33 +365,106 @@ OpenFile * FileSystem::Open(const char *name){
         sector = directory->Find(name); 
         if (sector >= 0) {
             
+            /* Recherche si le fichier n'est pas déjà ouvert */
             j = 0;
-            while(j < NBFILEOPENED && fileOpened[j] != sector){ j++; }
+            while(j < NBFILEOPENED){
+                if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
+                    break;
+                } else {
+                    j++;
+                }
+            }
 
-            if(fileOpened[j] == sector){
+            if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
                 printf("File %s already opened\n", name);
             } else {
                 openFile = new OpenFile(sector);	// name was found in directory 
-                fileOpened[i] = sector;
+                fileOpened[i] = new fileDescriptor;
+                fileOpened[i]->sector = sector; 
+                fileOpened[i]->file = openFile;
+                DEBUG('f', "Open %s sucessfull\n", name);
             }
-        }
+        } /* else le fichier n'a pas été trouvé */
         delete directory;
         return openFile;				// return NULL if not found
     }
 
 }
 
+/*
+* Ouvre un fichier et renvoie le descripteur de fichiers c'est a dire 
+* l'indice dans le tableau de fichiers ouverts
+* Renvoie -1 si le fichier ne peut pas etre ouvert ou n'est pas trouvé
+*/
+
+int FileSystem::OpenFd(const char* name){
+
+    int i = 0, j;
+    int fd = -1;
+
+
+    while(i < NBFILEOPENED && fileOpened[i] != NULL){ 
+        i++;
+    }
+
+    if(i >= NBFILEOPENED){ // il n'y a plus de place dans le tableau des fichiers ouverts
+        printf("Error couldn't open file %s, too much opened file\n", name);
+        return -1;
+    } else {
+
+        Directory *directory = new Directory(NumDirEntries);
+        OpenFile *openFile = NULL;
+        int sector;
+
+        DEBUG('f', "Opening file %s\n", name);
+        directory->FetchFrom(currentDirectoryFile);
+        sector = directory->Find(name); 
+        if (sector >= 0) {
+            
+            /* Recherche si le fichier n'est pas déjà ouvert */
+            j = 0;
+            while(j < NBFILEOPENED){
+                if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
+                    break;
+                } else {
+                    j++;
+                }
+            }
+
+            if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
+                printf("File %s already opened\n", name);
+            } else {
+                openFile = new OpenFile(sector);    // name was found in directory 
+                fileOpened[i] = new fileDescriptor;
+                fileOpened[i]->sector = sector; 
+                fileOpened[i]->file = openFile;
+                DEBUG('f', "Open %s sucessfull at fileDescriptor %d\n", name, i);
+                fd = i;
+            }
+        } /* else le fichier n'a pas été trouvé */
+        delete directory;
+        return fd;                // return NULL if not found
+    }
+}
+
 void FileSystem::Close(int sector){
 
     int i = 0;
 
-    while(i < NBFILEOPENED && fileOpened[i] != sector){ i++; }
+    while(i < NBFILEOPENED && fileOpened[i]->sector != sector){ i++; }
 
     if(i >= NBFILEOPENED){
         printf("Error file not opened or not found\n");
     } else {
-        fileOpened[i] = -1;
+        fileOpened[i]->sector = -1;
+        fileOpened[i]->file = NULL;
     }
+}
+
+void FileSystem::CloseFd(int fd){
+    ASSERT(fd >= 0 && fd < NBFILEOPENED);
+    delete fileOpened[fd];
+    fileOpened[fd] = NULL;
 }
 
 //----------------------------------------------------------------------
@@ -415,6 +488,11 @@ FileSystem::Remove(const char *name)
     BitMap *freeMap;
     FileHeader *fileHdr;
     int sector;
+
+    if(!strcmp(name, ".") || !strcmp(name, "..")){
+        DEBUG('f', "You can't remove \"%s\" directory\n", name);
+        return FALSE;
+    }
     
     directory = new Directory(NumDirEntries);
     directory->FetchFrom(currentDirectoryFile);
@@ -425,9 +503,9 @@ FileSystem::Remove(const char *name)
     }
 
     int i = 0;
-    while(i < NBFILEOPENED && fileOpened[i] != sector){i++;}
+    while(i < NBFILEOPENED && fileOpened[i]->sector != sector){i++;}
 
-    if(fileOpened[i] == sector){
+    if(fileOpened[i]->sector == sector){
         printf("Couldn't remove this file, opened in a process\n");
     }
 
@@ -606,6 +684,70 @@ FileSystem::Print()
 void FileSystem::ListOpenedFiles(){
     int i;
     for(i=0; i<NBFILEOPENED; i++){
-        printf("fileOpened[%d] = %d\n", i, fileOpened[i]);
+        if(fileOpened[i] != NULL){
+            printf("fileOpened[%d] sector = %d\n", i, fileOpened[i]->sector);
+        } else {
+            printf("fileOpened[%d] = NULL\n", i);
+        }
     }
+}
+
+int FileSystem::ReadFd(int fd, char*into, int numBytes){
+
+    int nbRead = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbRead = fileOpened[fd]->file->Read(into, numBytes);
+    }
+
+    return nbRead;
+}
+
+int FileSystem::ReadFdAt(int fd, char*into, int numBytes, int position){
+
+    int nbRead = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbRead = fileOpened[fd]->file->ReadAt(into, numBytes, position);
+    }
+
+    return nbRead;
+}
+
+int FileSystem::WriteFd(int fd, const char*from, int numBytes){
+
+    int nbWrite = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbWrite = fileOpened[fd]->file->Write(from, numBytes);
+    }
+
+    return nbWrite;
+}
+
+int FileSystem::WriteFdAt(int fd, const char*from, int numBytes, int position){
+
+    int nbWrite = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbWrite = fileOpened[fd]->file->WriteAt(from, numBytes, position);
+    }
+
+    return nbWrite;
 }
