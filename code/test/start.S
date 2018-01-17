@@ -81,37 +81,53 @@ Create:
 	j	$31
 	.end Create
 
-	.globl Open
-	.ent	Open
+    .globl Open
+    .ent    Open
 Open:
-	addiu $2,$0,SC_Open
-	syscall
-	j	$31
-	.end Open
+    addiu $2,$0,SC_Open
+    syscall
+    j   $31
+    .end Open
 
-	.globl Read
-	.ent	Read
-Read:
-	addiu $2,$0,SC_Read
-	syscall
-	j	$31
-	.end Read
-
-	.globl Write
-	.ent	Write
-Write:
-	addiu $2,$0,SC_Write
-	syscall
-	j	$31
-	.end Write
-
-	.globl Close
-	.ent	Close
+     .globl Close
+	 .ent   Close
 Close:
-	addiu $2,$0,SC_Close
-	syscall
-	j	$31
+	 addiu $2,$0,SC_Close
+	 syscall
+	 j   $31
 	.end Close
+
+    .globl Read
+    .ent   Read
+Read:
+    addiu $2,$0,SC_Read
+    syscall
+    j   $31
+    .end Read
+
+    .globl Write
+    .ent    Write
+Write:
+    addiu $2,$0,SC_Write
+    syscall
+    j   $31
+    .end Write
+
+    .globl ReadAt
+    .ent   ReadAt
+ReadAt:
+    addiu $2,$0,SC_ReadAt
+    syscall
+    j   $31
+    .end ReadAt
+
+    .globl  WriteAt
+    .ent    WriteAt
+WriteAt:
+    addiu $2,$0,SC_WriteAt
+    syscall
+    j   $31
+    .end Write
 
 	.globl Fork
 	.ent	Fork
