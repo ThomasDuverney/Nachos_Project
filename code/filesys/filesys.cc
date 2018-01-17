@@ -691,3 +691,63 @@ void FileSystem::ListOpenedFiles(){
         }
     }
 }
+
+int FileSystem::ReadFd(int fd, char*into, int numBytes){
+
+    int nbRead = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbRead = fileOpened[fd]->file->Read(into, numBytes);
+    }
+
+    return nbRead;
+}
+
+int FileSystem::ReadFdAt(int fd, char*into, int numBytes, int position){
+
+    int nbRead = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbRead = fileOpened[fd]->file->ReadAt(into, numBytes, position);
+    }
+
+    return nbRead;
+}
+
+int FileSystem::WriteFd(int fd, const char*from, int numBytes){
+
+    int nbWrite = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbWrite = fileOpened[fd]->file->Write(from, numBytes);
+    }
+
+    return nbWrite;
+}
+
+int FileSystem::WriteFdAt(int fd, const char*from, int numBytes, int position){
+
+    int nbWrite = -1;
+
+    if(fd < 0 && fd >= NBFILEOPENED){
+        printf("Bad file descriptor\n");
+    } else if(fileOpened[fd] == NULL){
+        printf("File not opened\n");
+    } else {
+        nbWrite = fileOpened[fd]->file->WriteAt(from, numBytes, position);
+    }
+
+    return nbWrite;
+}
