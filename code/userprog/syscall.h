@@ -263,36 +263,99 @@ void MutexDestroy(Mutex_t mutex);
 
 typedef int Sem_t;
 
+/*
+ * Sem_t SemCreate()
+ * Sémantique: Crée une sémaphore avec une valeur de jeton
+ * et retourne un numéro d'identifiant
+ */
 Sem_t SemCreate(int initialValue);
 
+/*
+ * void SemWait(Sem_t semaphore)
+ * Sémantique: Décrémente la valeur du jeton
+ */
 void SemWait(Sem_t semaphore);
 
+/*
+ * void SemPost(Sem_t semaphore)
+ * Sémantique: Incrémente la valeur du jeton
+ */
 void SemPost(Sem_t semaphore);
 
+/*
+ * void MutexDestroy(Mutex_t mutex)
+ * Sémantique: Détruit la sémaphore dont l'identifiant est passé en paramètre
+ */
 void SemDestroy(Sem_t semaphore);
 
 typedef int Cond_t;
 
+/*
+ * Cond_t CondCreate()
+ * Sémantique: Crée une condition et retourne un numéro d'identifiant
+ */
 Cond_t CondCreate();
 
-void CondWait(Cond_t condId, Mutex_t mutedId);
+/*
+ * Cond_t CondWait()
+ * Précondition : Le mutex doit être vérouiller par le thread appellant
+ *                avant d'appeller cette prémitive.
+ *
+ * Sémantique: Relache le verrou d'identifiant "mutexId" et place le thread
+ *             appellant dans la file d'attente de la condition "condId".
+ *             Puis endort le thread.
+ */
+void CondWait(Cond_t condId, Mutex_t mutexId);
 
+/*
+ * void CondSignal(Cond_t condId)
+ * Sémantique: Réveille un thread en attente sur la condition "condId"et le sort de la file d'attente
+ */
 void CondSignal(Cond_t condId);
 
+/*
+ * void CondBroadCast(Cond_t condId)
+ * Sémantique: Réveille et sort tout les threads en attente sur la condition "conId"
+ */
 void CondBroadCast(Cond_t condId);
 
+/*
+ * void MutexDestroy(Mutex_t mutex)
+ * Sémantique: Détruit la condition dont l'identifiant est passé en paramètre
+ */
 void CondDestroy(Cond_t condId);
 
+/*
+ * void CreateDirectory(char * name);
+ * Sémantique: Créer un répertoire dans le système de fichier Nachos, de nom "name"
+               passé en paramètre.
+ */
 void CreateDirectory(char * name);
 
 void ChangeDirectoryPath(char * name);
 
+/*
+ * void ListDirectory(char * name);
+ * Sémantique: Liste tout les fichiers et documents du chemin passé en paramètre
+ */
 void ListDirectory(char * name);
 
+/*
+ * int Remove(char * name);
+ * Sémantique: Supprime le fichier ou repertoire passé en paramètre
+ */
 int Remove(char * name);
 
+/*
+ * void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
+ * Sémantique: TODO ECRIRE LA SEMANTIQUE
+ */
 void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
 
+/*
+ * void ReceiveMessage(char * data, int box);
+ * Sémantique: TODO ECRIRE LA SEMANTIQUE
+ */
 void ReceiveMessage(char * data, int box);
 
 #endif // IN_USER_MODE

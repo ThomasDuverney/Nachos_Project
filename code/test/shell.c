@@ -36,6 +36,9 @@ int atoi(char * str){
     // Retourne le résultat avec le signe correspondant
     return sign*resultat;
 }
+void cat(char * filename){
+    int fd = Open(filename);
+}
 
 int main (){
     char cmd[100];
@@ -154,6 +157,13 @@ int main (){
                     char message[50];
                     ReceiveMessage(message,atoi(cmdline[2]));
                     PutString(message);
+                }
+            } else if(strcmp(cmdline[0], "cat") == 1){
+                if(index_cmdline < 2){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+
                 }
             } else {
                 PutString("Error command not found\n");
