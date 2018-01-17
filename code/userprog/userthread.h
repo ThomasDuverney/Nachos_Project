@@ -17,7 +17,7 @@ typedef struct _userThreadParams {
  * Valeur de retour:
  *   l'adresse du thread propulseur, NULL si la création du thread a échoué.
  */
-extern int do_UserThreadCreate();
+extern void do_UserThreadCreate();
 
 /*
  * Spécification: extern void do_UserThreadExit()
@@ -34,4 +34,4 @@ extern void do_UserThreadExit();
  * Ainsi on sait que T2 est attendu par T1.
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
-extern int do_UserThreadJoin(int tid);
+extern void do_UserThreadJoin(int tid);

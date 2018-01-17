@@ -9,21 +9,23 @@ static void startUserProcess(int threadParams){
 
 }
 
-extern int do_UserProcessCreate(char *filename){
-
-  OpenFile *executable = fileSystem->Open (filename);
+extern int do_UserProcessCreate(){
+  int ptrFileName = machine->ReadRegister(4);
+  char * executableName = executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+  copyStringFromMachine(ptrFileName, executableName, MAX_STRING_SIZE);
+  OpenFile *executable = fileSystem->Open (executableName);
 
   if (executable == NULL){
-    printf ("Unable to open file %s\n", filename);
+    printf ("Unable to open file %s\n", executableName);
     return -1;
   }
 
   Thread * threadLauncher;
-  if ((threadLauncher = new Thread (filename)) == NULL) {
+  if ((threadLauncher = new Thread (executableName)) == NULL) {
     return -1;
   }
 
-  threadLauncher->space = new AddrSpace (executable);
+  threadLauncher->space = new AddrSpace (executableName);
   threadLauncher->Fork(startUserProcess,-1);
 
   delete executable;		// close file
