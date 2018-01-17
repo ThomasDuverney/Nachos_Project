@@ -141,5 +141,6 @@ void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
         buffer = postOffice->ReceiveMessage(2);
         printf("RECU2=%s\n", buffer.c_str());
         postOffice->SendMessage(farAddrNext, 2, 3, buffer.c_str());
+        buffer = postOffice->ReceiveMessage(4);
     }
 }

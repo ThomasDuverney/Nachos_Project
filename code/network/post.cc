@@ -152,8 +152,10 @@ static void interruptTimer(int params){
         if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
-        postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
-        postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
+        if (mailTempoParams->mailHdr.length != MaxMailSize){
+            postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
+            postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
+        }
         free(mailTempoParams);
         return;
     }
@@ -408,9 +410,9 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
     outMailHdr.to = boxTo;
     outMailHdr.from = boxFrom;
 
-    while (sizeRemaining > MaxMailSize){
+    while (sizeRemaining >= MaxMailSize){
         char* buffer = new char[MaxMailSize];
-        memcpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
+        bcopy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
         outMailHdr.length = MaxMailSize;
         if (DebugIsEnabled('n')) {
             printf("SEND MSG nb=%d buffer=\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-strlen(buffer));
@@ -422,13 +424,12 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
         sizeRemaining -= MaxMailSize;
         delete [] buffer;
     }
-    int size = strlen((char*)(data + (cpt * MaxMailSize)));
-    char* buffer = new char[size];
-    memcpy(buffer, data + (cpt * MaxMailSize), size);
-    outMailHdr.length = size;
+    char* buffer = new char[sizeRemaining];
+    bcopy(data + (cpt * MaxMailSize), buffer, sizeRemaining);
+    outMailHdr.length = sizeRemaining;
     if (DebugIsEnabled('n')) {
-        printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-size);
-        printf("Max=%d buffer.length=%d mail.length=%d\n", MaxMailSize, size, outMailHdr.length);
+        printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d\n", cpt, buffer, sizeRemaining);
+        printf("Max=%d buffer.length=%d mail.length=%d\n", MaxMailSize, sizeRemaining, outMailHdr.length);
         fflush(stdout);
     }
     postOffice->SendPacket(outPktHdr, outMailHdr, buffer);
@@ -442,8 +443,7 @@ std::string PostOffice::ReceiveMessage(int box){
     char buffer[MaxMailSize];
 
     postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
-    printf("len=%d Max=%d buf=%s\n", strlen(buffer), MaxMailSize, buffer);
-    while(strlen(buffer) == MaxMailSize){
+    while(inMailHdr.length == MaxMailSize){
         data += buffer;
         memset(buffer, 0, MaxMailSize);
         postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
