@@ -58,6 +58,7 @@ extern SynchDisk *synchDisk;
 #ifdef NETWORK
 #include "post.h"
 extern PostOffice *postOffice;
+extern long long totalTicks;
 #endif
 
 #endif // SYSTEM_H

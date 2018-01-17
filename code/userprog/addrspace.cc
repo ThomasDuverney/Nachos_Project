@@ -250,5 +250,5 @@ void AddrSpace::printThreadList () {
 }
 
 int AddrSpace::getNbThread() {
-  return threadList->size();
+    return threadList->size();
 }

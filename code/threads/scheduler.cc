@@ -68,7 +68,7 @@ Scheduler::ReadyToRun (Thread * thread)
 //----------------------------------------------------------------------
 
 Thread * Scheduler::FindNextToRun () {
-  return (Thread *) readyList->Remove ();   
+  return (Thread *) readyList->Remove ();
 }
 
 //----------------------------------------------------------------------
@@ -133,7 +133,7 @@ Scheduler::Run (Thread * nextThread)
           Si threadTobedestroyed était le dernier thread d'un processus
           on libère l'espace mémoire de ce processus avec do_UserProcessfinish
         */
-        if (threadToBeDestroyed->space->getNbThread() == 0) {
+        if (threadToBeDestroyed->space != NULL && threadToBeDestroyed->space->getNbThread() == 0) {
           do_UserProcessFinish(threadToBeDestroyed);
         }
         #endif
