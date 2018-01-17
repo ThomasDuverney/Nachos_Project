@@ -113,7 +113,11 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadJoin:
                 DEBUG('a', "UserThreadJoin, initiated by user program.\n");
-                do_UserThreadJoin();
+                int returnValue;
+                int reg4;
+                reg4 = machine->ReadRegister(4);
+                returnValue = do_UserThreadJoin(reg4);
+                machine->WriteRegister(2,returnValue);
                 break;
             case SC_Exit:
                 DEBUG('a', "Exit, initiated by user program.\n");
