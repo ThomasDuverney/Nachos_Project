@@ -1,6 +1,7 @@
 #include "userprocess.h"
 #include "system.h"
 
+
 static void startUserProcess(int threadParams){
 
   currentThread->space->InitRegisters();
@@ -11,9 +12,9 @@ static void startUserProcess(int threadParams){
 
 extern int do_UserProcessCreate(){
   int ptrFileName = machine->ReadRegister(4);
-  char * executableName = executableName = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
+  char * executableName  = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
   copyStringFromMachine(ptrFileName, executableName, MAX_STRING_SIZE);
-  OpenFile *executable = fileSystem->Open (executableName);
+  OpenFile *executable = fileSystem->Open(executableName);
 
   if (executable == NULL){
     printf ("Unable to open file %s\n", executableName);
@@ -25,10 +26,11 @@ extern int do_UserProcessCreate(){
     return -1;
   }
 
-  threadLauncher->space = new AddrSpace (executableName);
+  threadLauncher->space = new AddrSpace(executable);
   threadLauncher->Fork(startUserProcess,-1);
 
-  delete executable;		// close file
+  free(executableName);		// close file
+  delete executable;
 
   return 1;
 }

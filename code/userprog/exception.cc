@@ -29,6 +29,7 @@
 #include "usersynchro.h"
 #include "userfilesys.h"
 #include "userconsole.h"
+#include "userconsole.h"
 
 
 //----------------------------------------------------------------------
@@ -69,7 +70,7 @@ static void UpdatePC (){
 //----------------------------------------------------------------------
 
 void ExceptionHandler (ExceptionType which){
-    int type, reg4;
+    int type;
     type = machine->ReadRegister(2);
 
     if (which == SyscallException) {
@@ -112,7 +113,7 @@ void ExceptionHandler (ExceptionType which){
                 break;
             case SC_UserThreadJoin:
                 DEBUG('a', "UserThreadJoin, initiated by user program.\n");
-                do_UserThreadJoin(reg4);
+                do_UserThreadJoin();
                 break;
             case SC_Exit:
                 DEBUG('a', "Exit, initiated by user program.\n");

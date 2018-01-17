@@ -1,5 +1,6 @@
 #include "userconsole.h"
 
+
 void do_UserPutChar(){
   int firstParam = machine->ReadRegister(4);
   synchconsole->SynchPutChar((char) firstParam);
@@ -27,7 +28,7 @@ void do_UserGetString(){
   int ptrAdressChar= machine->ReadRegister(4);
   // reg5 = taille max
   int tailleMaxChaine = machine->ReadRegister(5);
-  buff = (char*) malloc(tailleMaxChaine * sizeof(char));
+  char * buff = (char*) malloc(tailleMaxChaine * sizeof(char));
   synchconsole->SynchGetString(buff, tailleMaxChaine);
   int h = 0;
   while(h < tailleMaxChaine){

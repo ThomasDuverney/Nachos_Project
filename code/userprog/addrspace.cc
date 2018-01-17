@@ -91,7 +91,7 @@ static void SwapHeader (NoffHeader * noffH) {
 //
 //      "executable" is the file containing the object code to load into memory
 //----------------------------------------------------------------------
-AddrSpace::AddrSpace (OpenFile * executable) {
+AddrSpace::AddrSpace(OpenFile * executable){
     NoffHeader noffH;
     unsigned int i, size, numPagesPerAddrSpace, numStackPerAddrSpace;
     /* Lecture du fichier objet depuis le disque dans la structure noff */

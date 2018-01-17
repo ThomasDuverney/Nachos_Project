@@ -34,4 +34,4 @@ extern void do_UserThreadExit();
  * Ainsi on sait que T2 est attendu par T1.
  * Un thread ne peut join un autre thread que si il est vivant (présent dans threadList de l'addrspace)
  */
-extern void do_UserThreadJoin(int tid);
+extern void do_UserThreadJoin();

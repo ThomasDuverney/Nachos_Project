@@ -50,8 +50,9 @@
  */
 extern void do_UserThreadCreate() {
     Thread *t;
+    int tid;
     if ((t = new Thread ("UserThread")) == NULL) {
-      return -1;
+      tid = -1;
     }
 
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
@@ -61,7 +62,8 @@ extern void do_UserThreadCreate() {
 
     t->Fork(StartUserThread,(int) threadParams);
     // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
-    machine->WriteRegister(2,t->getTid());
+    tid = t->getTid();
+    machine->WriteRegister(2,tid);
 }
 
 /*
@@ -92,8 +94,9 @@ extern void do_UserThreadExit() {
 extern void do_UserThreadJoin(){
 
     int tid = machine->ReadRegister(4);
+    int error;
     if (tid == currentThread->getTid() || std::find(currentThread->space->threadList->begin(), currentThread->space->threadList->end(), tid) == currentThread->space->threadList->end()){
-        return -1;
+        error =  -1;
     }
     interrupt->SetLevel (IntOff);
     std::map<int, std::list<Thread*>* >::iterator it = currentThread->space->joinMap->find(tid);
@@ -106,5 +109,6 @@ extern void do_UserThreadJoin(){
     }
     tempThreadList->push_back(currentThread);
     currentThread->Sleep();
-    machine->WriteRegister(2,0);
+    error = 0;
+    machine->WriteRegister(2,error);
 }

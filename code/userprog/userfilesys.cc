@@ -32,11 +32,11 @@ extern void do_UserRemove(){
 
 #else
 
-extern void do_UserCreateDirectory(char * nameDirectory){
+extern void do_UserCreateDirectory(){
 	printf("CreateDirectory\n");
 }
 
-extern void do_UserChangeDirectoryPath(char * nameDirectory){
+extern void do_UserChangeDirectoryPath(){
 	printf("ChangeDirectory\n");
 }
 
@@ -44,7 +44,7 @@ extern void do_UserListCurrentDirectory(){
 	printf("ListCurrentDirectory\n");
 }
 
-extern void do_UserRemove(char * name){
+extern void do_UserRemove(){
 	printf("Remove\n");
 }
 
