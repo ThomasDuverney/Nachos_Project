@@ -19,7 +19,6 @@
 #include "copyright.h"
 #include "post.h"
 #include "system.h"
-#include <stdlib.h>
 #include <unistd.h>
 #include <strings.h> /* for bzero */
 #include <string.h>
@@ -261,7 +260,7 @@ void PostOffice::PostalDelivery() {
         pktHdr = network->Receive(bufin);
 
         mailHdr = *(MailHeader *)bufin;
-        if (mailHdr.type == '0'){
+        if (mailHdr.type == 0){
             if (ackSelfByBoxes[mailHdr.to] >= mailHdr.seq){
                 if (ackSelfByBoxes[mailHdr.to] == mailHdr.seq){
                     ackSelfByBoxes[mailHdr.to] += mailHdr.length;
@@ -274,7 +273,7 @@ void PostOffice::PostalDelivery() {
                 outMailHdr.ack = ackSelfByBoxes[outMailHdr.from];
                 outMailHdr.seq = seqByBoxes[outMailHdr.from];
                 outMailHdr.length = 0;
-                outMailHdr.type = '1';
+                outMailHdr.type = 1;
 
                 ASSERT(0 <= outMailHdr.to && outMailHdr.to < numBoxes);
                 bcopy(&outMailHdr, bufout, sizeof(MailHeader));
@@ -328,13 +327,14 @@ void PostOffice::SendPrivate(PacketHeader pktHdr, MailHeader mailHdr, const char
 
     mailHdr.seq = seqByBoxes[mailHdr.from];
     mailHdr.ack = ackSelfByBoxes[mailHdr.from];
-    mailHdr.type = '0';
+    mailHdr.type = 0;
 
     MailTempoParams *params = (MailTempoParams*) malloc(sizeof(MailTempoParams));
     params->data = new char[mailHdr.length];
     for (unsigned i=0; i<mailHdr.length; i++){
         params->data[i] = data[i];
     }
+    //memcpy(params->data, data, mailHdr.length);
 
     // concatenate MailHeader and data
     bcopy(&mailHdr, buf, sizeof(MailHeader));
@@ -392,8 +392,7 @@ void PostOffice::ReceivePrivate(int box, PacketHeader *pktHdr, MailHeader *mailH
     ASSERT(mailHdr->length <= MaxMailSize);
 }
 
-void PostOffice::Send(NetworkAddress addrTo, int boxTo, int boxFrom, const char *data){
-    char* buffer = new char[MaxMailSize];
+void PostOffice::Send(int farAddrNext, const char *data){
     int cpt = 0;
     unsigned sizeRemaining = strlen(data);
     PacketHeader outPktHdr;
@@ -403,12 +402,13 @@ void PostOffice::Send(NetworkAddress addrTo, int boxTo, int boxFrom, const char 
     	printf("BEGIN SEND MESSAGE \"%s\"\n", data);
         fflush(stdout);
     }
-    outPktHdr.to = addrTo;
-    outMailHdr.to = boxTo;
-    outMailHdr.from = boxFrom;
 
     while (sizeRemaining > MaxMailSize){
+        char buffer[MaxMailSize];
         memcpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
+        outPktHdr.to = farAddrNext;
+        outMailHdr.to = 0;
+        outMailHdr.from = 1;
         outMailHdr.length = MaxMailSize;
         if (DebugIsEnabled('n')) {
             printf("SEND MSG nb=%d buffer=\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-strlen(buffer));
@@ -420,7 +420,11 @@ void PostOffice::Send(NetworkAddress addrTo, int boxTo, int boxFrom, const char 
         sizeRemaining -= MaxMailSize;
     }
     int size = strlen((char*)(data + (cpt * MaxMailSize)));
+    char buffer[size];
     memcpy(buffer, data + (cpt * MaxMailSize), size);
+    outPktHdr.to = farAddrNext;
+    outMailHdr.to = 0;
+    outMailHdr.from = 1;
     outMailHdr.length = size;
     if (DebugIsEnabled('n')) {
         printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-size);
@@ -428,18 +432,19 @@ void PostOffice::Send(NetworkAddress addrTo, int boxTo, int boxFrom, const char 
         fflush(stdout);
     }
     postOffice->SendPrivate(outPktHdr, outMailHdr, buffer);
-    delete [] buffer;
 }
 
-std::string PostOffice::Receive(int box, PacketHeader *pktHdr, MailHeader *mailHdr){
+std::string PostOffice::Receive(int box){
     std::string data;
-    char* buffer = new char[MaxMailSize];
+    PacketHeader inPktHdr;
+    MailHeader inMailHdr;
+    char buffer[MaxMailSize];
 
-    postOffice->ReceivePrivate(box, pktHdr, mailHdr, buffer);
+    postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
     while(strlen(buffer) == MaxMailSize){
         data += buffer;
         memset(buffer, 0, MaxMailSize);
-        postOffice->ReceivePrivate(box, pktHdr, mailHdr, buffer);
+        postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
     }
     data += buffer;
 
@@ -447,80 +452,7 @@ std::string PostOffice::Receive(int box, PacketHeader *pktHdr, MailHeader *mailH
         printf("RECEIVE %s\n", data.c_str());
         fflush(stdout);
     }
-    delete [] buffer;
     return data;
-}
-
-void PostOffice::SendFile(NetworkAddress addrTo, int boxTo, int boxFrom, const char* filename){
-    OpenFile* file = fileSystem->Open(filename);
-    if (file != NULL){
-        char* buffer = new char[MaxMailSize];
-        sprintf(buffer, "%d", file->Length());
-        postOffice->Send(addrTo, boxTo, boxFrom, buffer);
-        while (file->Read(buffer, MaxMailSize) == MaxMailSize){
-            postOffice->Send(addrTo, boxTo, boxFrom, buffer);
-        }
-        delete [] buffer;
-    }
-}
-
-void PostOffice::ReceiveFile(int box, const char* filename){
-    OpenFile* file;
-    PacketHeader inPktHdr;
-    MailHeader inMailHdr;
-    char* buffer = new char[MaxMailSize];
-
-    postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
-    if (fileSystem->Create(filename, atoi(buffer))) {
-        file = fileSystem->Open(filename);
-        postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
-        while(strlen(buffer) == MaxMailSize){
-            file->Write(buffer, MaxMailSize);
-            memset(buffer, 0, MaxMailSize);
-            postOffice->ReceivePrivate(box, &inPktHdr, &inMailHdr, buffer);
-        }
-        file->Write(buffer, strlen(buffer));
-    }
-    delete [] buffer;
-}
-
-void PostOffice::GetFile(NetworkAddress addrTo, int boxTo, int boxFrom, const char* filename){
-    char* get = new char[sizeof(filename) + sizeof("GET")];
-    strcpy(get, "GET");
-    postOffice->Send(addrTo, boxTo, boxFrom, get);
-    postOffice->ReceiveFile(boxFrom, get);
-    delete [] get;
-}
-
-void PostOffice::PutFile(NetworkAddress addrTo, int boxTo, int boxFrom, const char* filename){
-    char* put = new char[sizeof(filename) + sizeof("PUT")];
-    strcpy(put, "PUT");
-    strcat(put, filename);
-    printf("SEND1%s\n", put);
-    postOffice->Send(addrTo, boxTo, boxFrom, put);
-    postOffice->SendFile(addrTo, boxTo, boxFrom, put);
-    delete [] put;
-}
-
-void PostOffice::RunFTPServer(int box){
-    PacketHeader pktHdr;
-    MailHeader mailHdr;
-    std::string data;
-    std::string type;
-    std::string filename;
-
-    while(1){
-        data = postOffice->Receive(box, &pktHdr, &mailHdr);
-        if (data.length() > 3){
-            type = data.substr(0, 3);
-            filename = data.substr(3, data.length() - 3);
-            if (!strcmp(type.c_str(), "GET")){
-                SendFile(pktHdr.from, mailHdr.from, box, filename.c_str());
-            } else if (!strcmp(type.c_str(), "PUT")){
-                ReceiveFile(box, filename.c_str());
-            }
-        }
-    }
 }
 
 //----------------------------------------------------------------------

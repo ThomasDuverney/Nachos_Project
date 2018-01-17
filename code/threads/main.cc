@@ -64,8 +64,6 @@ extern void StartProcess (char *file), ConsoleTest (char *in, char *out), SynchC
 extern void MailTest (int networkID);
 extern void MailTestRing (int prevID, int nextID);
 extern void MailTestRingTCP (int prevID, int nextID);
-extern void MailTestSendFile(int addrTo, const char* filename);
-extern void MailTestReceiveFile(int addrTo, const char* filename);
 
 //----------------------------------------------------------------------
 // main
@@ -169,32 +167,11 @@ main (int argc, char **argv)
 		MailTest (atoi (*(argv + 1)));
 		argCount = 2;
     } else if (!strcmp(*argv, "-r")){
-        ASSERT (argc > 2);
-        Delay (3);	// delay for 2 seconds
+        ASSERT (argc > 1);
+        Delay (5);	// delay for 2 seconds
         // to give the user time to
         // start up another nachos
         MailTestRingTCP(atoi (*(argv + 1)), atoi (*(argv + 2)));
-        argCount = 3;
-    } else if (!strcmp(*argv, "-f")){
-        ASSERT (argc > 1);
-        Delay (3);	// delay for 2 seconds
-        // to give the user time to
-        // start up another nachos
-        postOffice->RunFTPServer(atoi (*(argv + 1)));
-        argCount = 2;
-    } else if (!strcmp(*argv, "-s")){
-        ASSERT (argc > 2);
-        Delay (3);	// delay for 2 seconds
-        // to give the user time to
-        // start up another nachos
-        MailTestSendFile(atoi (*(argv + 1)), *(argv + 2));
-        argCount = 3;
-    } else if (!strcmp(*argv, "-re")){
-        ASSERT (argc > 2);
-        Delay (3);	// delay for 2 seconds
-        // to give the user time to
-        // start up another nachos
-        MailTestReceiveFile(atoi (*(argv + 1)), *(argv + 2));
         argCount = 3;
     }
 #endif // NETWORK

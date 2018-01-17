@@ -122,32 +122,22 @@ void MailTestRing(int farAddrPrev, int farAddrNext) {
 void MailTestRingTCP(int farAddrPrev, int farAddrNext) {
     const char *token = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     std::string buffer;
-    PacketHeader pktHdr;
-    MailHeader mailHdr;
 
     if (farAddrNext == 2){
 
-        postOffice->Send(farAddrNext, 0, 1, token);
-        buffer = postOffice->Receive(0, &pktHdr, &mailHdr);
+        postOffice->Send(farAddrNext, token);
+        buffer = postOffice->Receive(0);
         printf("RECU=%s\n", buffer.c_str());
 
     } else {
 
         // Wait for the token from the prev machine
-        buffer = postOffice->Receive(0, &pktHdr, &mailHdr);
+        buffer = postOffice->Receive(0);
         printf("RECU=%s\n", buffer.c_str());
-        postOffice->Send(farAddrNext, 1, 0, buffer.c_str());
+        postOffice->Send(farAddrNext, buffer.c_str());
 
     }
 
     // Then we're done!
     //interrupt->Halt();
-}
-
-void MailTestSendFile(int addrTo, const char* filename){
-    postOffice->PutFile(addrTo, 1, 0, filename);
-}
-
-void MailTestReceiveFile(int addrTo, const char* filename){
-    postOffice->GetFile(addrTo, 1, 0, filename);
 }
