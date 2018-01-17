@@ -119,7 +119,7 @@ AddrSpace::AddrSpace (OpenFile * executable) {
     pageTable = new TranslationEntry[numPages];
     for (i = 0; i < numPages; i++)
       {
-    	  pageTable[i].virtualPage = i;	// for now, virtual page # = phys page #
+    	  pageTable[i].virtualPage = i;
           pageTable[i].physicalPage = frameProvider->GetEmptyFrameRandom();
           pageTable[i].valid = TRUE;
     	  pageTable[i].use = FALSE;
