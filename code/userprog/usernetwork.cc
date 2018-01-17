@@ -1,6 +1,7 @@
 #include "usernetwork.h"
 #include <string>
 
+#ifdef NETWORK
 extern void do_UserSendMessage(){
   int addrDesti = machine->ReadRegister(4);
   int boxTo = machine->ReadRegister(5);
@@ -24,3 +25,12 @@ extern void do_UserReceiveMessage(){
     }
   }
 }
+#else
+extern void do_UserSendMessage(){
+
+}
+
+extern void do_UserReceiveMessage(){
+
+}
+#endif

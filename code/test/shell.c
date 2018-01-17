@@ -115,7 +115,7 @@ int main (){
                 stopped = 1;
                 state = IDLE;
                 break;
-            case SEND:
+                /*xcase SEND:
                 Send(,,,1);
                 state = IDLE;
                 break;
@@ -123,7 +123,7 @@ int main (){
                 Receive(buff,1);
                 stopped = 1;
                 state = IDLE;
-                break;
+                break;*/
             default:
                 PutString("Error state not found\n");
                 return 1;

@@ -130,3 +130,4 @@ $(eval $(call define-flavor,network,thread-test userprog filesys network))
 
 # if file sys done first!
 # $(eval $(call define-flavor,vm,userprog filesys vm))
+

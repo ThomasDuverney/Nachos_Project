@@ -213,6 +213,15 @@ Thread::Finish ()
     ASSERT (this == currentThread);
 
     nbThreadActifs--;
+
+#ifdef NETWORK
+    /*
+     * Si il ne reste plus que le thread noyau postalWorker on éteint la machine
+     */
+    if(nbThreadActifs == 1){
+      interrupt->Halt();
+    }
+#else
     /*
      * Si le thread courant est le dernier thread actif dans le système
      * on arrête la machine.
@@ -220,6 +229,7 @@ Thread::Finish ()
     if(nbThreadActifs == 0){
       interrupt->Halt();
     }
+#endif
 
 #ifdef USER_PROGRAM
     if (this->space != NULL){
