@@ -255,16 +255,20 @@ bool FileSystem::CreateDirectory(const char *name){
     Directory *currentDirectory;
     currentDirectory = new Directory(NumDirEntries);
 
-    // TODO a changer avec le repertoire courant
+    int backUpsector = currentDirectorySector;
+    char dirname[FileNameMaxLen+1];
+    ChangeDirectoryAndParse(name, dirname);
+
     currentDirectory->FetchFrom(currentDirectoryFile); // on rempli le le root directory
 
     ASSERT(currentDirectory != NULL);
 
-    DEBUG('f', "Creating directory: %s in the directory at the sector %d\n", name, currentDirectorySector);
+
+    DEBUG('f', "Creating directory: %s in the directory at the sector %d\n", dirname, currentDirectorySector);
 
     // on cherche si le nom est deja pris
-    if(currentDirectory->Find(name) != -1){ // si le nom est deja pris
-        printf("Error couldn't create %s directory, name already taken\n", name);
+    if(currentDirectory->Find(dirname) != -1){ // si le nom est deja pris
+        printf("Error couldn't create %s directory, name already taken\n", dirname);
         
         success = FALSE;
 
@@ -276,7 +280,7 @@ bool FileSystem::CreateDirectory(const char *name){
 
 
         if(sector == -1){ // il n'y a plus de secteur libre sur le disque;
-            printf("Error couldn't create %s directory, no sector free in current directory\n", name);
+            printf("Error couldn't create %s directory, no sector free in current directory\n", dirname);
             
             success = FALSE;
 
@@ -284,21 +288,21 @@ bool FileSystem::CreateDirectory(const char *name){
 
             newDir = new Directory(NumDirEntries);
 
-            DEBUG('f', "Sector for directory %s: %d\n", name, sector);
+            DEBUG('f', "Sector for directory %s: %d\n", dirname, sector);
 
             /* On ajoute l'entrée . dans le nouveau repertoire */
             newDir->Add(".", sector, TRUE);
             /* On ajoute l'entrée du répertoire parent dans le nouveau repertoire */
             newDir->Add("..", currentDirectorySector, TRUE);
             /* On ajoute l'entrée du nouveau répertoire dans le repertoire courant */
-            currentDirectory->Add(name, sector, TRUE);
+            currentDirectory->Add(dirname, sector, TRUE);
 
             /* Création d'un FileHeader pour le nouveau repertoire */
             directoryFileHeader = new FileHeader;
 
             /* Alloue les secteurs néccessaires pour stocker les données de la structure de repertoire (dirEntry) */
             if(!directoryFileHeader->Allocate(freeMap, DirectoryFileSize)){
-                DEBUG('f', "Error couldn't create %s directory, not enougth space in freeMap\n", name);
+                DEBUG('f', "Error couldn't create %s directory, not enougth space in freeMap\n", dirname);
                 success = FALSE;
             } else {
 
@@ -332,6 +336,10 @@ bool FileSystem::CreateDirectory(const char *name){
 
         delete freeMap;
     }
+
+    // on remet l'ancien repertoire courant
+    currentDirectorySector = backUpsector;
+    currentDirectoryFile = new OpenFile(currentDirectorySector);
 
     delete currentDirectory;
 
@@ -437,13 +445,17 @@ int FileSystem::OpenFd(const char* name){
         return -1;
     } else {
 
+        int backUpsector = currentDirectorySector;
+        char filename[FileNameMaxLen+1];
+        ChangeDirectoryAndParse(name, filename);
+
         Directory *directory = new Directory(NumDirEntries);
         OpenFile *openFile = NULL;
         int sector;
 
-        DEBUG('f', "Opening file %s\n", name);
+        DEBUG('f', "Opening file %s\n", filename);
         directory->FetchFrom(currentDirectoryFile);
-        sector = directory->Find(name); 
+        sector = directory->Find(filename); 
         if (sector >= 0) {
             
             /* Recherche si le fichier n'est pas déjà ouvert */
@@ -457,17 +469,24 @@ int FileSystem::OpenFd(const char* name){
             }
 
             if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
-                printf("File %s already opened\n", name);
+                printf("File %s already opened\n", filename);
             } else {
                 openFile = new OpenFile(sector);    // name was found in directory 
                 fileOpened[i] = new fileDescriptor;
                 fileOpened[i]->sector = sector; 
                 fileOpened[i]->file = openFile;
-                DEBUG('f', "Open %s sucessfull at fileDescriptor %d\n", name, i);
+                DEBUG('f', "Open %s sucessfull at fileDescriptor %d\n", filename, i);
                 fd = i;
             }
-        } /* else le fichier n'a pas été trouvé */
+        } else {
+            printf("Error couldn't find this file\n");
+        }
         delete directory;
+
+        // on remet l'ancien repertoire courant
+        currentDirectorySector = backUpsector;
+        currentDirectoryFile = new OpenFile(currentDirectorySector);
+
         return fd;                // return NULL if not found
     }
 }
