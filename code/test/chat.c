@@ -34,11 +34,10 @@ int main (){
     char cmd[100];
  //   char selfName[30];
  //   char otherName[30];
-    int state, boxFrom, addrTo, boxTo;
+    int boxFrom, addrTo, boxTo;
 
     PutString("Sur quelle boite souhaitez-vous écoutez ? ");
     GetInt(&boxFrom);
-    PutInt(boxFrom);
     PutString("\nA quelle adresse souhaitez-vous tchatter ? ");
     GetInt(&addrTo);
     PutString("\nA quelle box souhaitez-vous tchatter ? ");
@@ -50,11 +49,11 @@ int main (){
     p.boxFrom = boxFrom;
  //   p.otherName = (char*) otherName;
     UserThreadCreate(reception,0);
-    state = IDLE;
-    while(!state){
+    //state = IDLE;
+    while(1){
+        PutString("Entrez le message :\n");
         GetString(cmd,100);
  //       PutString(selfName);
-        PutString(cmd);
         SendMessage(addrTo, boxTo, boxFrom, cmd);
     }
     return 0;
