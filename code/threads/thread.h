@@ -110,7 +110,6 @@ class Thread
 
     void setStatus (ThreadStatus st);
 
-
     ThreadStatus getStatus();
 
     const char *getName ();
@@ -140,13 +139,13 @@ class Thread
 // one for its state while executing user code, one for its state
 // while executing kernel code.
 
-    int stackBitmapIndex;
+    int stackBitmapIndex; // Index de la pile du thread dans stackBitmap
     int userRegisters[NumTotalRegs];	// user-level CPU register state
   public:
     void SaveUserState ();	// save user-level register state
     void RestoreUserState ();	// restore user-level register state
 
-    int getStackBitmapIndex();
+    int getStackBitmapIndex(); // Retourne l'index de la pile du thread dans la bitmap.
     AddrSpace *space;		// User code this thread is running.
 #endif
 };
