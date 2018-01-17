@@ -195,6 +195,10 @@ void ExceptionHandler (ExceptionType which){
                 DEBUG('a', "UserRemove, initiated by user program.\n");
                 do_UserRemove();
                 break;
+            case SC_Create:
+                DEBUG('a', "UserRemove, initiated by user program.\n");
+                do_UserCreate();
+                break;
             default:
                 printf("Unexpected user mode exception %d %d\n", which, type);
                 ASSERT(FALSE);

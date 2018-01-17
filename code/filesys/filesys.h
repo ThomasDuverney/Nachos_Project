@@ -130,6 +130,8 @@ class FileSystem {
 
    fileDescriptor* fileOpened[NBFILEOPENED];
 
+   void ChangeDirectoryAndParse(const char *path, char *filename);
+
 };
 
 #endif // FILESYS
