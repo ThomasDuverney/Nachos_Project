@@ -60,12 +60,12 @@
 
 
 \section{Fonctionnalités}
-Environnement utilisateur multi-processus avec espaces d'adressages et memoire virtuelle.
+Environnement utilisateur multi-processus avec espaces d'adressages séparés et virtualisation memoire.
 Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, variables-conditions).
 Gestion des entrées-sorties (GetInt, PutInt, GetChar, PutChar, GetString, Putstring).
-Système de fichier type FAT.
-Protocole réseau avec envoi fiable de données.
-
+Système de fichier inspiré ext4.
+Protocole réseau sans connection avec envoi fiable de données.
+Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \section{Spécifications}
 \subsection{Entrées-Sorties}
 
@@ -89,7 +89,7 @@ Protocole réseau avec envoi fiable de données.
 \item[-] Sémantique:
   Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
   l'écrit à l'adresse \texttt{s}.
-\item[-] Pré-Conditions: L'adresse \texttt{s} est valide.
+\item[-] Pré-Conditions: L'adresse \texttt{s} est valide (espace suffisant).
 \end{itemize}
 
 \subsubsection{void PutInt(int n)}
@@ -128,7 +128,7 @@ Protocole réseau avec envoi fiable de données.
 \begin{itemize}
 \item[-] Sémantique: Attends la terminaison du Thread $tid$, renvoie $-1$
   si le thread est déjà terminé, $0$ sinon.
-\item[-] Pré-Conditions: Le thread courant n'a pas déjà fait join(tid).
+\item[-] Pré-Conditions: Le thread courant n'a pas déjà fait join(tid). 
 \end{itemize}
 
 \subsection{Synchronisation}
@@ -211,35 +211,87 @@ Protocole réseau avec envoi fiable de données.
 
 \section{Implémentation}
 
-\subsection{Variables globales du système}
-Nous maintenons les variables et structures suivantes au niveau système.
-\begin{itemize}
-\item[-] unsigned int threadCounter: Nb total de thread Crées, sert à l'attribution d'un tid.
-\item[-] unsigned int nbThreadActifs: Nb Total de thread actifs du système, sert à éteindre la machine.
-\item[-] unsigned int mutexCounter: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
-\item[-] std::map<int,Lock * > * mutexMap: Association entre un identifiant de mutex (user) et un objet Lock.
-\item[-] unsigned int semCounter: Nb Total de sémaphore créées, sert à l'initialisation des semaphores utilisateur.
-\item[-] std::map<int,Semaphore * > * semMap: Association entre un identifiant de semaphore (user) et un objet Semaphore.
-\item[-] unsigned int condCounter: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
-  condition utilisateur.
-\item[-] std::map<int,Condition * > * condMap: Association entre l'identifiant d'une variable condition et
-  un objet Condition.
-\end{itemize}
+\subsection{Structures de donées, variables et méthodes importantes}
+\subsubsection{\texttt{thread/system.cc}}
+
+\texttt{unsigned int threadCounter}: Nb total de thread Crées, sert à l'attribution d'un tid.
+
+\texttt{unsigned int nbThreadActifs}: Nb Total de thread actifs du système, sert à éteindre la machine.
+
+\texttt{unsigned int mutexCounter}: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
+
+\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex (user) et un objet Lock.
+
+\texttt{unsigned int semCounter}: Nb Total de sémaphore créées, sert à l'initialisation des semaphores utilisateur.
+
+\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de semaphore (user) et un objet Semaphore.
+
+\texttt{unsigned int condCounter}: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
+condition utilisateur.
+
+\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et
+un objet Condition.
+
+\subsubsection{\texttt{userprog/frameprovider.h}}
+\begin{lstlisting}[columns=fixed,basicstyle=\scriptsize\ttfamily]
+/*
+    GetEmptyFrame
+    Spécifications: int GetEmptyFrame()
+    Sémantique: retourne l'indice d'un cadre de page physique libre.
+    Met à jour la BitMap et marque la page comme occupée.
+  */
+  int GetEmptyFrame();
+
+  /*
+    GetEmptyFrameRandom
+    Spécifications: int GetEmptyFrameRandom()
+    Sémantique: retourne un indice aléatoire d'un cadre de page physique libre.
+    Met à jour la BitMap et marque la page comme occupée.
+  */
+  int GetEmptyFrameRandom();
+
+  /*
+    ReleaseFrame
+    Spécifications: void ReleaseFrame( int pageNum)
+    Sémantique: Met à jour la Bitmap et libère le cadre physique de page d'indice pageNum
+  */
+  void ReleaseFrame(int pageNum);
+
+  /*
+     NumAvailableFrame
+     Spécifications: int NumAvailableFrame()
+     Sémantique: Retourne le nombre de cadres de pages libres.
+  */
+  int NumAvailableFrame();
+\end{lstlisting}
+\subsubsection{}
 
 \subsubsection{Memoire virtuelle}
-La virtualisation de la mémoire passe par une association entre numéro de page en mémoire virtuelle
-et un numéro de page physique. L'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
+La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
+de page en mémoire virtuelle et un numéro de page physique. L'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
 Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \texttt{frameprovider} une table temporaire des numéros de cadres de pages libres.
 On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse
 en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Processus et Threads}
 Nous modélisons un Processus par un espace d'adressage, i.e. un objet \texttt{AddrSpace}.
-L'objet \texttt{AddrSpace} encapsule, en plus d'une page des tables, l'état de la machine \texttt{MIPS}
-(valeur des registres), la liste de threads actifs dans l'espace d'adressage,
-informations sur les jointures entre thread (join), une bitmap pour l'emplacement des piles des threads.
+Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, dans la version originale de nachos, les méthodes relatives à la restoration et la sauvegarde de l'état de la machine \texttt{MIPS} (valeur des registres).
 
-TODO Explication du choix:
+Partant de ce constat nous avons décidé d'étendre encore la sémantique de l'objet \texttt{addrSpace} en ajoutant la liste de threads actifs dans l'espace d'adressage, ainsi que les informations relatives aux jointures entre thread (join).
+
+Nous parlerons par la suite d'espace d'adressage au sens élargi décrit ci-dessus:
+Une entité décrivant à la fois un espace mémoire, l'état de la machine \texttt{MIPS} et
+les informations relatives aux fils d'exécution actifs, c'est à dire un processus.
+
+une bitmap pour la gestion des emplacements des piles des threads.
+
+Nous donnons à chaque objet \texttt{thread} une référence vers son espace d'adressage.
+
+Remarque: Dans une version antérieure de notre projet, il nous avait contre intuitif d'associer a la classe
+\texttt{addrspace} les informations relatives aux fils d'executions. Il nous semblait plus
+cohérant d'un point de vue sémantique de déléguer à addrspace, les méthodes de gestion de la mémoire
+et de créer une classe \texttt{processus} regroupant un espace d'adressage ET les informations relatives aux fil d'executions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des diffultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Il nous a falu modifier la procedure de création du premier thread de la machine. Après plusieur jours d'arêt dans l'avancement.
+
 
 \subsubsection{Piles des threads}
 Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace}
@@ -286,7 +338,49 @@ le nouveau thread utilisateur on place cette adresse dans le registre \texttt{Re
 \subsection{Synchronisation}
 
 \subsection{Réseau}
+* Numéro de séquence
+* Données/Acquitements
+* Acquitements cumulatifs
+* 
+Nous avons mis en place un protocole de transmition de données fiable (sans perte de d'information), qui s'inspire du mécanisme d'acquitement cumulatif de TCP et de la notion de flux d'octet. 
+On distingue deux type de messages, données et acquitements. On se place dans le cadre d'un échange bi-directionnel de données entre deux machines $A$ et $B$.
+De chaque côté on considère un flux d'octet. Chaque octet du flux est numéroté. TODO -> numsequence
 
+On suppose que $A$ envoie plusieurs messages $m_1, m_2, m_3, ... $ de données à $B$.
+$A$ associe un timer à chaque message de donnée, et déclenche le timer à l'envoi du message.
+Afin de garantir que fiabilité du transfert chaque message doit être acquité par $B$ dans le temps imparti par le timer. Le principe d'acquitement cumulatif garantit que si $A$ reçoit un acquitement pour un message $m_n$ alors $B$ a bien reçu les messages dont les numéros de séquence sont inférieur ou égal à $n$.
+
+* Envoi reception Données de tailles variables
+Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs paquets.
+
+\subsection{Système de Fichier}
+
+
+* Structures et variables importantes 
+** FileOpened 
+Lors de la création de l'objet \texttt{filesys} système de fichier on crée un tableau qui mémorise les fichiers ouvert. Ce tableau est utilisé pour garantir l'acces exclusif d'un fichier à un unique thread (sur tout le système). Les index dans le tableau sont utilisés comme descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'ecriture dans un fichier.
+
+
+** Currentdirectory
+A l'initialisation du système de fichier, on place lerepertoire courant à la racine du système de fichiers.
+
+* Chemins relatifs
+Toutes les méthodes createDirectory, changeDir, Create,... acceptent les chemins relatifs.
+
+** FileHeaders
+La gestion des fichiers et repertoires sur le disque s'appuie sur les objets fileHeader qui mémorise,
+la taille du fichier en octet, le nombre de scteurs de disques utilisés, et les indices des secteurs de disques.
+Le fileHeader est un index pour accéder au contenu réel du fichier.
+
+
+Un répertoire est vu comme un fichier particulier et possède aussi son file header.
+ 
+* FreeMap
+
+* Is directory
+Permet de discerner le type d' une entrée de répertoire (fichier ou repertoire).
+Utilisé lors d'un change directory, et d'un remove (si le repertoire est vide ou pas).
+ 
 
 \section{Organisation}
 Pour les premières étapes nous avons travaillé sur un ordinateur commun.
