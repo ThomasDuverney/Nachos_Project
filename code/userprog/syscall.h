@@ -58,6 +58,8 @@
 #define SC_Remove               37
 #define SC_SendMessage          38
 #define SC_ReceiveMessage       39
+#define SC_ReadAt               40
+#define SC_WriteAt              41
 
 #ifdef IN_USER_MODE
 
@@ -125,10 +127,12 @@ void Create (char *name, int initialSize);
 /* Open the Nachos file "name", and return an "OpenFileId" that can
  * be used to read and write to the file.
  */
-OpenFileId Open (char *name);
+OpenFileId Open(char *name);
 
 /* Write "size" bytes from "buffer" to the open file. */
 void Write (char *buffer, int size, OpenFileId id);
+
+int WriteAt(OpenFileId fd, char* from, int numBytes, int position);
 
 /* Read "size" bytes from the open file into "buffer".
  * Return the number of bytes actually read -- if the open file isn't
@@ -136,12 +140,12 @@ void Write (char *buffer, int size, OpenFileId id);
  * characters to read, return whatever is available (for I/O devices,
  * you should always wait until you can return at least one character).
  */
-int Read (char *buffer, int size, OpenFileId id);
+int Read(char *buffer, int size, OpenFileId id);
+
+int ReadAt(OpenFileId id,char * into, int numBytes, int position);
 
 /* Close the file, we're done reading and writing to it. */
-void Close (OpenFileId id);
-
-
+void Close(OpenFileId id);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
  * threads to run within a user program.

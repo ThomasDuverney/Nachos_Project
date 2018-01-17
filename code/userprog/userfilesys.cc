@@ -62,9 +62,9 @@ extern void do_UserClose(){
 }
 
 extern void do_UserRead(){
-  int fileId = machine->ReadRegister(4);
-  int ptrBuffer = machine->ReadRegister(5);
-  int numBytes = machine->ReadRegister(6);
+  int ptrBuffer = machine->ReadRegister(4);
+  int numBytes = machine->ReadRegister(5);
+  int fileId = machine->ReadRegister(6);
   int numBytesRead;
   int i = 0;
   char * buffer = (char*) malloc(sizeof(char)*numBytes);

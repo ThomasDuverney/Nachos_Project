@@ -3,6 +3,7 @@
 #define DEBUG 0
 #define NBMAXARGS 8
 #define MAXLENGTHCMD 40
+#define MAX_SIZE 100
 
 int strcmp(char *s1, char *s2){
     int i = 0;
@@ -36,8 +37,15 @@ int atoi(char * str){
     // Retourne le résultat avec le signe correspondant
     return sign*resultat;
 }
+
 void cat(char * filename){
     int fd = Open(filename);
+    char buffer[MAX_SIZE];
+    while(Read(buffer,MAX_SIZE,fd)!=0){
+        PutString(buffer);
+    }
+    Close(fd);
+    PutString("\n");
 }
 
 int main (){
@@ -163,7 +171,7 @@ int main (){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
-
+                    cat(cmdline[1]);
                 }
             } else {
                 PutString("Error command not found\n");
