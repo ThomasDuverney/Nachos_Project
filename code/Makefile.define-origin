@@ -43,7 +43,8 @@ THREAD_SRC      :=      main.cc list.cc scheduler.cc synch.cc synchlist.cc \
 
 USERPROG_SRC    :=      addrspace.cc bitmap.cc exception.cc progtest.cc console.cc \
                         machine.cc mipssim.cc translate.cc synchconsole.cc userthread.cc \
-                        frameprovider.cc userprocess.cc usersynchro.cc
+                        frameprovider.cc userprocess.cc usersynchro.cc userfilesys.cc userconsole.cc
+                        
 
 VM_SRC          :=
 
@@ -96,7 +97,7 @@ vm_CPPFLAGS=-DUSE_TLB
 # *************************************
 # These flavors are the one initially provided in Nachos.
 # Only a part of all Nachos features is available in each of them.
-ORIG_FLAVORS=threads userprog filesys network vm
+ORIG_FLAVORS=threads userprog filesys network
 
 ###########################################################################
 #            Original flavors
@@ -105,10 +106,10 @@ ORIG_FLAVORS=threads userprog filesys network vm
 $(eval $(call define-flavor,threads,thread-test))
 
 ######### userprog
-$(eval $(call define-flavor,userprog,userprog filesys-stub))
+# $(eval $(call define-flavor,userprog,userprog filesys-stub))
 
 # if file system done first!
-# $(eval $(call define-flavor,userprog,userprog filesys))
+$(eval $(call define-flavor,userprog,userprog filesys-stub))
 
 ######### filesys
 $(eval $(call define-flavor,filesys,userprog filesys))
@@ -125,7 +126,7 @@ $(eval $(call define-flavor,network,thread-test userprog filesys network))
 
 ###########################################################################
 ######### vm
-$(eval $(call define-flavor,vm,userprog filesys-stub vm))
+# $(eval $(call define-flavor,vm,userprog filesys-stub vm))
 
 # if file sys done first!
 # $(eval $(call define-flavor,vm,userprog filesys vm))

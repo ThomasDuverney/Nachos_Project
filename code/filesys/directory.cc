@@ -24,6 +24,11 @@
 #include "utility.h"
 #include "filehdr.h"
 #include "directory.h"
+#include "filesys.h"
+#include <stdio.h>
+
+
+#define couleur(param) printf("\033[%sm",param)
 
 //----------------------------------------------------------------------
 // Directory::Directory
@@ -110,37 +115,95 @@ Directory::Find(const char *name)
 {
     int i = FindIndex(name);
 
-    if (i != -1)
-	return table[i].sector;
-    return -1;
+    if (i != -1){
+	   return table[i].sector;
+    } else {
+        return -1;
+    }
+}
+
+
+#ifdef FILESYS
+
+bool Directory::isEmpty(){
+    return nbEntry() == 0;
 }
 
 //----------------------------------------------------------------------
 // Directory::Add
-// 	Add a file into the directory.  Return TRUE if successful;
-//	return FALSE if the file name is already in the directory, or if
-//	the directory is completely full, and has no more space for
-//	additional file names.
+//  Add a file into the directory.  Return TRUE if successful;
+//  return FALSE if the file name is already in the directory, or if
+//  the directory is completely full, and has no more space for
+//  additional file names.
 //
-//	"name" -- the name of the file being added
-//	"newSector" -- the disk sector containing the added file's header
+//  "name" -- the name of the file being added
+//  "newSector" -- the disk sector containing the added file's header
 //----------------------------------------------------------------------
+
+bool Directory::Add(const char *name, int newSector, bool isDir) { 
+
+    if (FindIndex(name) != -1)
+       return FALSE;
+
+    for (int i = 0; i < tableSize; i++){
+
+        if (!table[i].inUse) {
+            table[i].inUse = TRUE;
+            strncpy(table[i].name, name, FileNameMaxLen); 
+            table[i].sector = newSector;
+            table[i].isDirectory = isDir;
+            return TRUE;
+        }
+    }
+    return FALSE;   // no space.  Fix when we have extensible files.
+}
+
+/* Retourne vrai si l'entrée table[index] est un repertoire */
+bool Directory::isDirectory(int index){
+    ASSERT(index >= 0 && index < tableSize);
+    return table[index].isDirectory;
+}
+
+/* Retourne le secteur de l'entrée table[index] */
+int Directory::getSectorFile(int index){
+    ASSERT(index >= 0 && index < tableSize);
+    return table[index].sector;
+}
+
+/* Retourne le nombres d'entrées dans le repertoire courant */
+int Directory::nbEntry(){
+    int nb = 0;
+    for (int i = 0; i < tableSize; i++){
+
+        if (table[i].inUse && strcmp(table[i].name, ".") && strcmp(table[i].name, "..")){
+            printf("DEBUG nb++\n");
+            nb++;
+        }
+    }
+    return nb;
+}
+
+#else
 
 bool
 Directory::Add(const char *name, int newSector)
 { 
     if (FindIndex(name) != -1)
-	return FALSE;
+	   return FALSE;
 
-    for (int i = 0; i < tableSize; i++)
+    for (int i = 0; i < tableSize; i++){
+
         if (!table[i].inUse) {
             table[i].inUse = TRUE;
             strncpy(table[i].name, name, FileNameMaxLen); 
             table[i].sector = newSector;
-        return TRUE;
-	}
+            return TRUE;
+    	}
+    }
     return FALSE;	// no space.  Fix when we have extensible files.
 }
+
+#endif
 
 //----------------------------------------------------------------------
 // Directory::Remove
@@ -155,8 +218,32 @@ Directory::Remove(const char *name)
 { 
     int i = FindIndex(name);
 
-    if (i == -1)
-	return FALSE; 		// name not in directory
+    if (i == -1){
+        DEBUG('f', "Couldn't find %s\n", name);
+	    return FALSE; 		// name not in directory
+    }
+
+    #ifdef FILESYS
+
+    /* si le fichier est un répertoire on teste si il est vide ou pas
+    * Si il est vide on met le inUse a FALSE et on renvoie TRUE
+    * Sinon on affiche une erreur et on renvoie FALSE;
+    */
+    if(table[i].isDirectory){
+        OpenFile *directoryFile = new OpenFile(table[i].sector);
+        Directory *directory = new Directory(NumDirEntries);
+        directory->FetchFrom(directoryFile);      
+        if(directory->isEmpty()){
+            table[i].inUse = FALSE;
+            return TRUE;
+        } else {
+            printf("Couldn't remove directory %s, this directory is not empty\n", name);
+            return FALSE;
+        }
+    }
+
+    #endif
+
     table[i].inUse = FALSE;
     return TRUE;	
 }
@@ -169,9 +256,23 @@ Directory::Remove(const char *name)
 void
 Directory::List()
 {
-   for (int i = 0; i < tableSize; i++)
-	if (table[i].inUse)
-	    printf("%s\n", table[i].name);
+
+
+    
+   for (int i = 0; i < tableSize; i++){
+        if (table[i].inUse){
+            /*if(table[i].isDirectory){
+                couleur("34");
+            } else {
+                couleur("32");
+            }*/
+	       printf("%s\n", table[i].name);
+        }
+    
+   }
+
+
+    // couleur("30");
 }
 
 //----------------------------------------------------------------------

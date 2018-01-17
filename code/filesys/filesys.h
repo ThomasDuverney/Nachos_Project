@@ -64,7 +64,21 @@ class FileSystem {
 
 };
 
+
 #else // FILESYS
+
+#define FreeMapSector       0
+#define DirectorySector     1
+
+#define NBFILEOPENED 10
+
+class fileDescriptor {
+    public:
+        int sector;
+        OpenFile * file;
+};
+
+
 class FileSystem {
   public:
     FileSystem(bool format);		// Initialize the file system.
@@ -78,10 +92,29 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    int OpenFd(const char* name);
+    void Close(int sector);
+    void CloseFd(int fd);
 
-    bool Remove(const char *name); 	// Delete a file (UNIX unlink)
+    bool CreateDirectory(const char *name);
+    void AddOpenFile(int sector, OpenFile *file);
+
+    /* Read/Write from a fileDescriptor */
+
+    int ReadFd(int fd, char*into, int numBytes);
+    int ReadFdAt(int fd, char*into, int numBytes, int position);
+    int WriteFd(int fd, const char*from, int numBytes);
+    int WriteFdAt(int fd, const char*from, int numBytes, int position);
+
+
+    bool Remove(const char *name); 	/* supprime un fichier ou un repertoire dans le dossier courant (pas de pathname) */
+
+    void ChangeDirectory(const char *name);
+    void ChangeDirectoryPath(const char *name);
 
     void List();			// List all the files in the file system
+    void ListCurrentDirectory();
+    void ListOpenedFiles();
 
     void Print();			// List all the files and their contents
 
@@ -90,6 +123,13 @@ class FileSystem {
 					// represented as a file
    OpenFile* directoryFile;		// "Root" directory -- list of 
 					// file names, represented as a file
+
+   int currentDirectorySector;
+   OpenFile* currentDirectoryFile;
+
+
+   fileDescriptor* fileOpened[NBFILEOPENED];
+
 };
 
 #endif // FILESYS

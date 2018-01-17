@@ -3,21 +3,13 @@
 #define NB 2
 
 /*
- * Création de plusieurs threads exécutant PutString.
- * On vérifie le bon fonctionnement des structures de synchronisation par
- * l'utilisation concurrente de synchconsole
+ *
  */
 
 Cond_t cond;
 Mutex_t mutex;
 int checkNumber;
-/*
-struct threadParam{
-  int * size;
-};
 
-struct threadParam p;
-*/
 void g(void *arg) {
   MutexLock(mutex);
   while(checkNumber <= 0){
@@ -37,7 +29,6 @@ int main(){
   int i;
   int tid[NB];
 
-  //*(p.size) = 0;
   cond = CondCreate();
   mutex = MutexCreate();
   checkNumber = 0;

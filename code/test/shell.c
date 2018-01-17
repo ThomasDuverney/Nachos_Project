@@ -1,37 +1,96 @@
 #include "syscall.h"
 
-int
-main ()
-{
-    SpaceId newProc;
-    OpenFileId input = ConsoleInput;
-    OpenFileId output = ConsoleOutput;
-    char prompt[2], buffer[60];
-    int i;
+#define IDLE 0
+#define CD 1
+#define RM 2
+#define LS 3
+#define MKDIR 4
+#define EXEC  5
 
-    prompt[0] = '-';
-    prompt[1] = '-';
+int strcmp(char *s1, char *s2){
+    int i = 0;
+    while(s1[i] != '\0'){
+        if(s1[i] != s2[i]){
+            return 0; // les chaines ne sont pas les memes
+        }
+        i++;
+    }
 
-    while (1)
-      {
-	  Write (prompt, 2, output);
+    return 1;
+}
 
-	  i = 0;
 
-	  do
-	    {
 
-		Read (&buffer[i], 1, input);
+int main (){
+    char cmd[100];
+    char buff[30];
+    int i,j,state;
+    int stopped = 0;
 
-	    }
-	  while (buffer[i++] != '\n');
+    while(1){
+        state = IDLE;
+        PutString("Shell>> ");
+        GetString(cmd,100);
+        i=0;
+        stopped = 0;
+        while (stopped == 0 && cmd[i] != '\n'){
+            j=0;
 
-	  buffer[--i] = '\0';
+            // on stocke 
+            while(cmd[i] != ' ' && cmd[i] != '\n'){
+                buff[j] = cmd[i];
+                i++;
+                j++;
+            }
+            buff[j] = '\0';
 
-	  if (i > 0)
-	    {
-		newProc = Exec (buffer);
-		Join (newProc);
-	    }
-      }
+            switch(state){
+            case IDLE:
+                if(strcmp(buff, "mkdir") == 1){
+                    state = MKDIR;
+                } else if(strcmp(buff, "cd") == 1){
+                    state = CD;
+                } else if(strcmp(buff, "rm") == 1){
+                    state = RM;
+                } else if(strcmp(buff, "ls") == 1){
+                    ListCurrentDirectory();
+                    state = IDLE;
+                    stopped = 1;
+                } else if(strcmp(buff, "exec") == 1){
+                    state =EXEC;
+                } else {
+                    PutString("Error command not found");
+                }
+                break;
+            case CD:
+                ChangeDirectoryPath(buff);
+                stopped = 1;
+                state = IDLE;
+                break;
+            case MKDIR:
+                CreateDirectory(buff);
+                stopped = 1;
+                state = IDLE;
+                break;
+            case RM:
+                Remove(buff);
+                stopped = 1;
+                state = IDLE;
+                break;
+            case EXEC:
+                ForkExec(buff);
+                stopped = 1;
+                state = IDLE;
+            default:
+                PutString("Error state not found");
+                return 1;
+                break;
+            }
+
+            if(cmd[i] == ' '){
+                i++;
+            }
+        }
+    }
+    return 0;
 }

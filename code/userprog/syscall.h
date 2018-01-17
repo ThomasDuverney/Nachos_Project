@@ -52,6 +52,10 @@
 #define SC_CondSignal       31
 #define SC_CondBroadCast    32
 #define SC_CondDestroy      33
+#define SC_CreateDirectory  34
+#define SC_ChangeDirectoryPath  35
+#define SC_ListCurrentDirectory 36
+#define SC_Remove               37
 
 #ifdef IN_USER_MODE
 
@@ -276,6 +280,14 @@ void CondSignal(Cond_t condId);
 void CondBroadCast(Cond_t condId);
 
 void CondDestroy(Cond_t condId);
+
+void CreateDirectory(char * name);
+
+void ChangeDirectoryPath(char * name);
+
+void ListCurrentDirectory();
+
+int Remove(char * name);
 
 #endif // IN_USER_MODE
 

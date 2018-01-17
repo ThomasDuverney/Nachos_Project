@@ -146,6 +146,10 @@ main (int argc, char **argv)
 	    {			// list Nachos directory
 		fileSystem->List ();
 	    }
+	    else if (!strcmp (*argv, "-ls"))
+	    {			// list Nachos directory
+		fileSystem->ListCurrentDirectory ();
+	    }
 	  else if (!strcmp (*argv, "-D"))
 	    {			// print entire filesystem
 		fileSystem->Print ();
@@ -154,6 +158,20 @@ main (int argc, char **argv)
 	    {			// performance test
 		PerformanceTest ();
 	    }
+	   else if(!strcmp(*argv, "-mkdir"))
+	   {			// creation de repertoire
+		ASSERT (argc > 1);
+		fileSystem->CreateDirectory(*(argv+1));
+		argCount = 2;
+	   }	
+	   else if(!strcmp(*argv, "-cd"))
+	   {			// changement de repertoire
+		ASSERT (argc > 1);
+		fileSystem->ChangeDirectoryPath(*(argv+1));
+		fileSystem->ListCurrentDirectory();
+		argCount = 2;
+	   }
+
 #endif // FILESYS
 #ifdef NETWORK
 	  if (!strcmp (*argv, "-o"))
@@ -168,7 +186,8 @@ main (int argc, char **argv)
 #endif // NETWORK
       }
 
-    currentThread->Finish ();	// NOTE: if the procedure "main"
+
+    //currentThread->Finish ();	// NOTE: if the procedure "main"  
     // returns, then the program "nachos"
     // will exit (as any other normal program
     // would).  But there may be other

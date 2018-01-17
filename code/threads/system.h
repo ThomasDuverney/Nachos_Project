@@ -42,6 +42,7 @@ extern std::map<int,Condition * > * condMap;
 extern Machine *machine;	// user program memory and registers
 extern FrameProvider *frameProvider;
 extern SynchConsole *synchconsole;
+extern void copyStringFromMachine(int from, char *to, unsigned size);
 #endif
 
 #ifdef FILESYS_NEEDED		// FILESYS or FILESYS_STUB

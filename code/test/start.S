@@ -317,6 +317,40 @@ CondDestroy:
 	 j  $31
 	.end    CondDestroy
 
+
+    .globl 	CreateDirectory
+	.ent    CreateDirectory
+CreateDirectory:
+	 addiu $2,$0,SC_CreateDirectory
+	 syscall
+	 j  $31
+	.end 	CreateDirectory
+
+	.globl 	ChangeDirectoryPath
+	.ent    ChangeDirectoryPath
+ChangeDirectoryPath:
+	 addiu $2,$0,SC_ChangeDirectoryPath
+	 syscall
+	 j  $31
+	.end   	ChangeDirectoryPath
+
+
+    .globl 	ListCurrentDirectory
+	.ent    ListCurrentDirectory
+ListCurrentDirectory:
+	 addiu $2,$0,SC_ListCurrentDirectory
+	 syscall
+	 j  $31
+	.end   	ListCurrentDirectory
+
+    .globl 	Remove
+	.ent    Remove
+Remove:
+	 addiu $2,$0,SC_Remove
+	 syscall
+	 j  $31
+	.end   	Remove
+
 /* dummy function to keep gcc happy */
         .globl  __main
         .ent    __main

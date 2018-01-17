@@ -49,10 +49,11 @@
  * La fonction f et les paramètres arg sont passés à l'appel Fork à par le biais d'une structure
  * de donnée de type UserThreadParams.
  */
-extern int do_UserThreadCreate() {
+extern void do_UserThreadCreate() {
     Thread *t;
+    int tid;
     if ((t = new Thread ("UserThread")) == NULL) {
-      return -1;
+      tid = -1;
     }
 
     UserThreadParams *threadParams = (UserThreadParams*) malloc(sizeof(UserThreadParams));
@@ -68,7 +69,9 @@ extern int do_UserThreadCreate() {
     threadParams->addrExit = machine->ReadRegister(6);
 
     t->Fork(StartUserThread,(int) threadParams);
-    return t->getTid();
+    // /!\ ATTENTION TRAITER LE CAS OU LE THREADID = -1
+    tid = t->getTid();
+    machine->WriteRegister(2,tid);
 }
 
 /*
