@@ -335,13 +335,13 @@ ChangeDirectoryPath:
 	.end   	ChangeDirectoryPath
 
 
-    .globl 	ListCurrentDirectory
-	.ent    ListCurrentDirectory
-ListCurrentDirectory:
-	 addiu $2,$0,SC_ListCurrentDirectory
+    .globl 	ListDirectory
+	.ent    ListDirectory
+ListDirectory:
+	 addiu $2,$0,SC_ListDirectory
 	 syscall
 	 j  $31
-	.end   	ListCurrentDirectory
+	.end   	ListDirectory
 
     .globl 	Remove
 	.ent    Remove
