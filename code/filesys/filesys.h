@@ -69,6 +69,12 @@ class FileSystem {
 
 #define NBFILEOPENED 10
 
+class fileDescriptor {
+    public:
+        int sector;
+        OpenFile * file;
+};
+
 
 class FileSystem {
   public:
@@ -83,7 +89,9 @@ class FileSystem {
 					// Create a file (UNIX creat)
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
+    int OpenFd(const char* name);
     void Close(int sector);
+    void CloseFd(int fd);
 
     bool CreateDirectory(const char *name);
 
@@ -110,7 +118,7 @@ class FileSystem {
    OpenFile* currentDirectoryFile;
 
 
-   int fileOpened[NBFILEOPENED];
+   fileDescriptor* fileOpened[NBFILEOPENED];
 
 };
 
