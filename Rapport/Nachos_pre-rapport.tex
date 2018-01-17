@@ -224,61 +224,6 @@ void ReceiveMessage(char * data, int box);
 
 \section{Implémentation}
 
-\subsection{Structures de donées, variables et méthodes importantes}
-\subsubsection{\texttt{thread/system.cc}}
-
-\texttt{unsigned int threadCounter}: Nb total de thread Crées, sert à l'attribution d'un tid.
-
-\texttt{unsigned int nbThreadActifs}: Nb Total de thread actifs du système, sert à éteindre la machine.
-
-\texttt{unsigned int mutexCounter}: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
-
-\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex (user) et un objet Lock.
-
-\texttt{unsigned int semCounter}: Nb Total de sémaphore créées, sert à l'initialisation des semaphores utilisateur.
-
-\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de semaphore (user) et un objet Semaphore.
-
-\texttt{unsigned int condCounter}: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
-condition utilisateur.
-
-\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et
-un objet Condition.
-
-\subsubsection{\texttt{userprog/frameprovider.h}}
-\begin{lstlisting}[columns=fixed,basicstyle=\scriptsize\ttfamily]
-/*
-    GetEmptyFrame
-    Spécifications: int GetEmptyFrame()
-    Sémantique: retourne l'indice d'un cadre de page physique libre.
-    Met à jour la BitMap et marque la page comme occupée.
-  */
-  int GetEmptyFrame();
-
-  /*
-    GetEmptyFrameRandom
-    Spécifications: int GetEmptyFrameRandom()
-    Sémantique: retourne un indice aléatoire d'un cadre de page physique libre.
-    Met à jour la BitMap et marque la page comme occupée.
-  */
-  int GetEmptyFrameRandom();
-
-  /*
-    ReleaseFrame
-    Spécifications: void ReleaseFrame( int pageNum)
-    Sémantique: Met à jour la Bitmap et libère le cadre physique de page d'indice pageNum
-  */
-  void ReleaseFrame(int pageNum);
-
-  /*
-     NumAvailableFrame
-     Spécifications: int NumAvailableFrame()
-     Sémantique: Retourne le nombre de cadres de pages libres.
-  */
-  int NumAvailableFrame();
-\end{lstlisting}
-\subsubsection{}
-
 \subsection{Processus et Threads}
 Nous modélisons un Processus par un objet \texttt{AddrSpace}.
 Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, dans la version originale de nachos, les méthodes relatives, entre autres, à la restoration et la sauvegarde de l'état de la machine \texttt{MIPS} (valeur des registres).
@@ -333,6 +278,8 @@ Lorsque $t$ sera le thread courant il executera la méthode StartUserThread((f,a
 qui se chargera de configurer les registres de la machine MIPS pour l'exectution
 de la fonction utilisateur f(arg) et lancera la machine avec machine->Run(). 
 
+\subsubsection{Creation d'un processus}
+
 
 \subsubsection{Terminaison d'un thread et d'un processus}
 Les threads d'un processus ont une vie (et une mort) indépendante, sans aucune hiérarchie entre eux.
@@ -341,9 +288,9 @@ Un processus se termine en même temps que son dernier fil d'exécution.
 L'absence de hiérarchie entre threads à l'intérieur d'un processus et entre processus simplifie
 l'implémentation des méthodes \texttt{do\_UserThreadCreate} \texttt{do\_UserThreadexit}.
 
-Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadexit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle \texttt{finish} pour libérer les ressources système associées au thread:
+Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadexit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle \texttt{finish} pour libérer les ressources associées au thread:
 Mise à jour la stackBitmap, la liste des threads de l'espace d'adressage, on décrémente le compteur des
-thread actifs sur le systèmes. Si le thread courant était le dernier thread actif, il éteint la machine par un appel à Halt(). Le thread courant devient alors \texttt{threadTobeDestroyed}.
+thread actifs sur le système. Si le thread courant était le dernier thread actif, il éteint la machine par un appel à Halt(). Le thread courant devient alors \texttt{threadTobeDestroyed}.
 
 Au prochain appel de la méthode \texttt{run}, le scheduler vérifie si le thread à détruire était le dernier
 thread d'un espace d'adressage et libère les ressources associées à cet espace le cas échéant.
@@ -354,7 +301,6 @@ Lors de la création du nouveau thread au niveau noyau avec \texttt{do\_UserThre
 cette adresse depuis \texttt{r6} et au moment de \texttt{Fork}, avant de brancher la machine \texttt{MIPS} sur
 le nouveau thread utilisateur on place cette adresse dans le registre \texttt{RetAddrReg}. Ainsi au moment de terminer son exécution le \texttt{PC} sera branché sur UserThreadExit.
 
-
 \subsubsection{Memoire virtuelle}
 La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
 de page en mémoire virtuelle et un numéro de page physique. Au moment de la création d'un espace d'adressage, l'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
@@ -362,6 +308,11 @@ Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \te
 On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Synchronisation}
+Le système Nachos est executé en tant que simple processus utilisateur, non multi-threadé. Aussi tout se passe comme si nous travaillions sur une architecture monoprocesseur. Cela nous facilite la tâche pour l'implémentation des primitives de synchronisation au niveau noyau. En désactivant les interruptions
+on empêche toute tentative de préamption du scheduler. On peut ainsi facilement
+implémenter des sections critiques en désactivant les intérruptions à l'entrée de la
+section et les réactivant à la sortie. C'est sur ce principe simpliste que s'appuient nos primitives Mutex et Sempahore. Notons que si un thread utilisateur
+ayant acquis un vérrou se bloque, le système sera bloqué sans aucun espoir de retour.
 
 \subsection{Réseau}
 * Numéro de séquence
@@ -380,7 +331,6 @@ Afin de garantir que fiabilité du transfert chaque message doit être acquité 
 Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs paquets.
 
 \subsection{Système de Fichier}
-
 
 * Structures et variables importantes 
 ** FileOpened 
@@ -406,7 +356,27 @@ Un répertoire est vu comme un fichier particulier et possède aussi son file he
 * Is directory
 Permet de discerner le type d' une entrée de répertoire (fichier ou repertoire).
 Utilisé lors d'un change directory, et d'un remove (si le repertoire est vide ou pas).
- 
+
+\subsection{Autres Structures de données, variables globales du système}
+\subsubsection{\texttt{thread/system.cc}}
+\texttt{unsigned int threadCounter}: Nb total de thread Crées, sert à l'attribution d'un tid.
+
+\texttt{unsigned int nbThreadActifs}: Nb Total de thread actifs du système, sert à éteindre la machine.
+
+\texttt{unsigned int mutexCounter}: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
+
+\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex (user) et un objet Lock.
+
+\texttt{unsigned int semCounter}: Nb Total de sémaphore créées, sert à l'initialisation des semaphores utilisateur.
+
+\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de semaphore (user) et un objet Semaphore.
+
+\texttt{unsigned int condCounter}: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
+condition utilisateur.
+
+\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et
+un objet Condition.
+
 
 \section{Organisation}
 Pour les premières étapes nous avons travaillé sur un ordinateur commun.
