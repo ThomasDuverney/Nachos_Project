@@ -23,7 +23,7 @@ int main (){
     char cmd[100];
     int boxFrom, addrTo, boxTo;
 
-    PutString("Sur quelle boite souhaitez-vous écoutez ? ");
+    PutString("Sur quelle boite souhaitez-vous écouter ? ");
     GetInt(&boxFrom);
     PutString("\nA quelle adresse souhaitez-vous tchatter ? ");
     GetInt(&addrTo);

@@ -1,7 +1,17 @@
 #include "syscall.h"
 
+int calculSomme(){
+	int i =0;
+	int somme = 0;
+	for(;i<10;i++){
+		somme += i;
+	}
+	return somme;
+}
 int main(){
-	PutString("Lance le programme PutInt_0");
-	ForkExec("PutInt_0");
+	PutString("Début du programme\n");
+	ForkExec("Factoriel");
+	PutString("\n");
+	PutInt( calculSomme() );
 	Exit(0);
 }
