@@ -9,9 +9,11 @@ int calculSomme(){
 	return somme;
 }
 int main(){
-	PutString("Début du programme\n");
+	PutString("Début du processus forkExecbasique \n");
 	ForkExec("Factoriel");
 	PutString("\n");
 	PutInt( calculSomme() );
+	PutString("\n");
+	PutString("Fin du processus forkExecbasique \n");
 	Exit(0);
 }

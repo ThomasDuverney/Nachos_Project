@@ -14,7 +14,10 @@ void g(void *arg) {
   int i = 0;
   MutexLock(mutex);
   for(i = 0; i<NB; i++){
+    PutString("    **");
+    PutString("Je suis le thread du processus MultiThreadPutInt_Mutex_0 :");
     PutInt(*(int *)arg);
+    PutString("**\n");
   }
   MutexUnlock(mutex);
   UserThreadExit();
@@ -22,6 +25,7 @@ void g(void *arg) {
 
 
 int main(){
+  PutString("    **Début du processus MultiThreadPutInt_Mutex_0**\n");
   int tab[NB];
   int i;
   int tid[NB];
@@ -35,5 +39,6 @@ int main(){
     UserThreadJoin(tid[i]);
   }
   MutexDestroy(mutex);
+  PutString("    **Fin du processus MultiThreadPutInt_Mutex_0**\n");
   return 0;
 }
