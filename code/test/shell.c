@@ -158,12 +158,12 @@ int main (){
                     SendMessage(atoi(cmdline[1]),atoi(cmdline[2]),atoi(cmdline[3]),cmdline[4]);
                 }
             } else if(strcmp(cmdline[0], "receive") == 1){
-                if(index_cmdline < 3){
+                if(index_cmdline < 2){
                     PutString("Too few arguments\n");
                     continue;
                 } else {
                     char message[50];
-                    ReceiveMessage(message,atoi(cmdline[2]));
+                    ReceiveMessage(message,atoi(cmdline[1]));
                     PutString(message);
                 }
             } else if(strcmp(cmdline[0], "cat") == 1){
