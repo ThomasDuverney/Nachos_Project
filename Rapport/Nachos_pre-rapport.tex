@@ -81,7 +81,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \item[-] Sémantique: Écrit le caractère \texttt{c} sur la sortie standard.
 \end{itemize}
 
-\subsubsection{\texttt{void PutString(const char *s);}}
+\subsubsection{\texttt{void PutString(const char *s)}}
 \begin{itemize}
 \item[-] Sémantique: Écrit la chaîne de caractères lue à l'adresse \texttt{s} sur la sortie standard.
 \item[-] Préconditions: La chaîne doit se terminer par un caractère \texttt{'$\backslash$0'}.
@@ -100,7 +100,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \item[-] Préconditions: L'adresse \texttt{s} est valide (espace suffisant).
 \end{itemize}
 
-\subsubsection{void PutInt(int n)}
+\subsubsection{\texttt{void PutInt(int n)}}
 \begin{itemize}
 \item[-] Sémantique: Écrit l'entier \texttt{n} sur la sortie standard.
 \end{itemize}
@@ -296,13 +296,14 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{void ListDirectory(char * name)}}
 \begin{itemize}
-\item[-]Sémantique: Liste tout les fichiers et documents du répertoire dont le nom est passé en paramètre.
+\item[-]Sémantique: Liste tout les fichiers et documents du répertoire dont le nom "name"
+  est passé en paramètre.
 \item[-]Exemple: \texttt{ListDirectory("./Dossier1/Dossier2")}
 \end{itemize}
 
  \subsubsection{\texttt{int Remove(char * name)}}
 \begin{itemize}
-\item[-]Sémantique: Supprime le fichier ou répertoire passé en paramètre
+\item[-]Sémantique: Supprime le fichier ou répertoire dont le nom "name" est passé en paramètre
 \item[-]Valeur de retour: $1$ si la suppression a réussi, $0$ sinon.
 \item[-]Exemple: \texttt{Remove("./Dossier1/Dossier2")}
 \end{itemize}
@@ -340,17 +341,17 @@ Nous avons décidé d'étendre la sémantique de l'objet \texttt{addrSpace} en a
 \begin{myDef}
   On appellera \textit{espace d'adressage} une entité décrivant un espace mémoire, l'état de la machine \texttt{MIPS} et les informations relatives aux fils d'exécution actifs dans cet espace.
 \end{myDef}
-Afin de faire le lien entre les différents threads d'un même processus/espace d'adressage nous donnons à chaque objet \texttt{thread} une référence vers un objet \texttt{addrspace}.
+Afin de faire le lien entre les différents threads d'un même processus/espace d'adressage nous donnons à chaque objet \texttt{thread} une référence vers un objet \texttt{Addrspace}.
 \begin{myRem}
-Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent de déléguer à \texttt{addrspace} les méthodes de gestion de la mémoire et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fil d'exécutions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des difficultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons abandonné ce modèle au profit de celui décrit plus haut.
+Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent de déléguer à \texttt{addrspace} les méthodes de gestion de la mémoire et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fils d'exécutions vivant dans cet espace. Pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons donc abandonné ce modèle au profit de celui décrit plus haut.
 \end{myRem}
 
 \subsubsection{Piles des threads}
 Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace} en blocs de pages, de taille \texttt{NumPagesPerStack}.
-Dans chaque espace, une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacements des blocs de pages libres pour les piles. 
+Dans chaque espace on mémorise l'état courant des emplacement de piles grâce à la bitmap \texttt{stackBitmap}. 
 
 \subsubsection{Thread Join}
-Au sein d'un processus, un thread peut utiliser la méthode \texttt{join} pour attendre la terminaison d'un autre thread.
+Au sein d'un processus, un thread peut utiliser la méthode \texttt{UserThreadJoin} pour attendre la terminaison d'un autre thread.
 On maintient dans chaque \texttt{addrSpace} une structure \texttt{joinMap}.
 La map associe à un \texttt{tid} une liste de threads.
 
@@ -360,44 +361,45 @@ Le thread $t1$ se met alors en sommeil et attends $t2$.
 Si $t3$ fait un \texttt{join} sur $t2$ la \texttt{joinMap} se retrouve dans l'état $(t2, [t1,t3])$ et $t3$ est mis en sommeil.
 Lorsque $t2$ termine son exécution il place $t1$ et $t3$ dans la \texttt{readylist} du scheduler.
 
-De plus, on maintient une liste \texttt{threadList} des threads actifs dans un espace d'adressage.
+De plus, on maintient chaque \texttt{addrSpace} une liste \texttt{threadList} des threads actifs de l'espace d'adressage.
 Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
 Un thread peut être attendu par plusieurs threads distincts.
 
 \subsubsection{Création d'un thread}
 Toute création d'un thread utilisateur s'effectue par l'appel système
-\texttt{UserThreadcreate}
-qui déclenche un passage en mode noyau via l'instruction \texttt{syscal}.
+\texttt{UserThreadCreate}
+qui déclenche un passage en mode noyau via l'instruction \texttt{syscall}.
 Le gestionnaire d'exception implémenté dans la méthode \texttt{ExceptionHandler} de la classe
 \texttt{exception.cc} appelle alors la méthode \texttt{do\_UserThreadCreate()}.
-L'initialisation du nouveau fil d'éxecution s'effectue en trois étapes.
+L'initialisation du nouveau fil d'exécution s'effectue en trois étapes.
 
 \begin{enumerate}
-\item Dans \texttt{do\_UserThreadCreate()}:
+\item Dans \texttt{do\_UserThreadCreate}:
 
 On crée un nouvel objet thread $t$ (thread noyau propulseur), destiné à configurer et brancher la machine \texttt{MIPS} sur l'exécution d'une nouvelle fonction $f$ au sein de l'espace d'adressage du thread/processus courant.
 On commence par récupérer la fonction utilisateur $f$ à exécuter et ses arguments $arg$ dans les registres $4$ et $5$ de la machine \texttt{MIPS}. On appelle ensuite la méthode \texttt{t->Fork(StartUserthead, (f, arg))}.
 
-\item Dans \texttt{fork}:
+\item Dans \texttt{Fork}:
 On initialise la "partie noyau" du thread propulseur $t$ de manière
-à ce qu'il exécute la méthode \texttt{StartUserThread(f,arg)}. On affecte à $t$ le même espace d'adressage que le thread courant. On met à jour la liste des thread de l'espace d'adressage, on cherche un emplacement
-libre dans l'espace d'adressage pour la pile en mode user du nouveau thread $t$.
-On place ensuite le thread $t$ dans la ready list du scheduler.
+à ce qu'il exécute la méthode \texttt{StartUserThread(f,arg)}. On affecte à $t$ le même espace d'adressage que le thread courant. On met à jour la liste des threads de l'espace d'adressage, on cherche un emplacement
+libre dans l'espace d'adressage pour la pile du nouveau thread $t$.
+On place ensuite le thread $t$ dans la \texttt{readyList} du scheduler.
 
 \item Lorsque $t$ devient le thread courant il exécute la méthode \texttt{StartUserThread(f,arg)}
-qui se charge de configurer les registres de la machine MIPS pour l'exécution
+qui se charge de configurer les registres de la machine \texttt{MIPS} pour l'exécution
 de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{machine->Run()}. 
 \end{enumerate}
 
 \subsubsection{Création d'un processus}
+La procédure de création d'un processus est similaire à celle d'un thread utilisateur, à la différence que l'on doit lire un exécutable au format \texttt{noff} pour initialiser un nouvel espace d'adressage et affecter cet espace au thread propulseur avant l' appel à \texttt{Fork} dans la méthode \texttt{do_UserProcessCreate}.
 
 \subsubsection{Terminaison d'un thread et d'un processus}
 Les threads d'un processus ont une vie (et une mort) indépendante, sans aucune hiérarchie entre eux.
 Un processus se termine en même temps que son dernier fil d'exécution.
 L'absence de hiérarchie entre threads à l'intérieur d'un processus et entre processus simplifie
-l'implémentation des méthodes \texttt{do\_UserThreadCreate} et \texttt{do\_UserThreadexit}.
+l'implémentation des méthodes \texttt{do\_UserThreadCreate} et \texttt{do\_UserThreadExit}.
 
-Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadexit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle la méthode \texttt{finish} dans laquelle on met à jour la stackBitmap, la liste des threads de l'espace d'adressage, on décrémente le compteur des thread actifs sur le système. Le thread courant devient alors \texttt{threadTobeDestroyed} (ou éteint la machine si il était le dernier thread actif).
+Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadExit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle la méthode \texttt{finish} dans laquelle on met à jour la stackBitmap, la liste des threads de l'espace d'adressage, on décrémente le compteur des threads actifs sur le système. Le thread courant devient alors \texttt{threadTobeDestroyed} (ou éteint la machine si il était le dernier thread actif).
 
 Au prochain appel de la méthode \texttt{run}, si le thread à détruire était le dernier thread d'un espace d'adressage, le scheduler appelle \texttt{do\_UserThreadExit} pour libérer les ressources et la mémoire associée au processus et détruit le thread propulseur.
 
@@ -409,92 +411,97 @@ le nouveau thread utilisateur, on place cette adresse dans le registre \texttt{R
 
 \subsubsection{Mémoire virtuelle}
 La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
-de page en mémoire virtuelle et un numéro de page physique. Au moment de la création d'un espace d'adressage, l'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframerandom()} de l'objet \texttt{FrameProvider}.
-Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \texttt{frameprovider} une table temporaire des numéros de cadres de pages libres.
+de page en mémoire virtuelle et un numéro de page physique. Au moment de la création d'un espace d'adressage, l'allocation des pages physiques est réalisée par la méthode \texttt{GetEmptyframeRandom()} de l'objet \texttt{FrameProvider}.
+Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \texttt{FrameProvider} une table temporaire des numéros de cadres de pages libres.
 On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Synchronisation}
-Le système Nachos est exécute en tant que simple processus utilisateur, non multi-threadé. Aussi tout se passe comme si nous travaillions sur une architecture mono-processeur. Cela nous facilite la tâche pour l'implémentation des primitives de synchronisation au niveau noyau. En désactivant les interruptions on empêche toute tentative de préemption du scheduler. Pour les variables conditions 
+L'implémentation des primitives de synchronisation au niveau utilisateur s'appuie sur les structures de données noyau suivantes que l'on trouvera dans la classe \texttt{system.cc}:
+\begin{itemize}
+\item[-]\texttt{unsigned int mutexCounter}: Nombre total de mutex créés,
+  sert d'indentifiant lors de l'initialisation d'un mutex au niveau utilisateur.
+\item[-]\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex
+  et un objet Lock.
+\item[-]\texttt{unsigned int semCounter}: Nombre total de sémaphores créées,
+  sert d'identifiant lors de l'initialisation d'une sémaphores au niveau utilisateur.
+\item[-]\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de sémaphore
+  et un objet Semaphore.
+\item[-]\texttt{unsigned int condCounter}: Nombre total de variables conditions crées, sert
+  d'identifiant lors de l'initialisation d'une variable condition utilisateur.
+\item[-]\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et un objet Condition.
+\end{itemize}
+nous avons ajouté à la "classe" usersynch.cc un ensemble de méthodes pour la création des objets mutex, sémaphores, variables-condition et la mise à jour des structures au niveau noyau servant de support à la synchronisation dans les processus utilisateurs.
 
 \subsection{Réseau}
-Nous avons mis en place un protocole de transmission de données fiable (sans perte de d'information), qui s'inspire du mécanisme d'acquittement cumulatif de TCP et de la notion de flux d'octet. On distingue deux type de messages, données et acquittements.
-\subsubsection{Numéro de séquence}
-On initie un flux d'octet bidirectionnel entre le serveur \texttt{A} et le client \texttt{B}.
-Pour chaque direction de flux, chaque octet est identifié par un numéro de séquence unique. Chaque direction de flux possède un numéro de début de séquence initial et chaque octet du flux
-possède un numéro de séquence relatif à ce numéro initial.
-Lorsque l'on envoie un segment, on envoie un paquet d'octet d'un coup , le numéro de séquence transmit avec le segment
-correspond au numéro de séquence du premier octet des données envoyées.
+Nous avons mis en place un protocole simple de transmission fiable de données (sans perte de d'information), qui s'inspire du mécanisme d'acquittement cumulatif de TCP et de la notion de flux d'octet.
+\begin{myDef}
+  On appelle message, une séquence d'octets à transmettre sur le réseau.
+\end{myDef}
+L'envoi d'un message passe par l'envoi d'un ou plusieurs objets \texttt{mail} que l'on peut assimiler à un segment \texttt{TCP}. 
 
-\subsection{Numéro d'acquittement}
-L'émetteur d'un message d'acquittement transmet avec son message,
-le numéro de séquence du prochain octet qu'il s'attend a recevoir.
+Un mail est constitué d'un en-tête et d'un tableau d'octets contenant les données à envoyer.
+On distingue trois types de mail:
+\begin{itemize}
+\item[-]Donnée
+\item[-]Acquittement
+\item[-]Fin de message
+\end{itemize}
+
+On stocke dans l'en-tête d'un mail la taille des données, le type de mail, un numéro de séquence, un
+numéro d'acquittement.
+
+La fiabilité de notre protocole, tout comme \texttt{TCP} s'appuie sur l'utilisation de numéros de séquences
+et de numéro d'acquittement.
+
+\subsubsection{Numéro de séquence}
+Supposons que l'on initie un flux d'octet bidirectionnel entre un serveur \texttt{A} et un client \texttt{B}.
+Pour chaque direction de flux, tout octet du flux est identifié par un numéro de séquence unique. 
+Lorsque l'on envoie un mail, on joint dans l'en-tête du mail un numéro de séquence correspondant
+au numéro du premier octet des données envoyées dans ce mail. Le numéro de séquence initial est $0$.
+
+\subsubsection{Numéro d'acquittement}
+La fiabilité de la transmission repose sur le fait que, pour chaque mail envoyé par $A$ à $B$, $B$ prévient $A$ qu'il a bien reçu le mail en lui renvoyant un mail d'acquittement.
+Un mail d'acquittement est un mail particulier, sans données, servant uniquement à transmettre un numéro d'acquittement correspondant numéro de séquence du prochain octet que $B$ s'attend a recevoir.
 Avec le principe d'acquittement cumulatif, \texttt{A} n'a pas besoin de recevoir les acquittements de tous les paquets qu'il envoie. Si on envoie trois paquets p1, p2, p3 à \texttt{B} et que \texttt{B}
 acquitte p3, alors si \texttt{A} reçoit l'acquittement il sait que \texttt{B} a bien reçu p1, p2 et p3.
 
-Contrairement à Tcp \texttt{B} envoie un acquittement pour chaque paquet reçu.
+\subsubsection{Timer de réemission}
+Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP). A chaque envoi de paquet on déclenche un timer. A la "sonnerie" du timer, si on a pas reçu d'acquittement, on réemet le paquet considéré perdu. Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
 
 \subsubsection{Mise à jour des champs ACK et SEQ}
-Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement.
-Pour simplifier notre protocole on exige que les envois se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé.
+Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement. Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. L'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination. On acquitte pas un acquittement. 
 
-On remarque que l'émetteur d'un acquittement ne sait pas si celui-ci
-est bien arrivé à destination. Cela est lié au fait que la taille d'un paquet d'acquittement est nulle: on acquitte pas un acquittement. 
+\subsubsection{ Envoi et réception messages de tailles variables}
+Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs mails.
+L'émetteur termine l'envoi du message par un mail de type "Fin de message" contenant pour seules données
+la chaîne de caractères "fin". Une fois ce dernier mail acquitté, on est sûr que le message est bien arrivé.
 
-\subsubsection{Timer de rée-mission}
-A chaque envoi de paquet de donnée on déclenche un timer associé à ce paquet.
-En cas de perte du paquet, on attends un acquittement qui n'arrive pas, à l'écoulement du timer on rée-met le paquet, considéré perdu.
-Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
+\section{Système de Fichier}
 
-\subsubsection{ Envoi réception Données de tailles variables}
-Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs paquets.
+\subsection{FileOpened}
+Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les fichiers ouvert du système de fichier. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Les index dans le tableau servent de descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier.
 
-\subsection{Système de Fichier}
+\section{Currentdirectory}
+A l'initialisation du système de fichier, on place le repertoire courant à la racine du système de fichiers.
 
-* Structures et variables importantes 
-** FileOpened 
-Lors de la création de l'objet \texttt{filesys} système de fichier on crée un tableau qui mémorise les fichiers ouvert. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread (sur tout le système). Les index dans le tableau sont utilisés comme descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier.
-
-
-** Currentdirectory
-A l'initialisation du système de fichier, on place lerepertoire courant à la racine du système de fichiers.
-
-* Chemins relatifs
+\section{Chemins relatifs}
 Toutes les méthodes createDirectory, changeDir, Create,... acceptent les chemins relatifs.
 
 ** FileHeaders
-La gestion des fichiers et répertoires sur le disque s'appuie sur les objets fileHeader qui mémorise,
-la taille du fichier en octet, le nombre de secteurs de disques utilisés, et les indices des secteurs de disques.
+La gestion des fichiers et répertoires sur le disque s'appuie sur les objets \texttt{fileHeader} qui mémorisent:
+\begin{itemize}
+\item[-] La taille du fichier en octet
+\item[-] Le nombre de secteurs de disques utilisés
+\item[-] Les indices des secteurs de disques.
+\end{itemize}
 Le fileHeader est un index pour accéder au contenu réel du fichier.
-
-
-Un répertoire est vu comme un fichier particulier et possède aussi son file header.
+un répertoire est vu comme un fichier particulier et possède aussi son file header.
  
 * FreeMap
 
-* Is directory
-Permet de discerner le type d' une entrée de répertoire (fichier ou répertoire).
+\section{Is directory}
+Permet de discerner les fichiers des répertoire lorsqu'on parcourt les entrées d'un répertoire.
 Utilisé lors d'un change directory, et d'un remove (si le répertoire est vide ou pas).
-
-\subsection{Autres Structures de données, variables globales du système}
-\subsubsection{\texttt{thread/system.cc}}
-\texttt{unsigned int threadCounter}: Nb total de thread Crées, sert à l'attribution d'un tid.
-
-\texttt{unsigned int nbThreadActifs}: Nb Total de thread actifs du système, sert à éteindre la machine.
-
-\texttt{unsigned int mutexCounter}: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
-
-\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex (user) et un objet Lock.
-
-\texttt{unsigned int semCounter}: Nb Total de sémaphore créées, sert à l'initialisation des sémaphores utilisateur.
-
-\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de sémaphore (user) et un objet Semaphore.
-
-\texttt{unsigned int condCounter}: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
-condition utilisateur.
-
-\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et
-un objet Condition.
-
 
 \section{Organisation}
 Pour les premières étapes nous avons travaillé sur un ordinateur commun.
@@ -505,6 +512,13 @@ avons adopté un point de vue critique vis à vis du code produit,
 n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
 avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
 tant sur les aspects techniques que dans nos rapport au travail en général.
+
+\section{Pistes d'amélliorations}
+Nous estimons que nous pourrions rapidement mettre en oeuvre les ammélioration suivantes:
+
+Bibliothèque d'entrées sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler,
+ouverture concurente de fichiers, taille variables des fichiers, taille maximum des fichiers.
+Nous ne pouvons pas encore executer de manière interractive des programmes utilisateurs depuis l'invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid).
 
 \section{Annexe}
 
