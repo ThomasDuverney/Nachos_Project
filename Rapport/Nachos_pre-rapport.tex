@@ -58,7 +58,7 @@
 \setcounter{secnumdepth}{2}
 \author{Borne, Duquennoy, Duverney, Isnel}
 \date{}
-\title{Nachos Pré-rapport}
+\title{Nachos: Rapport final}
 
 \begin{document}
 \maketitle
@@ -84,7 +84,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \subsubsection{\texttt{void PutString(const char *s);}}
 \begin{itemize}
 \item[-] Sémantique: Écrit la chaîne de caractères lue à l'adresse \texttt{s} sur la sortie standard.
-\item[-] Préconditions: La chaîne doit se terminer par un caractère \texttt{'$\backslash$ 0'}.
+\item[-] Préconditions: La chaîne doit se terminer par un caractère \texttt{'$\backslash$0'}.
 \end{itemize}
 
 \subsubsection{\texttt{char GetChar()}}
@@ -126,7 +126,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction \texttt{f(arg)}. 
 \item[-] Préconditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
   pile du thread à créer. 
-\item[-] Valeur de retour: retourne l'identficateur du thread crée, $-1$ si une erreur s'est produite lors de
+\item[-] Valeur de retour: retourne l'identificateur du thread créé, $-1$ si une erreur s'est produite lors de
   la création du thread.
 \end{itemize}
 
@@ -137,7 +137,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{int UserThreadJoin(int tid)}}
 \begin{itemize}
-\item[-] Sémantique: Attends la terminaison du thread d'identifiant "tid", renvoie $-1$
+\item[-] Sémantique: Attend la terminaison du thread d'identifiant "tid", renvoie $-1$
   si le thread est déjà terminé, $0$ sinon.
 \item[-] Préconditions: "tid" est un identifiant de thread valide, initialisé dans le processus courant
   à l'aide d'un appel à \texttt{UserThreadCreate}. Le thread courant n'a pas déjà fait \texttt{join(tid)}.
@@ -154,16 +154,16 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \begin{itemize}
 \item[-]Sémantique: Acquiert le mutex d'identifiant "mutexId". Si "mutexId" est déverrouillé, il devient verrouillé
   et possédé par le thread appelant. Si le mutex d'identifiant "mutexId" est déjà verrouillé par un autre thread,
-  le thread appelant est suspendu jusqu'à ce que "mutexId" soit déverrouillé.
+  le thread courant est suspendu jusqu'à ce que "mutexId" soit déverrouillé.
 \item[-]Pré-Condition: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
-  appellant par la méthode \texttt{MutexCreate}.
+  courant par la méthode \texttt{MutexCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void MutexUnlock(Mutex\_t mutexId)}}
 \begin{itemize}
 \item[-]Sémantique: Relâche le mutex d'identifiant "mutexId".
 \item[-]Précondition: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
-  courant par la méthode \texttt{MutexCreate}. "mutexId" est Verrouillé.
+  courant par la méthode \texttt{MutexCreate}. "mutexId" est verrouillé.
 \end{itemize}
 
 \subsubsection{\texttt{MutexDestroy(Mutex\_t mutexId)}}
@@ -183,7 +183,8 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{void SemWait(Sem\_t semaphoreId)}}
 \begin{itemize}
-\item[-]Sémantique: Le thread appelant attends que la sémaphore ait une valeur $>0$ et la décrémente. 
+\item[-]Sémantique: Le thread courant attend que la sémaphore ait une valeur suppérieure à $0$
+  et la décrémente.
 \item[-]Précondition: "semaphoreId" est un identifiant de semaphore valide, initialisé dans le processus
   appellant par la méthode \texttt{SemCreate}.
 \end{itemize}
@@ -211,7 +212,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{void CondWait(Cond\_t condId, Mutex\_t mutedId)}}
 \begin{itemize}
-\item[-]Sémantique: Met le thread courant en sommeil dans la file d'attente associée à "condId",
+\item[-]Sémantique: Met le thread courant en sommeil dans la file d'attente associée à "condId" et
   relâche le verrou "mutexId".
 \item[-]Préconditions: "mutexId" et "condId" sont des identifiants de mutex et variables-conditions
   valides, initialisés dans le processus courant par les méthodes \texttt{MutexCreate} et \texttt{CondCreate}.
@@ -228,7 +229,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{void CondBroadCast(Cond\_t condId)}}
 \begin{itemize}
-\item[-]Sémantique: Réveille tous les threads en sommeil dans le file d'attente associée à la
+\item[-]Sémantique: Réveille tous les threads en sommeil dans la file d'attente associée à la
   variable-condition "condId".
 \item[-]Préconditions: "contId" est un identifiant de variable-condition valide, initialisé dans le processus
   courant par la méthode \texttt{CondCreate}.
@@ -250,14 +251,14 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{OpenFileId Open(char *name)}}
 \begin{itemize}
-\item[-]Sémantique: Ouvre le fichier dont le nom "name". 
+\item[-]Sémantique: Ouvre le fichier dont le nom est "name". 
 \item[-]Valeur de retour: Retourne un descripteur de fichier de type \texttt{OpenFileId}
   permettant de lire et écrire dans le fichier ou $-1$ si l'ouverture à échoué.
 \end{itemize}
 
 \subsubsection{\texttt{int Write (char *buffer, int size, OpenFileId id)}}
 \begin{itemize}
-\item[-]Sémantique: Écrit "size" octets depuis le fichier dont le descripteur est "id"
+\item[-]Sémantique: Écrit "size" octet(s) depuis le fichier dont le descripteur est "id"
   dans le buffer "buffer".
 \item[-]Préconditions: Le descripteur "id" doit être valide (fichier ouvert), initialisé dans le thread courant
   par la méthode \texttt{Open}. Tenter d'écrire dans un fichier non initialisé par open resulte en un comportement non spécifié.
@@ -268,22 +269,22 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 \begin{itemize}
 \item[-]Sémantique: Lit "size" octets depuis le fichier dont le descripteur est "id" dans le buffer
   dont l'adresse est "buffer". Si le fichier contient moins de "size" octets on lit tout les octets disponibles.
-\item[-]Valeur de retour: Nombre d'octets lus.
-\item[-]Preconditions: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread appelant
-  par la méthode Open.
+\item[-]Préconditions: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread courant
+  par la méthode \texttt{Open}.
   Tenter de lire dans un fichier non initialisé par \texttt{Open} résulte en un comportement non spécifié.
+\item[-]Valeur de retour: Nombre d'octets lus.
 \end{itemize}
 
 \subsubsection{\texttt{void Close(OpenFileId id)}}
 \begin{itemize}
-\item[-]Sémantique: Ferme le ficher dont le descripteur est "id".
-\item[-]Préconditions: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread appelant
-  par la méthode Open. Tenter de fermer un fichier non initialisé par \texttt{Open} résulte en un comportement non spécifié.
+\item[-]Sémantique: Ferme le fichier dont le descripteur est "id".
+\item[-]Préconditions: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread courant
+  par la méthode \texttt{Open}. Tenter de fermer un fichier non initialisé par \texttt{Open} résulte en un comportement non spécifié.
 \end{itemize}
 
 \subsubsection{\texttt{void CreateDirectory(char * name)}}
 \begin{itemize}
-\item[-]Sémantique: Créer un répertoire dans le système de fichier Nachos, de nom "name"
+\item[-]Sémantique: Crée un répertoire dans le système de fichier Nachos, de nom "name"
   passé en paramètre.
 \end{itemize}
 
@@ -302,7 +303,7 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
  \subsubsection{\texttt{int Remove(char * name)}}
 \begin{itemize}
 \item[-]Sémantique: Supprime le fichier ou répertoire passé en paramètre
-\item[-]Valeur de retour: 1 si la suppression a réussi, 0 sinon.
+\item[-]Valeur de retour: $1$ si la suppression a réussi, $0$ sinon.
 \item[-]Exemple: \texttt{Remove("./Dossier1/Dossier2")}
 \end{itemize}
 
@@ -346,17 +347,17 @@ Lors de notre réflexion sur l'implémentation des processus utilisateur, il nou
 
 \subsubsection{Piles des threads}
 Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace} en blocs de pages, de taille \texttt{NumPagesPerStack}.
-Dans chaque espace, une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacement de blocs de pages libres pour les piles. 
+Dans chaque espace, une bitmap \texttt{stackBitmap} mémorise l'état courant des emplacements des blocs de pages libres pour les piles. 
 
 \subsubsection{Thread Join}
 Au sein d'un processus, un thread peut utiliser la méthode \texttt{join} pour attendre la terminaison d'un autre thread.
-On maintient dans chaque \texttt{addressSpace} une structure \texttt{joinMap}.
+On maintient dans chaque \texttt{addrSpace} une structure \texttt{joinMap}.
 La map associe à un \texttt{tid} une liste de threads.
 
 Lorsqu'un thread $t1$ fait un \texttt{join} sur un thread $t2$ on ajoute dans \texttt{joinMap}
 l'association $(t2, [t1])$. Cette association signifie que $t2$ est attendu par $t1$.
 Le thread $t1$ se met alors en sommeil et attends $t2$. 
-Si $t3$ fait un join sur $t2$ la \texttt{joinMap} se retrouve dans l'état $(t2, [t1,t3])$ et $t3$ est mis en sommeil.
+Si $t3$ fait un \texttt{join} sur $t2$ la \texttt{joinMap} se retrouve dans l'état $(t2, [t1,t3])$ et $t3$ est mis en sommeil.
 Lorsque $t2$ termine son exécution il place $t1$ et $t3$ dans la \texttt{readylist} du scheduler.
 
 De plus, on maintient une liste \texttt{threadList} des threads actifs dans un espace d'adressage.
@@ -364,7 +365,7 @@ Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
 Un thread peut être attendu par plusieurs threads distincts.
 
 \subsubsection{Création d'un thread}
-Toute création de thread utilisateur s'effectue par l'appel système
+Toute création d'un thread utilisateur s'effectue par l'appel système
 \texttt{UserThreadcreate}
 qui déclenche un passage en mode noyau via l'instruction \texttt{syscal}.
 Le gestionnaire d'exception implémenté dans la méthode \texttt{ExceptionHandler} de la classe
@@ -394,11 +395,11 @@ de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{
 Les threads d'un processus ont une vie (et une mort) indépendante, sans aucune hiérarchie entre eux.
 Un processus se termine en même temps que son dernier fil d'exécution.
 L'absence de hiérarchie entre threads à l'intérieur d'un processus et entre processus simplifie
-l'implémentation des méthodes \texttt{do\_UserThreadCreate} \texttt{do\_UserThreadexit}.
+l'implémentation des méthodes \texttt{do\_UserThreadCreate} et \texttt{do\_UserThreadexit}.
 
 Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadexit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle la méthode \texttt{finish} dans laquelle on met à jour la stackBitmap, la liste des threads de l'espace d'adressage, on décrémente le compteur des thread actifs sur le système. Le thread courant devient alors \texttt{threadTobeDestroyed} (ou éteint la machine si il était le dernier thread actif).
 
-Au prochain appel de la méthode \texttt{run}, Si le thread à détruire était le dernier thread d'un espace d'adressage le scheduler appelle do\_UserThreadExit pour libérer les ressources et la mémoire associée au processus et détruit le thread propulseur.
+Au prochain appel de la méthode \texttt{run}, si le thread à détruire était le dernier thread d'un espace d'adressage, le scheduler appelle \texttt{do\_UserThreadExit} pour libérer les ressources et la mémoire associée au processus et détruit le thread propulseur.
 
 \subsubsection{Terminaison automatique des threads}
 Dans \texttt{Start.S}, lors de l'appel système \texttt{UserThreadCreate}, on place dans le registre $6$ de la machine \texttt{MIPS} l'adresse de l'instruction \texttt{UserThreadExit}.
