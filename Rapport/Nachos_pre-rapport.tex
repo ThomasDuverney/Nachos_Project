@@ -391,6 +391,7 @@ de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{
 \end{enumerate}
 
 \subsubsection{Création d'un processus}
+La procédure de création d'un processus est similaire à celle d'un thread utilisateur, à la différence que l'on doit lire un exécutable au format \texttt{noff} pour initialiser un nouvel espace d'adressage et affecter cet espace au thread propulseur avant l' appel à \texttt{Fork} dans la méthode \texttt{do_UserProcessCreate}.
 
 \subsubsection{Terminaison d'un thread et d'un processus}
 Les threads d'un processus ont une vie (et une mort) indépendante, sans aucune hiérarchie entre eux.
@@ -415,17 +416,24 @@ Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \te
 On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Synchronisation}
-\texttt{unsigned int mutexCounter}: Nb Total de mutex créés, sert à l'initialisation des mutex utilisateur.
-\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex (user) et un objet Lock.
-\texttt{unsigned int semCounter}: Nb Total de sémaphore créées, sert à l'initialisation des sémaphores utilisateur.
-\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de sémaphore (user) et un objet Semaphore.
-\texttt{unsigned int condCounter}: Nb Total de variables conditions crées, sert à l'initialisation d'une variable
-condition utilisateur.
-\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et
-un objet Condition.
+L'implémentation des primitives de synchronisation au niveau utilisateur s'appuie sur les structures de données noyau suivantes que l'on trouvera dans la classe \texttt{system.cc}:
+\begin{itemize}
+\item[-]\texttt{unsigned int mutexCounter}: Nombre total de mutex créés,
+  sert d'indentifiant lors de l'initialisation d'un mutex au niveau utilisateur.
+\item[-]\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex
+  et un objet Lock.
+\item[-]\texttt{unsigned int semCounter}: Nombre total de sémaphores créées,
+  sert d'identifiant lors de l'initialisation d'une sémaphores au niveau utilisateur.
+\item[-]\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de sémaphore
+  et un objet Semaphore.
+\item[-]\texttt{unsigned int condCounter}: Nombre total de variables conditions crées, sert
+  d'identifiant lors de l'initialisation d'une variable condition utilisateur.
+\item[-]\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et un objet Condition.
+\end{itemize}
+nous avons ajouté à la "classe" usersynch.cc un ensemble de méthodes pour la création des objets mutex, sémaphores, variables-condition et la mise à jour des structures au niveau noyau servant de support à la synchronisation dans les processus utilisateurs.
 
 \subsection{Réseau}
-Nous avons mis en place un protocole de transmission de données fiable (sans perte de d'information), qui s'inspire du mécanisme d'acquittement cumulatif de TCP et de la notion de flux d'octet.
+Nous avons mis en place un protocole simple de transmission fiable de données (sans perte de d'information), qui s'inspire du mécanisme d'acquittement cumulatif de TCP et de la notion de flux d'octet.
 \begin{myDef}
   On appelle message, une séquence d'octets à transmettre sur le réseau.
 \end{myDef}
@@ -440,7 +448,7 @@ On distingue trois types de mail:
 \end{itemize}
 
 On stocke dans l'en-tête d'un mail la taille des données, le type de mail, un numéro de séquence, un
-numéro d'acquitement.
+numéro d'acquittement.
 
 La fiabilité de notre protocole, tout comme \texttt{TCP} s'appuie sur l'utilisation de numéros de séquences
 et de numéro d'acquittement.
@@ -451,61 +459,49 @@ Pour chaque direction de flux, tout octet du flux est identifié par un numéro 
 Lorsque l'on envoie un mail, on joint dans l'en-tête du mail un numéro de séquence correspondant
 au numéro du premier octet des données envoyées dans ce mail. Le numéro de séquence initial est $0$.
 
-\subsubsection{Numéro d'acquitement}
+\subsubsection{Numéro d'acquittement}
 La fiabilité de la transmission repose sur le fait que, pour chaque mail envoyé par $A$ à $B$, $B$ prévient $A$ qu'il a bien reçu le mail en lui renvoyant un mail d'acquittement.
-Un mail d'acquitement est un mail particulier, sans données, servant uniquement à transmettre un numéro d'acquitement correspondant numéro de séquence du prochain octet que $B$ s'attend a recevoir.
+Un mail d'acquittement est un mail particulier, sans données, servant uniquement à transmettre un numéro d'acquittement correspondant numéro de séquence du prochain octet que $B$ s'attend a recevoir.
 Avec le principe d'acquittement cumulatif, \texttt{A} n'a pas besoin de recevoir les acquittements de tous les paquets qu'il envoie. Si on envoie trois paquets p1, p2, p3 à \texttt{B} et que \texttt{B}
 acquitte p3, alors si \texttt{A} reçoit l'acquittement il sait que \texttt{B} a bien reçu p1, p2 et p3.
 
 \subsubsection{Timer de réemission}
-Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP).
-A chaque envoi de paquet on déclenche un timer.
-A la "sonnerie" du timer, si on a pas reçu d'acquitement, on réemet le paquet considéré perdu.
-Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
+Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP). A chaque envoi de paquet on déclenche un timer. A la "sonnerie" du timer, si on a pas reçu d'acquittement, on réemet le paquet considéré perdu. Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
 
 \subsubsection{Mise à jour des champs ACK et SEQ}
-Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement.
-Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. 
-On remarque que l'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination. Cela est lié au fait que la taille d'un paquet d'acquittement est nulle: on acquitte pas un acquittement. 
+Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement. Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. L'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination. On acquitte pas un acquittement. 
 
 \subsubsection{ Envoi et réception messages de tailles variables}
 Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs mails.
-L'emmeteur termine l'envoi du message par un mail de type "Fin de message" contenant pour seules données
-la chaine de caractères "fin". Une fois ce dernier mail acquité, on est sûr que le message est bien arrivé.
+L'émetteur termine l'envoi du message par un mail de type "Fin de message" contenant pour seules données
+la chaîne de caractères "fin". Une fois ce dernier mail acquitté, on est sûr que le message est bien arrivé.
 
-\subsection{Système de Fichier}
+\section{Système de Fichier}
 
-* Structures et variables importantes 
-** FileOpened 
-Lors de la création de l'objet \texttt{filesys} système de fichier on crée un tableau qui mémorise les fichiers ouvert. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread (sur tout le système). Les index dans le tableau sont utilisés comme descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier.
+\subsection{FileOpened}
+Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les fichiers ouvert du système de fichier. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Les index dans le tableau servent de descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier.
 
+\section{Currentdirectory}
+A l'initialisation du système de fichier, on place le repertoire courant à la racine du système de fichiers.
 
-** Currentdirectory
-A l'initialisation du système de fichier, on place lerepertoire courant à la racine du système de fichiers.
-
-* Chemins relatifs
+\section{Chemins relatifs}
 Toutes les méthodes createDirectory, changeDir, Create,... acceptent les chemins relatifs.
 
 ** FileHeaders
-La gestion des fichiers et répertoires sur le disque s'appuie sur les objets fileHeader qui mémorise,
-la taille du fichier en octet, le nombre de secteurs de disques utilisés, et les indices des secteurs de disques.
+La gestion des fichiers et répertoires sur le disque s'appuie sur les objets \texttt{fileHeader} qui mémorisent:
+\begin{itemize}
+\item[-] La taille du fichier en octet
+\item[-] Le nombre de secteurs de disques utilisés
+\item[-] Les indices des secteurs de disques.
+\end{itemize}
 Le fileHeader est un index pour accéder au contenu réel du fichier.
-
-
-Un répertoire est vu comme un fichier particulier et possède aussi son file header.
+un répertoire est vu comme un fichier particulier et possède aussi son file header.
  
 * FreeMap
 
-* Is directory
-Permet de discerner le type d' une entrée de répertoire (fichier ou répertoire).
+\section{Is directory}
+Permet de discerner les fichiers des répertoire lorsqu'on parcourt les entrées d'un répertoire.
 Utilisé lors d'un change directory, et d'un remove (si le répertoire est vide ou pas).
-
-\subsection{Autres Structures de données, variables globales du système}
-\subsubsection{\texttt{thread/system.cc}}
-\texttt{unsigned int threadCounter}: Nb total de thread Crées, sert à l'attribution d'un tid.
-
-\texttt{unsigned int nbThreadActifs}: Nb Total de thread actifs du système, sert à éteindre la machine.
-
 
 \section{Organisation}
 Pour les premières étapes nous avons travaillé sur un ordinateur commun.
