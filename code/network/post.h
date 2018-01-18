@@ -38,8 +38,8 @@
 typedef int MailBoxAddress;
 
 #define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-#define TEMPO 100000000
-#define MAXREEMISSIONS 20
+#define TEMPO 10000000000
+#define MAXREEMISSIONS 5
 
 // The following class defines part of the message header.
 // This is prepended to the message by the PostOffice, before the message

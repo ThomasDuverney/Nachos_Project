@@ -155,6 +155,7 @@ Thread::Fork (VoidFunctionPtr func, int arg)
     /* Recherche d'un emplacement libre dans la bitmap pour la pile du thread */
     if (this->space != NULL)
         this->stackBitmapIndex= this->space->stackBitmap->Find();
+    /* TODO tester si l'allocation a réussi (-1 == echec) */
 
 #endif // USER_PROGRAM
 

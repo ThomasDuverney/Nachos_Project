@@ -348,21 +348,6 @@ bool FileSystem::CreateDirectory(const char *name){
 
 }
 
-void FileSystem::AddOpenFile(int sector, OpenFile *file){
-    int i = 0;
-    while(i < NBFILEOPENED && fileOpened[i] != NULL){ 
-        i++;
-    }
-
-    if(i >= NBFILEOPENED){ // il n'y a plus de place dans le tableau des fichiers ouverts
-        printf("[AddOpenFile] Error couldn't open file, too much opened file\n");
-    } else {
-        fileOpened[i] = new fileDescriptor;
-        fileOpened[i]->file = file;
-        fileOpened[i]->sector = sector;
-    }
-}
-
 //----------------------------------------------------------------------
 // FileSystem::Open
 // 	Open a file for reading and writing.  
@@ -373,55 +358,20 @@ void FileSystem::AddOpenFile(int sector, OpenFile *file){
 //	"name" -- the text name of the file to be opened
 //----------------------------------------------------------------------
 
-OpenFile * FileSystem::Open(const char *name){
- 
-    int i = 0, j;
+OpenFile *
+FileSystem::Open(const char *name)
+{ 
+    Directory *directory = new Directory(NumDirEntries);
+    OpenFile *openFile = NULL;
+    int sector;
 
-
-    while(i < NBFILEOPENED && fileOpened[i] != NULL){ 
-        i++;
-    }
-
-    if(i >= NBFILEOPENED){ // il n'y a plus de place dans le tableau des fichiers ouverts
-        printf("Error couldn't open file %s, too much opened file\n", name);
-        return NULL;
-    } else {
-
-        Directory *directory = new Directory(NumDirEntries);
-        OpenFile *openFile = NULL;
-        int sector;
-
-        DEBUG('f', "Opening file %s\n", name);
-        directory->FetchFrom(currentDirectoryFile);
-        sector = directory->Find(name); 
-        if (sector >= 0) {
-            
-            /* Recherche si le fichier n'est pas déjà ouvert */
-            j = 0;
-            while(j < NBFILEOPENED){
-                if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
-                    break;
-                } else {
-                    j++;
-                }
-            }
-
-            if(fileOpened[j] != NULL && fileOpened[j]->sector == sector){
-                printf("File %s already opened\n", name);
-            } else {
-                openFile = new OpenFile(sector);	// name was found in directory 
-                fileOpened[i] = new fileDescriptor;
-                fileOpened[i]->sector = sector; 
-                fileOpened[i]->file = openFile;
-                DEBUG('f', "Open %s sucessfull\n", name);
-            }
-        } else {
-            printf("Error couldn't find this file\n");
-        }
-        delete directory;
-        return openFile;				// return NULL if not found
-    }
-
+    DEBUG('f', "Opening file %s\n", name);
+    directory->FetchFrom(directoryFile);
+    sector = directory->Find(name); 
+    if (sector >= 0)        
+        openFile = new OpenFile(sector);    // name was found in directory 
+    delete directory;
+    return openFile;                // return NULL if not found
 }
 
 /*
@@ -493,25 +443,6 @@ int FileSystem::OpenFd(const char* name){
 
 
 
-void FileSystem::Close(int sector){
-
-    int i = 0;
-
-    while(i < NBFILEOPENED){
-        if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
-            break;
-        } else {
-            i++;
-        }
-    }
-
-    if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
-        delete fileOpened[i];
-        fileOpened[i] = NULL;
-    } else {
-        printf("Error file not opened or not found\n");
-    }
-}
 
 void FileSystem::CloseFd(int fd){
     ASSERT(fd >= 0 && fd < NBFILEOPENED);

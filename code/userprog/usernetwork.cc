@@ -16,7 +16,6 @@ extern void do_UserSendMessage(){
 extern void do_UserReceiveMessage(){
   int ptrData = machine->ReadRegister(4);
   int box = machine->ReadRegister(5);
-  //char * buffer =  (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
   std::string message = postOffice->ReceiveMessage(box);
   int i = 0;
   while(i < MAX_STRING_SIZE){

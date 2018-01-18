@@ -54,15 +54,14 @@ void SynchConsole::SynchGetString(char *s, int n) {
     semRead->P();
     int i = 0;
     char c;
-    bool continuer = true;
 
-    while(i<n && continuer == true){
+    while(i<n){
         readAvail->P();
         c = console->GetChar();
         if (c == EOF || c == 04 || c == '\n' || c == '\0'){
             s[i] = '\0';
             /* On s'arrète quand on trouve un caractère de fin de séquence */
-            continuer = false;
+            break;
         }
         s[i] = c;
         i++;

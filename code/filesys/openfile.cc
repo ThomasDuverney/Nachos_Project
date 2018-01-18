@@ -33,10 +33,6 @@ OpenFile::OpenFile(int sector)
     hdr->FetchFrom(sector);
     seekPosition = 0;
     sectorFile = sector;
-
-    if(sectorFile != FreeMapSector && sectorFile != DirectorySector){
-        fileSystem->AddOpenFile(sectorFile, this);
-    }
 }
 
 //----------------------------------------------------------------------
@@ -47,9 +43,6 @@ OpenFile::OpenFile(int sector)
 OpenFile::~OpenFile()
 {
     delete hdr;
-    if(sectorFile != FreeMapSector && sectorFile != DirectorySector){
-        fileSystem->Close(this->sectorFile);
-    }
 }
 
 //----------------------------------------------------------------------
