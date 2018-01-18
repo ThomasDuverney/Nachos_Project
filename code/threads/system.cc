@@ -143,13 +143,13 @@ Initialize (int argc, char **argv)
 	      format = TRUE;
 #endif
 #ifdef NETWORK
-	  if (!strcmp (*argv, "-l"))
+	  if (!strcmp (*argv, "-fi"))
 	    {
 		ASSERT (argc > 1);
 		rely = atof (*(argv + 1));
 		argCount = 2;
 	    }
-	  else if (!strcmp (*argv, "-m"))
+	  else if (!strcmp (*argv, "-ad"))
 	    {
 		ASSERT (argc > 1);
 		netname = atoi (*(argv + 1));
