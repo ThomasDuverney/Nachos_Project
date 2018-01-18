@@ -543,9 +543,6 @@ Nous ne pouvons pas encore executer de manière interractive des programmes util
 \end{itemize}
 
 \subsection{UserThreads}
-Afin de vérifier le bon fonctionnement des structures de synchronisation des fonctions d'entrée-sorties,
-les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui permet de rendre aléatoire le comportement de l'ordonnanceur.
-
 \begin{itemize}
 \item[-] \texttt{UserThreadcreate\_0}: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
   création.
@@ -553,12 +550,10 @@ les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui
   Le second afficher \texttt{"Y"} puis le caractère \texttt{'b'} passé en paramètre.
 \item[-] \texttt{Userthreadcreate\_2}: Lancement d'un nombre de thread trop important pour l'espace mémoire.
   Le programme affiche l'identifiant des threads crées.
-\item[-] \texttt{MultiThreadGetString\_0}: Lance plusieurs threads exécutant la commande \texttt{GetString()}.
 \end{itemize}
 
 \subsection{Entrées-Sorties Multithread}
- Avec les tests suivants, on vérifie le bon fonctionnement des structures de synchronisation par l'utilisation
-  concurrente de synchconsole.
+ Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
 \begin{itemize}
 \item[-] \texttt{MultithreadGetChar\_0}: Création de plusieurs threads exécutant \texttt{GetChar}
   puis \texttt{Putchar}.
@@ -568,32 +563,168 @@ les programmes de tests ont été lancés avec et sans l'option \texttt{-rs} qui
   Suite à l'appel de \texttt{GetChar()}, le caractère \texttt{'$\backslash$n'} est toujours
   présent dans l'entrée standard. Aussi, le thread suivant exécutant \texttt{GetChar()} récupère et
   affiche \texttt{'$\backslash$n'}.
-\item[-] \texttt{MultithreadGetInt\_0}: Création de plusieurs threads exécutant \texttt{GetInt}
+\item[-] \texttt{MultithreadGetInt\_0}: Création de plusieurs threads exécutant \texttt{GetInt} puis  \texttt{PutInt}
   puis \texttt{PutInt} pour afficher l'entier saisi.
 \item[-] \texttt{MultithreadGetString\_0}: Création de plusieurs threads exécutant
   \texttt{getString} puis \texttt{PutString}.
-\item[-] \texttt{MultithreadPutChar\_0}: Création de plusieurs threads exécutant \texttt{getString}
-  puis \texttt{PutString}.
-\item[-] \texttt{MultithreadPutString\_0}: Création de plusieurs threads exécutant \texttt{PutString}.
 \end{itemize}
 
-\section{Consignes}
-Un rapport de 8 à 12 pages maximum dont l'objectif est de nous convaincre d'acheter votre nachos. Ce rapport sera structuré en 5 parties :
-une (courte) partie présentant rapidement les fonctionnalités intéressante/importante de votre noyau (ce qui vous démarque de vos concurrents, ce qu'on peut faire avec votre logiciel, ...).
+On reprends l'ensemble des tests sur les opérations d'entrées-sorties précédents en rendant l'exécution de chaque thread séquentielle par l'utilisation d'un mutex.
 
-Une partie "spécifications" listant ce qui est disponible pour les programmes utilisateurs.
-Il faut mettre ici le genre d'information que vous trouvez dans les pages man.
-On doit donc trouver tous les appels systèmes implémentés avec leur prototype, la description des arguments,
-la description du fonctionnement (fonctionnalités utilisateurs, pas implémentation) de l'appel système,
-de la valeur de retour éventuelle, la signalisation des erreurs, ...
-Si vous avez également une bibliothèque utilisateur, vous devez décrire ses fonctions de la même manière que les appels systèmes.
+\subsection{Lecteur-rédacteurs}
 
-Une partie "tests utilisateurs" décrivant les programmes de test que vous avez réalisés, ce qu'ils montrent, ...
+Nous avons implémenté un programme de test lecteur-rédacteurs pour vérifier le bon
+fonctionnement des variables conditions et mutex.
 
-Une partie "implémentation" qui explique les points importants de votre implémentation. C'est donc la seule partie qui parle du détail du code que vous avez écrit. Expliquez vos choix d'implémentation.
-une partie plus "scolaire" où vous décrivez l'organisation de votre travail (planning, ...), commentaires constructifs sur le déroulement du projet, ...
+\begin{lstlisting}[columns=fixed,basicstyle=\small\ttfamily]
+#include "syscall.h"
 
-Les 3 premières parties s'adressent à un utilisateur de votre système. La 4ième partie s'adresse à un développeur qui voudrait continuer à développer votre système. Si vous avez bien travaillé sur les spécifications comme demandé, ces parties techniques seront faciles à écrire.
+#define NB_ITERATIONS 3;
+#define NB_LECTEURS 3;
+#define NB_REDACTEURS 3;
+
+int nbLs;
+int nbLa;
+int enEcriture;
+int donnee = 0;
+Cond_t fileL;
+Cond_t fileR;
+Mutex_t mutex;
+
+void debut_redaction() {
+  MutexLock(mutex);
+  while(enEcriture || nbLa> 0) {
+    CondWait(fileR, mutex);
+  }
+  enEcriture = 1;
+  MutexUnlock(mutex);
+}
+
+void debut_lecture() {
+  MutexLock(mutex);
+  nbLs++;
+  while(enEcriture) {
+    CondWait(fileL, mutex);
+  }
+  nbLs--;
+  nbLa++;
+  MutexUnlock(mutex);
+}
+
+void fin_redaction() {
+  MutexLock(mutex);
+  enEcriture = 0;
+  if(nbLs == 0) {
+    CondSignal(fileR);
+  } else {
+    CondBroadCast(fileL);
+  }
+  MutexUnlock(mutex);
+}
+
+void fin_lecture(){
+  MutexLock(mutex);
+  nbLa--;
+  if(nbLa == 0){
+    CondSignal(fileR);
+  }
+  MutexUnlock(mutex);
+}
+
+void lecteur(void *args) {
+  int i= 0;
+  int valeur = 0;
+  int iter = NB_ITERATIONS;
+  int threadNumber = *(int *)args;
+  for(i=0 ; i<iter ; i++) {
+    debut_lecture();
+    valeur = donnee;
+    // sleep;
+
+    MutexLock(mutex);
+    PutString("Debut Lecture Thread: ");
+    PutInt(threadNumber);
+    PutChar('\n');
+    if (valeur != donnee) {
+      PutString("LECTURE INCOHERENTE !!!\n");
+    }
+    else {
+      PutString("lecture coherente\n");
+    }
+    MutexUnlock(mutex);
+    fin_lecture();
+  }
+
+  MutexLock(mutex);
+  PutString("Thread: ");
+  PutInt(threadNumber);
+  PutString(" Fin lecture\n");
+  MutexUnlock(mutex);
+  UserThreadExit();
+}
+
+void redacteur(void *args) {
+  int i, valeur;
+  int iter = NB_ITERATIONS;
+  int threadNumber = *(int *)args;
+
+  for (i=0; i < iter; i++) {
+    //sleep
+    MutexLock(mutex);
+    PutString("Debut Redaction Thread: ");
+    PutInt(threadNumber);
+    PutChar('\n');
+    MutexUnlock(mutex);
+    debut_redaction();
+    valeur = threadNumber;
+    donnee = valeur;
+    //sleep
+    MutexLock(mutex);
+    PutString("Thread: ");
+    PutInt(threadNumber);
+    PutChar('\n');
+    if (valeur != donnee)
+      PutString("REDACTION INCOHERENTE !!!\n");
+    else
+      PutString("redaction coherente......\n");
+    MutexUnlock(mutex);
+    fin_redaction();
+  }
+  PutString("fin redaction....\n");
+  UserThreadExit();
+}
+
+int main(){
+  int nbL = NB_LECTEURS;
+  int nbR = NB_REDACTEURS;
+  int tid[nbL + nbR];
+  int tab[nbL + nbR];
+  int i;
+
+  /* Initialisation des variables globales */
+  mutex = MutexCreate();
+  fileL = CondCreate();
+  fileR = CondCreate();
+  nbLs = 0;
+  nbLa = 0;
+  enEcriture = 0;
+
+  for (i=0; i<nbL+nbR; i++) {
+    tab[i] = i;
+    if(i<nbL) tid[i] = UserThreadCreate(lecteur,(void*) (tab+i));
+    else tid[i] = UserThreadCreate(redacteur,(void*) (tab+i));
+  }
+
+  for (i=0; i<nbL + nbR; i++) {
+    UserThreadJoin(tid[i]);
+  }
+
+  MutexDestroy(mutex);
+  CondDestroy(fileL);
+  CondDestroy(fileR);
+  return 0;
+}
+\end{lstlisting}
 
 \end{document}
 
