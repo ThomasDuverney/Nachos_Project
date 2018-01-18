@@ -128,23 +128,32 @@ void Create (char *name, int initialSize);
  * be used to read and write to the file.
  */
 OpenFileId Open(char *name);
-
-/* Write "size" bytes from "buffer" to the open file. */
+/*
+ * Sémantique: Écrit "size" octets depuis le fichier dont le descripteur est "id"
+ * dans le buffer "buffer".
+ * Pré-condition: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread appellant
+ * par la méthode Open. Tenter d'écrire dans un fichier non initialisé par open résulte en un comportement non   * spécifié.
+ */
 void Write (char *buffer, int size, OpenFileId id);
 
 int WriteAt(OpenFileId fd, char* from, int numBytes, int position);
 
-/* Read "size" bytes from the open file into "buffer".
- * Return the number of bytes actually read -- if the open file isn't
- * long enough, or if it is an I/O device, and there aren't enough
- * characters to read, return whatever is available (for I/O devices,
- * you should always wait until you can return at least one character).
+/*
+ * Sémantique: Lit "size" octets depuis le fichier dont le descripteur est "id" dans le buffer
+ * "buffer". Si le fichier contient moins de "size" octets on lit tout les octets disponibles.
+ * Valeur de retour: Nombre d'octets lus.
+ * Pré-condition: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread appelant
+ * par la méthode Open. Tenter d'écrire dans un fichier non initialisé par open résulte en un comportement non
+ * spécifié.
  */
 int Read(char *buffer, int size, OpenFileId id);
 
 int ReadAt(OpenFileId id,char * into, int numBytes, int position);
-
-/* Close the file, we're done reading and writing to it. */
+/*
+ * Sémantique: Ferme le ficher dont le descripteur est "id".
+ * Pré-condition: Le descripteur doit être valide (fichier ouvert), initialisé dans le thread appelant
+ * par la méthode Open. Tenter d'écrire dans un fichier non initialisé par open résulte en un comportement non spécifié.
+ */
 void Close(OpenFileId id);
 
 /* User-level thread operations: Fork and Yield.  To allow multiple
@@ -347,18 +356,21 @@ void ListDirectory(char * name);
 /*
  * int Remove(char * name);
  * Sémantique: Supprime le fichier ou repertoire passé en paramètre
+ * Valeur de retour: 1 si la suppréssion a réussi, 0 sinon.
  */
 int Remove(char * name);
 
 /*
  * void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
- * Sémantique: TODO ECRIRE LA SEMANTIQUE
+ * Sémantique: Envoi du message "data" depuis la boite
+ * "boxfrom" vers la machine d'adresse "addressDesti" dans la boite "boxTo"
  */
 void SendMessage(int addressDesti, int boxTo, int boxFrom, char * data);
 
 /*
  * void ReceiveMessage(char * data, int box);
- * Sémantique: TODO ECRIRE LA SEMANTIQUE
+ * Sémantique: Initialise la réception d'un message depuis la boite "box".
+ * Les données reçues sont stoquées à l'adresse "data".
  */
 void ReceiveMessage(char * data, int box);
 
