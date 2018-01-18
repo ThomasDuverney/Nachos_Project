@@ -221,6 +221,23 @@ int main (){
                 } else {
                     cat(cmdline[1]);
                 }
+            } else if(strcmp(cmdline[0], "open") == 1){
+                if(index_cmdline < 2){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    int fd = Open(cmdline[1]);
+                    PutString("fd = ");
+                    PutInt(fd);
+                    PutChar('\n');
+                }
+            } else if(strcmp(cmdline[0], "close") == 1){
+                if(index_cmdline < 2){
+                    PutString("Too few arguments\n");
+                    continue;
+                } else {
+                    Close(atoi(cmdline[1]));
+                }
             } else if(strcmp(cmdline[0], "chat") == 1){
                 chat();
             } else {
