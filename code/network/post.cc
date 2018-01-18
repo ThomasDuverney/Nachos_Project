@@ -152,10 +152,10 @@ static void interruptTimer(int params){
         if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
-        if (mailTempoParams->mailHdr.length != MaxMailSize){
-            postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
-            postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
-        }
+        // if (mailTempoParams->mailHdr.length != MaxMailSize){
+        //     postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
+        //     postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
+        // }
         free(mailTempoParams);
         return;
     }
@@ -167,13 +167,14 @@ static void interruptTimer(int params){
         if (DebugIsEnabled('n')) {
             printf("RePost send: ");
             PrintHeader(mailTempoParams->pktHdr, mailTempoParams->mailHdr);
+            printf("nbEnvoie=%d\n", *mailTempoParams->nbEnvoi);
         }
 
-        postOffice->sendLock->Acquire();
         *mailTempoParams->totalTicksStart = stats->totalTicks;
         (*mailTempoParams->nbEnvoi)++;
+        postOffice->sendLock->Acquire();
         postOffice->network->Send(mailTempoParams->pktHdr, buffer);
-        postOffice->messageSent->P();
+        // postOffice->messageSent->P();
         postOffice->sendLock->Release();
         delete [] buffer;
     }
@@ -264,7 +265,7 @@ void PostOffice::PostalDelivery() {
         pktHdr = network->Receive(bufin);
 
         mailHdr = *(MailHeader *)bufin;
-        if (mailHdr.type == 0){
+        if (mailHdr.type == 0 || mailHdr.type == 2){
             if (ackSelfByBoxes[mailHdr.to] >= mailHdr.seq){
                 if (ackSelfByBoxes[mailHdr.to] == mailHdr.seq){
                     ackSelfByBoxes[mailHdr.to] += mailHdr.length;
@@ -289,10 +290,10 @@ void PostOffice::PostalDelivery() {
                     printf("ACK send: ");
                     PrintHeader(outPktHdr, outMailHdr);
                 }
-
+                printf("ACK ENVOIE = ack=%d seq=%d\n", outMailHdr.ack, outMailHdr.seq);
                 sendLock->Acquire();
                 network->Send(outPktHdr, bufout);
-                messageSent->P();
+                // messageSent->P();
                 sendLock->Release();
 
                 if (DebugIsEnabled('n')) {
@@ -308,13 +309,13 @@ void PostOffice::PostalDelivery() {
         } else if(ackOtherByBoxes[mailHdr.to] < mailHdr.ack){
             if (DebugIsEnabled('n')) {
                 printf("ACK receive: ");
-                PrintHeader(outPktHdr, outMailHdr);
+                PrintHeader(pktHdr, mailHdr);
             }
             ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
         } else {
             if (DebugIsEnabled('n')) {
-                printf("OLD ACK send: ");
-                PrintHeader(outPktHdr, outMailHdr);
+                printf("OLD ACK receive: ");
+                PrintHeader(pktHdr, mailHdr);
             }
         }
     }
@@ -340,14 +341,12 @@ void PostOffice::SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char*
 
     mailHdr.seq = seqByBoxes[mailHdr.from];
     mailHdr.ack = ackSelfByBoxes[mailHdr.from];
-    mailHdr.type = 0;
 
     MailTempoParams *params = (MailTempoParams*) malloc(sizeof(MailTempoParams));
     params->data = new char[mailHdr.length];
     for (unsigned i=0; i<mailHdr.length; i++){
         params->data[i] = data[i];
     }
-    //memcpy(params->data, data, mailHdr.length);
 
     // concatenate MailHeader and data
     bcopy(&mailHdr, buf, sizeof(MailHeader));
@@ -361,7 +360,6 @@ void PostOffice::SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char*
     	PrintHeader(pktHdr, mailHdr);
     }
 
-    sendLock->Acquire();   		// only one message can be sent to the network at any one time
     params->pktHdr = pktHdr;
     params->mailHdr = mailHdr;
 
@@ -372,11 +370,11 @@ void PostOffice::SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char*
     Timer *t = new Timer(interruptTimer, (int) params, false);
     params->timer = t;
 
+    sendLock->Acquire();   		// only one message can be sent to the network at any one time
     network->Send(pktHdr, buf);
-    seqByBoxes[mailHdr.from] += mailHdr.length;
-    messageSent->P();			// wait for interrupt to tell us
-					            // ok to send the next message
+    // messageSent->P();			// wait for interrupt to tell us ok to send the next message
     sendLock->Release();
+    seqByBoxes[mailHdr.from] += mailHdr.length;
 
     delete [] buf;			// we've sent the message, so
 					            // we can delete our buffer
@@ -418,8 +416,9 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
     outPktHdr.to = addrTo;
     outMailHdr.to = boxTo;
     outMailHdr.from = boxFrom;
+    outMailHdr.type = 0;
 
-    while (sizeRemaining >= MaxMailSize){
+    while (sizeRemaining > MaxMailSize){
         char* buffer = new char[MaxMailSize];
         strncpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
         //bcopy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
@@ -445,6 +444,10 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
     }
     postOffice->SendPacket(outPktHdr, outMailHdr, buffer);
     delete [] buffer;
+
+    outMailHdr.type = 2;
+    outMailHdr.length = 3;
+    postOffice->SendPacket(outPktHdr, outMailHdr, "FIN");
 }
 
 std::string PostOffice::ReceiveMessage(int box){
@@ -457,15 +460,14 @@ std::string PostOffice::ReceiveMessage(int box){
     for (unsigned i=0; i<inMailHdr.length; i++)
         data += buffer[i];
     delete [] buffer;
-
-    while(inMailHdr.length == MaxMailSize){
+    while(inMailHdr.type != 2){
         buffer = new char[MaxMailSize];
         postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
-        for (unsigned i=0; i<inMailHdr.length; i++)
+        for (unsigned i=0; inMailHdr.type != 2 && i<inMailHdr.length; i++)
             data += buffer[i];
         delete [] buffer;
     }
-    ackSelfByBoxes[inMailHdr.to] = 0;
+    //ackSelfByBoxes[inMailHdr.to] = 0;
     if (DebugIsEnabled('n')) {
         printf("RECEIVE %s\n", data.c_str());
         fflush(stdout);
