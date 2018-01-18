@@ -110,19 +110,20 @@ class FileSystem {
 
     void ChangeDirectory(const char *name);
     void ChangeDirectoryPath(const char *name);
+    void ChangeDirectoryAndParse(const char *path, char *filename);
 
-    void List();			// List all the files in the file system
+    void List();      // List all the files in the file system
     void ListCurrentDirectory();
     void ListDirectory(const char *path);
     void ListOpenedFiles();
 
-    void Print();			// List all the files and their contents
+    void Print();     // List all the files and their contents
 
   private:
-   OpenFile* freeMapFile;		// Bit map of free disk blocks,
-					// represented as a file
-   OpenFile* directoryFile;		// "Root" directory -- list of 
-					// file names, represented as a file
+   OpenFile* freeMapFile;   // Bit map of free disk blocks,
+          // represented as a file
+   OpenFile* directoryFile;   // "Root" directory -- list of 
+          // file names, represented as a file
 
    int currentDirectorySector;
    OpenFile* currentDirectoryFile;
@@ -130,7 +131,6 @@ class FileSystem {
 
    fileDescriptor* fileOpened[NBFILEOPENED];
 
-   void ChangeDirectoryAndParse(const char *path, char *filename);
 
 };
 
