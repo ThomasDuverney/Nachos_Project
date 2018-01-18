@@ -147,19 +147,16 @@ static void WriteDone(int arg)
 
 static void interruptTimer(int params){
     MailTempoParams *mailTempoParams = (MailTempoParams*) params;
+    //printf("DESTRUCTION du timer\nackOther=%d seq=%d len=%d\n", postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from], mailTempoParams->mailHdr.seq, mailTempoParams->mailHdr.length);
     if(postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] >= (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length)
-            || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO)){
-        if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
+            || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && ((stats->totalTicks - *mailTempoParams->totalTicksStart) > (TEMPO * MAXREEMISSIONS)))){
+        if (postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] < (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length))
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
-        // if (mailTempoParams->mailHdr.length != MaxMailSize){
-        //     postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
-        //     postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
-        // }
         free(mailTempoParams);
         return;
     }
-    if(stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO){
+    if((stats->totalTicks - *mailTempoParams->totalTicksStart) > TEMPO && *mailTempoParams->nbEnvoi < MAXREEMISSIONS){
         char* buffer = new char[MaxPacketSize];
         bcopy(&(mailTempoParams->mailHdr), buffer, sizeof(MailHeader));
         bcopy(mailTempoParams->data, buffer + sizeof(MailHeader), mailTempoParams->mailHdr.length);
@@ -177,6 +174,8 @@ static void interruptTimer(int params){
         // postOffice->messageSent->P();
         postOffice->sendLock->Release();
         delete [] buffer;
+    } else {
+        //printf("WAIT:%lli\n", (TEMPO - (stats->totalTicks - *mailTempoParams->totalTicksStart)));
     }
 }
 
@@ -290,7 +289,7 @@ void PostOffice::PostalDelivery() {
                     printf("ACK send: ");
                     PrintHeader(outPktHdr, outMailHdr);
                 }
-                printf("ACK ENVOIE = ack=%d seq=%d\n", outMailHdr.ack, outMailHdr.seq);
+                //printf("ACK ENVOIE = ack=%d seq=%d\n", outMailHdr.ack, outMailHdr.seq);
                 sendLock->Acquire();
                 network->Send(outPktHdr, bufout);
                 // messageSent->P();
@@ -363,7 +362,7 @@ void PostOffice::SendPacket(PacketHeader pktHdr, MailHeader mailHdr, const char*
     params->pktHdr = pktHdr;
     params->mailHdr = mailHdr;
 
-    params->totalTicksStart = (int*) malloc(sizeof(int));
+    params->totalTicksStart = (long long*) malloc(sizeof(long long));
     *params->totalTicksStart = stats->totalTicks;
     params->nbEnvoi = (int*) malloc(sizeof(int));
     *params->nbEnvoi = 0;

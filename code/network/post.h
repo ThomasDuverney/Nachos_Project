@@ -38,7 +38,7 @@
 typedef int MailBoxAddress;
 
 #define MaxMailSize (MaxPacketSize - sizeof(MailHeader))
-#define TEMPO 10000000000
+#define TEMPO 20000000
 #define MAXREEMISSIONS 5
 
 // The following class defines part of the message header.
@@ -56,7 +56,7 @@ class MailHeader {
 };
 
 typedef struct _mailTempoParams{
-    int *totalTicksStart;
+    long long *totalTicksStart;
     PacketHeader pktHdr;
     MailHeader mailHdr;
     char *data;
