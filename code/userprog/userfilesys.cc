@@ -14,7 +14,7 @@ extern void do_UserChangeDirectoryPath(){
   int ptrNameDirectory = machine->ReadRegister(4);
   char * nameDirectory = (char *) malloc(sizeof(char)*MAX_STRING_SIZE);
   copyStringFromMachine(ptrNameDirectory,nameDirectory, MAX_STRING_SIZE);
-  fileSystem->ChangeDirectory(nameDirectory);
+  fileSystem->ChangeDirectoryPath(nameDirectory);
   free(nameDirectory);
 }
 

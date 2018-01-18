@@ -93,11 +93,10 @@ class FileSystem {
 
     OpenFile* Open(const char *name); 	// Open a file (UNIX open)
     int OpenFd(const char* name);
-    void Close(int sector);
+    // void Close(int sector);
     void CloseFd(int fd);
 
     bool CreateDirectory(const char *name);
-    void AddOpenFile(int sector, OpenFile *file);
 
     /* Read/Write from a fileDescriptor */
 

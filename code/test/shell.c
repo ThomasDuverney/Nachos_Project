@@ -40,8 +40,13 @@ int atoi(char * str){
 
 void cat(char * filename){
     int fd = Open(filename);
+    int n;
+    if(fd == -1){
+        return;
+    }
     char buffer[MAX_SIZE];
-    while(Read(buffer,MAX_SIZE,fd)!=0){
+    while((n = Read(buffer,MAX_SIZE-1,fd))!=0){
+        buffer[n] = '\0';
         PutString(buffer);
     }
     Close(fd);
@@ -49,7 +54,7 @@ void cat(char * filename){
 }
 
 int main (){
-    char cmd[100];
+    char cmd[NBMAXARGS*MAXLENGTHCMD];
     char cmdline[NBMAXARGS][MAXLENGTHCMD];
     int i,j;
     int z;
@@ -62,19 +67,21 @@ int main (){
         i=0;
 
         /* Séparation de la commande entrée par l'utilisateur */
-        while (index_cmdline < NBMAXARGS && cmd[i] != '\n'){
+        while (index_cmdline < NBMAXARGS && cmd[i] != '\n' && cmd[i] != '\0'){
             j=0;
 
+            while(j < MAXLENGTHCMD && cmd[i] == ' '){i++;}
+
             // on stocke 
-            while(j < MAXLENGTHCMD - 1 && cmd[i] != ' ' && cmd[i] != '\n'){
+            while(j < MAXLENGTHCMD - 1 && cmd[i] != ' ' && cmd[i] != '\n' && cmd[i] != '\0'){
                 cmdline[index_cmdline][j] = cmd[i];
                 i++;
                 j++;
             }
+
             if(cmd[i] == ' '){
                 i++;
             } else if(j >= MAXLENGTHCMD -1){
-                PutString("passe\n");
                 break;
             }
             cmdline[index_cmdline][j] = '\0';
