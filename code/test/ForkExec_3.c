@@ -2,7 +2,7 @@
 
 int main(){
 	PutChar('A');
-	ForkExec("MultiThreadPutInt_Mutex_0");
+	ForkExec("MultiThreadPutInt_0");
 	PutChar('B');
 	Exit(0);
 }

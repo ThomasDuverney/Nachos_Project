@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-#define NB 5
+#define NB 10
 
 /*
  * Programme de test créant un nombre de thread supérieur au nombre de thread possible.
@@ -14,7 +14,6 @@ void g(void *arg) {
   PutString("Je suis le thread num ");
   PutInt(n);
   PutChar('\n');
-  UserThreadExit();
 }
 
 

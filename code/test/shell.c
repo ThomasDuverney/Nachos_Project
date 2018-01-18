@@ -53,6 +53,43 @@ void cat(char * filename){
     PutString("\n");
 }
 
+struct threadParam{
+    int boxFrom;
+    char* otherName;
+};
+
+struct threadParam p;
+
+void reception(void *arg) {
+    char buf[100];
+    int box = p.boxFrom;
+    while(1){
+        ReceiveMessage(buf, box);
+        PutString(buf);
+        PutString("\nEntrez le message :\n");
+    }
+}
+
+void chat(){
+    char cmd[100];
+    int boxFrom, addrTo, boxTo;
+
+    PutString("Sur quelle boite souhaitez-vous écoutez ? ");
+    GetInt(&boxFrom);
+    PutString("\nA quelle adresse souhaitez-vous tchatter ? ");
+    GetInt(&addrTo);
+    PutString("\nA quelle box souhaitez-vous tchatter ? ");
+    GetInt(&boxTo);
+    p.boxFrom = boxFrom;
+    UserThreadCreate(reception,0);
+
+    while(1){
+        PutString("Entrez le message :\n");
+        GetString(cmd,100);
+        SendMessage(addrTo, boxTo, boxFrom, cmd);
+    }
+}
+
 int main (){
     char cmd[NBMAXARGS*MAXLENGTHCMD];
     char cmdline[NBMAXARGS][MAXLENGTHCMD];
@@ -180,6 +217,8 @@ int main (){
                 } else {
                     cat(cmdline[1]);
                 }
+            } else if(strcmp(cmdline[0], "chat") == 1){
+                chat();
             } else {
                 PutString("Error command not found\n");
             }
