@@ -76,7 +76,7 @@ MailBox::~MailBox() {
 //----------------------------------------------------------------------
 
 static void PrintHeader(PacketHeader pktHdr, MailHeader mailHdr) {
-    printf("From (%d, %d) to (%d, %d) bytes %d seq %d ack %d\n", pktHdr.from, mailHdr.from, pktHdr.to, mailHdr.to, mailHdr.length, mailHdr.seq, mailHdr.ack);
+    printf("From (%d, %d) to (%d, %d) bytes %d seq %d ack %d type %d\n", pktHdr.from, mailHdr.from, pktHdr.to, mailHdr.to, mailHdr.length, mailHdr.seq, mailHdr.ack, mailHdr.type);
 }
 
 //----------------------------------------------------------------------
@@ -306,7 +306,16 @@ void PostOffice::PostalDelivery() {
 
             }
         } else if(ackOtherByBoxes[mailHdr.to] < mailHdr.ack){
+            if (DebugIsEnabled('n')) {
+                printf("ACK receive: ");
+                PrintHeader(outPktHdr, outMailHdr);
+            }
             ackOtherByBoxes[mailHdr.to] = mailHdr.ack;
+        } else {
+            if (DebugIsEnabled('n')) {
+                printf("OLD ACK send: ");
+                PrintHeader(outPktHdr, outMailHdr);
+            }
         }
     }
 }
@@ -412,7 +421,8 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
 
     while (sizeRemaining >= MaxMailSize){
         char* buffer = new char[MaxMailSize];
-        bcopy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
+        strncpy(buffer, data + (cpt * MaxMailSize), MaxMailSize);
+        //bcopy(data + (cpt * MaxMailSize), buffer, MaxMailSize);
         outMailHdr.length = MaxMailSize;
         if (DebugIsEnabled('n')) {
             printf("SEND MSG nb=%d buffer=\"%s\" sizeRemaining=%d diff=%d\n", cpt, buffer, sizeRemaining, sizeRemaining-strlen(buffer));
@@ -425,7 +435,8 @@ void PostOffice::SendMessage(NetworkAddress addrTo, int boxTo, int boxFrom, cons
         delete [] buffer;
     }
     char* buffer = new char[sizeRemaining];
-    bcopy(data + (cpt * MaxMailSize), buffer, sizeRemaining);
+    strncpy(buffer, data + (cpt * MaxMailSize), sizeRemaining);
+    //bcopy(data + (cpt * MaxMailSize), buffer, sizeRemaining);
     outMailHdr.length = sizeRemaining;
     if (DebugIsEnabled('n')) {
         printf("SEND MSG nb=%d buffer =\"%s\" sizeRemaining=%d\n", cpt, buffer, sizeRemaining);
@@ -440,15 +451,20 @@ std::string PostOffice::ReceiveMessage(int box){
     std::string data;
     PacketHeader inPktHdr;
     MailHeader inMailHdr;
-    char buffer[MaxMailSize];
+    char* buffer = new char[MaxMailSize];
 
     postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
+    for (unsigned i=0; i<inMailHdr.length; i++)
+        data += buffer[i];
+    delete [] buffer;
+
     while(inMailHdr.length == MaxMailSize){
-        data += buffer;
-        memset(buffer, 0, MaxMailSize);
+        buffer = new char[MaxMailSize];
         postOffice->ReceivePacket(box, &inPktHdr, &inMailHdr, buffer);
+        for (unsigned i=0; i<inMailHdr.length; i++)
+            data += buffer[i];
+        delete [] buffer;
     }
-    data += buffer;
     ackSelfByBoxes[inMailHdr.to] = 0;
     if (DebugIsEnabled('n')) {
         printf("RECEIVE %s\n", data.c_str());

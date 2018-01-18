@@ -16,6 +16,7 @@ void reception(void *arg) {
         ReceiveMessage(buf, box);
  //       PutString(p.otherName);
         PutString(buf);
+        PutString("\nEntrez le message :\n");
     }
 }
 
