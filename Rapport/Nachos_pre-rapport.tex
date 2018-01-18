@@ -63,12 +63,10 @@
 
 
 \section{Fonctionnalités}
-Environnement utilisateur multi-processus avec espaces d'adressages séparés et virtualisation memoire.
-Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, variables-conditions).
-Gestion des entrées-sorties (GetInt, PutInt, GetChar, PutChar, GetString, Putstring).
-Système de fichier inspiré ext4.
-Protocole réseau sans connection avec envoi fiable de données.
-Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
+Environnement utilisateur multi-processus avec espaces d'adressages séparés et virtualisation mémoire.
+Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, variables-conditions). Gestion des entrées-sorties (GetInt, PutInt, GetChar, PutChar, GetString, Putstring).
+Système de fichier. Protocole réseau sans connexion avec envoi fiable de données.
+Utilisation interactive via un Shell (exec, cd, ls, mkdir, open ...).
 \section{Spécifications}
 \subsection{Entrées-Sorties}
 
@@ -246,17 +244,17 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 
 \subsubsection{\texttt{OpenFileId Open(char *name)}}
 \begin{itemize}
-\item[-]Sémantique: Ouvre le fichier de nom "name". 
-\item[-]Valeur de retour: Retourne un descripteur de fichier de type OpenFileid
-  permettant de lire et écrire dans le fichier ou -1 si l'ouverture à échoué.
+\item[-]Sémantique: Ouvre le fichier dont le nom "name". 
+\item[-]Valeur de retour: Retourne un descripteur de fichier de type \texttt{OpenFileId}
+  permettant de lire et écrire dans le fichier ou $-1$ si l'ouverture à échoué.
 \end{itemize}
 
 \subsubsection{\texttt{void Write (char *buffer, int size, OpenFileId id)}}
 \begin{itemize}
 \item[-]Sémantique: Écrit "size" octets depuis le fichier dont le descripteur est "id"
   dans le buffer "buffer".
-\item[-]Pré-condition: Le descripteur "id" doit être valide (fichier ouvert), initialisé dans le thread appellant
-  par la méthode Open. Tenter d'écrire dans un fichier non initialisé par open resulte en un comportement non spécifié.
+\item[-]Pré-condition: Le descripteur "id" doit être valide (fichier ouvert), initialisé dans le thread courant
+  par la méthode \texttt{Open}. Tenter d'écrire dans un fichier non initialisé par open resulte en un comportement non spécifié.
 \end{itemize}
 
 \subsubsection{\texttt{int Read(char *buffer, int size, OpenFileId id)}}
@@ -307,8 +305,8 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \begin{itemize}
 \item[-]Sémantique: Envoi du message "data" depuis la boite
  "boxfrom" vers la machine d'adresse "addressDesti" dans la boite "boxTo".
-\item[-]Pré\_condition: La machine addressDesti doit être prête à recevoir des messages,
-  i.e. avoir exécuté ReceiveMessage, les numéros de boites "boxTo" et "boxFrom" sont compris entre 0 et 9.
+\item[-]Pré\_condition: La machine "addressDesti" doit être prête à recevoir des messages,
+  i.e. avoir exécuté \texttt{ReceiveMessage}, les numéros de boites "boxTo" et "boxFrom" sont compris entre $0$ et $9$.
 \end{itemize}
 
 \subsubsection{\texttt{void ReceiveMessage(char * data, int box)}}
@@ -317,7 +315,6 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
   Les données reçues sont stockées à l'adresse "data".
 \item[-]Pré\_condition: Le numéro de boite "box".
 \end{itemize}
-
 
 
 \section{Implémentation}
