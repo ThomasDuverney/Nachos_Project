@@ -20,6 +20,7 @@
 #include "thread.h"
 #include "disk.h"
 #include "stats.h"
+#include "directory.h"
 
 #define TransferSize 	10 	// make it small, just to be difficult
 
@@ -47,15 +48,18 @@ Copy(const char *from, const char *to)
     fileLength = ftell(fp);
     fseek(fp, 0, 0);
 
+    char filename[FileNameMaxLen+1];
+    fileSystem->ChangeDirectoryAndParse(to, filename);
+
 // Create a Nachos file of the same length
-    DEBUG('f', "Copying file %s, size %d, to file %s\n", from, fileLength, to);
-    if (!fileSystem->Create(to, fileLength)) {	 // Create Nachos file
-	printf("Copy: couldn't create output file %s\n", to);
+    DEBUG('f', "Copying file %s, size %d, to file %s\n", from, fileLength, filename);
+    if (!fileSystem->Create(filename, fileLength)) {	 // Create Nachos file
+	printf("Copy: couldn't create output file %s\n", filename);
 	fclose(fp);
 	return;
     }
     
-    openFile = fileSystem->Open(to);
+    openFile = fileSystem->Open(filename);
     ASSERT(openFile != NULL);
     
 // Copy the data in TransferSize chunks

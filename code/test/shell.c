@@ -7,14 +7,17 @@
 
 int strcmp(char *s1, char *s2){
     int i = 0;
-    while(s1[i] != '\0'){
+    while(s1[i] != '\0' && s1[i] != '\n' ){
         if(s1[i] != s2[i]){
             return 0; // les chaines ne sont pas les memes
         }
         i++;
     }
-
-    return 1;
+    if(s1[i] == '\0' && s2[i] == '\0'){
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 int atoi(char * str){
@@ -120,8 +123,9 @@ int main (){
                 i++;
             } else if(j >= MAXLENGTHCMD -1){
                 break;
+            } else {
+                cmdline[index_cmdline][j] = '\0';
             }
-            cmdline[index_cmdline][j] = '\0';
             index_cmdline++;
         }
 
