@@ -149,18 +149,14 @@ static void interruptTimer(int params){
     MailTempoParams *mailTempoParams = (MailTempoParams*) params;
     //printf("DESTRUCTION du timer\nackOther=%d seq=%d len=%d\n", postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from], mailTempoParams->mailHdr.seq, mailTempoParams->mailHdr.length);
     if(postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] >= (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length)
-            || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && stats->totalTicks - *mailTempoParams->totalTicksStart > TEMPO)){
-        if (*mailTempoParams->nbEnvoi == MAXREEMISSIONS)
+            || (*mailTempoParams->nbEnvoi == MAXREEMISSIONS && ((stats->totalTicks - *mailTempoParams->totalTicksStart) > (TEMPO * MAXREEMISSIONS)))){
+        if (postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] < (mailTempoParams->mailHdr.seq + mailTempoParams->mailHdr.length))
             printf("Envoi du paquet annulé : trop de réémission\n");
         mailTempoParams->timer->setToBeDestroyed(TRUE);
-        // if (mailTempoParams->mailHdr.length != MaxMailSize){
-        //     postOffice->seqByBoxes[mailTempoParams->mailHdr.from] = 0;
-        //     postOffice->ackOtherByBoxes[mailTempoParams->mailHdr.from] = 0;
-        // }
         free(mailTempoParams);
         return;
     }
-    if((stats->totalTicks - *mailTempoParams->totalTicksStart) > TEMPO){
+    if((stats->totalTicks - *mailTempoParams->totalTicksStart) > TEMPO && *mailTempoParams->nbEnvoi < MAXREEMISSIONS){
         char* buffer = new char[MaxPacketSize];
         bcopy(&(mailTempoParams->mailHdr), buffer, sizeof(MailHeader));
         bcopy(mailTempoParams->data, buffer + sizeof(MailHeader), mailTempoParams->mailHdr.length);
