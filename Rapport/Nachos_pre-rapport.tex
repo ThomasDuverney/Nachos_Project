@@ -48,6 +48,9 @@
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
 \definecolor{mauve}{rgb}{0.58,0,0.82}
 
+\theoremstyle{definition}
+\newtheorem*{myRem}{Remarque}
+
 \tolerance=1000
 \setcounter{secnumdepth}{2}
 \author{Borne, Duquennoy, Duverney, Isnel}
@@ -89,7 +92,7 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \item[-] Sémantique:
   Lit une chaîne de caractères de longueur maximale égale à \texttt{n} depuis l'entrée standard et
   l'écrit à l'adresse \texttt{s}.
-\item[-] Pré-Conditions: L'adresse \texttt{s} est valide (espace suffisant).
+\item[-] Préconditions: L'adresse \texttt{s} est valide (espace suffisant).
 \end{itemize}
 
 \subsubsection{void PutInt(int n)}
@@ -100,23 +103,27 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \subsubsection{\texttt{void GetInt(int *n)}}
 \begin{itemize}
 \item[-] Sémantique: Lit un entier depuis l'entrée standard et l'écrit à l'adresse \texttt{n}.
-\item[-] Pré-Conditions: L'adresse \texttt{n} est valide.
+\item[-] Préconditions: L'adresse \texttt{n} est valide.
 \end{itemize}
 
 \subsection{Processus et Threads}
 
 \subsubsection{\texttt{int ForkExec(char * fileName)}}
  \begin{itemize}
- \item[-] Sémantique: Crée un nouveau processus qui exécute le fichier donné en paramètre
+ \item[-] Sémantique: Crée un nouveau processus qui exécute le fichier dont le nom est fourni en paramètre
+\item[-] Préconditions: "fileName" est le nom d'un fichier exécutable au format \texttt{noff}.
  \end{itemize}
 
 \subsubsection{\texttt{int UserThreadCreate(void f(void* arg), void* arg)}}
 \begin{itemize}
+\item[-] Spécifications: Prends en paramètres un pointeur de fonction "f" ne retournant pas de valeur
+  et un pointeur "arg".
 \item[-] Sémantique: Crée un nouveau thread utilisateur qui exécute la fonction \texttt{f(arg)}.
-\item[-] Pré-Conditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
+  f est un pointeur de fonction 
+\item[-] Préconditions: Le système doit disposer d'une quantité de mémoire suffisante pour allouer la
   pile du thread à créer. 
 \item[-] Valeur de retour: retourne l'identficateur du thread crée, $-1$ si une erreur s'est produite lors de
-  la création.
+  la création du thread.
 \end{itemize}
 
 \subsubsection{\texttt{void UserThreadExit()}}
@@ -126,54 +133,55 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 
 \subsubsection{\texttt{int UserThreadJoin(int tid)}}
 \begin{itemize}
-\item[-] Sémantique: Attends la terminaison du Thread $tid$, renvoie $-1$
+\item[-] Sémantique: Attends la terminaison du thread d'identifiant "tid", renvoie $-1$
   si le thread est déjà terminé, $0$ sinon.
-\item[-] Pré-Conditions: Le thread courant n'a pas déjà fait join(tid). 
+\item[-] Préconditions: "tid" est un identifiant de thread valide, initialisé dans le processus courant
+  à l'aide d'un appel à \texttt{UserThreadCreate}. Le thread courant n'a pas déjà fait \texttt{join(tid)}.
 \end{itemize}
 
 \subsection{Synchronisation}
 \subsubsection{\texttt{Mutex\_t MutexCreate()}}
 \begin{itemize}
-\item[-]Sémantique: Initialise une variable de type \texttt{Mutex\_t}.
-\item[-]Valeur de retour: Un identifiant pour le mutex.
+\item[-]Sémantique: Initialise un mutex.
+\item[-]Valeur de retour: Un identifiant de type \texttt{Mutex\_t} pour le mutex.
 \end{itemize}
 
 \subsubsection{\texttt{void MutexLock(Mutex\_t mutexId)}}
 \begin{itemize}
-\item[-]Sémantique: Acquiert le verrou \texttt{mutex}. Si le mutex est déverrouillé, il devient verrouillé
-  et possédé par le thread appelant. Si le mutex est déjà verrouillé par un autre thread,
-  le thread appelant est suspendu jusqu'à ce que le mutex soit déverrouillé.
+\item[-]Sémantique: Acquiert le mutex d'identifiant "mutexId". Si "mutexId" est déverrouillé, il devient verrouillé
+  et possédé par le thread appelant. Si le mutex d'identifiant "mutexId" est déjà verrouillé par un autre thread,
+  le thread appelant est suspendu jusqu'à ce que "mutexId" soit déverrouillé.
 \item[-]Pré-Condition: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
-  appellant par la méthode MutexCreate.
+  appellant par la méthode \texttt{MutexCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void MutexUnlock(Mutex\_t mutexId)}}
 \begin{itemize}
-\item[-]Sémantique: Relâche le verrou \texttt{mutex}.
+\item[-]Sémantique: Relâche le mutex d'identifiant "mutexId".
 \item[-]Pré-Condition: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
-  appellant par la méthode MutexCreate. "mutex" est Verrouillé.
+  courant par la méthode \texttt{MutexCreate}. "mutexId" est Verrouillé.
 \end{itemize}
 
-\subsubsection{\texttt{MutexDestroy(Mutex\_t mutex)}}
+\subsubsection{\texttt{MutexDestroy(Mutex\_t mutexId)}}
 \begin{itemize}
-\item[-]Sémantique: Détruit le verrou \texttt{mutex}.
-\item[-]Pré-Conditions: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
-  appellant par la méthode MutexCreate.
-  Le verrou mutex est relâché. Détruire un verrou non relâché mène à un comportement
+\item[-]Sémantique: Détruit le mutex "mutexId".
+\item[-]Préconditions: "mutexId" est un identifiant de mutex valide, initialisé dans le processus
+  courant par la méthode \texttt{MutexCreate}.
+  Le verrou est relâché. Détruire un verrou non relâché mène à un comportement
   non déterminé.
 \end{itemize}
 
 \subsubsection{\texttt{Sem\_t SemCreate(int initialValue)}}
 \begin{itemize}
 \item[-]Sémantique: Initialise une sémaphore avec la valeur "initialValue".
-\item[-]Valeur de retour: Un identifiant de type Sem\_t pour la variable condition.
+\item[-]Valeur de retour: Un identifiant de type \texttt{Sem\_t} pour la variable-condition.
 \end{itemize}
 
 \subsubsection{\texttt{void SemWait(Sem\_t semaphoreId)}}
 \begin{itemize}
 \item[-]Sémantique: Le thread appelant attends que la sémaphore ait une valeur $>0$ et la décrémente. 
 \item[-]Pré-Condition: "semaphoreId" est un identifiant de semaphore valide, initialisé dans le processus
-  appellant par la méthode SemCreate.
+  appellant par la méthode \texttt{SemCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void SemPost(Sem\_t semaphoreId)}}
@@ -181,52 +189,52 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \item[-]Sémantique: Incrémente la valeur de la sémaphore, réveille un thread en attente de cette sémaphore
   si besoin.
 \item[-]Pré-Condition: "semaphoreId" est un identifiant de semaphore valide, initialisé dans le processus
-  appellant par la méthode SemCreate.
+  courant par la méthode \texttt{SemCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void SemDestroy(Sem\_t semaphoreId)}}
 \begin{itemize}
 \item[-]Sémantique: Libère les ressources associées à la sémaphore.
 \item[-]Pré-Condition: "semaphoreId" est un identifiant de semaphore valide, initialisé dans le processus
-  appellant par la méthode SemCreate.
+  courant par la méthode \texttt{SemCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{Cond\_t CondCreate()}}
 \begin{itemize}
-\item[-]Sémantique: Initialise une variable de type Cond\_t.
-\item[-]Valeur de retour: Un identifiant pour la variable condition.
+\item[-]Sémantique: Initialise une variable-condition.
+\item[-]Valeur de retour: Un identifiant de type \texttt{Cond\_t} pour la variable-condition.
 \end{itemize}
 
 \subsubsection{\texttt{void CondWait(Cond\_t condId, Mutex\_t mutedId)}}
 \begin{itemize}
-\item[-]Sémantique: Met le thread appelant en sommeil dans la file d'attente associée à condId,
-  relâche le verrou mutexId.
-\item[-]Pré-Conditions: mutexId et condId sont des identifiants de mutex et variables-conditions
-  valides, initialisés dans le processus appellant par les méthode MutexCreate et CondCreate.
-  mutexId est verrouillé.
+\item[-]Sémantique: Met le thread courant en sommeil dans la file d'attente associée à "condId",
+  relâche le verrou "mutexId".
+\item[-]Préconditions: "mutexId" et "condId" sont des identifiants de mutex et variables-conditions
+  valides, initialisés dans le processus courant par les méthodes \texttt{MutexCreate} et \texttt{CondCreate}.
+  "mutexId" est verrouillé.
 \end{itemize}
 
 \subsubsection{\texttt{void CondSignal(Cond\_t condId)}}
 \begin{itemize}
-\item[-]Sémantique: Réveille un thread en sommeil dans la file d'attente associée à la variable
-  condition condId. Si aucun thread n'est présent dans la liste, le signal est perdu.
-\item[-]Pré-Condition: contId est un identifiant de variable-condition valide, initialisé dans le processus
-  appellant par la méthode CondCreate.
+\item[-]Sémantique: Réveille un thread en sommeil dans la file d'attente associée à la variable-condition
+  "condId". Si aucun thread n'est présent dans la liste, le signal est perdu.
+\item[-]Pré-Condition: "contId" est un identifiant de variable-condition valide, initialisé dans le processus
+  courant par la méthode \texttt{CondCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void CondBroadCast(Cond\_t condId)}}
 \begin{itemize}
-\item[-]Sémantique: Réveille tous les threads en sommeil dans le file d'attente associée à la variable
-  condition condId.
-\item[-]Pré-Condition: contId est un identifiant de variable-condition valide, initialisé dans le processus
-  appellant par la méthode CondCreate.
+\item[-]Sémantique: Réveille tous les threads en sommeil dans le file d'attente associée à la
+  variable-condition "condId".
+\item[-]Pré-Condition: "contId" est un identifiant de variable-condition valide, initialisé dans le processus
+  courant par la méthode \texttt{CondCreate}.
 \end{itemize}
 
 \subsubsection{\texttt{void CondDestroy(Cond\_t condId)}}
 \begin{itemize}
-\item[-]Sémantique: Libère les ressources associées à la variable condition condId. 
-\item[-]Pré-Condition: contId est un identifiant de variable-condition valide, initialisé dans le processus
-  appellant par la méthode CondCreate. Aucun thread n'est en attente dans la file associée à la variable.
+\item[-]Sémantique: Libère les ressources associées à la variable condition "condId". 
+\item[-]Pré-Condition: "contId" est un identifiant de variable-condition valide, initialisé dans le processus
+  courant par la méthode \texttt{CondCreate}. Aucun thread n'est en attente dans la file associée à la variable.
 \end{itemize}
 
 \subsection{Système de fichier}
@@ -315,19 +323,20 @@ Utilisation interractive via un Shell (exec, cd, ls, mkdir, open ...).
 \section{Implémentation}
 
 \subsection{Processus et Threads}
-\texttt{userprog/userthread.cc, userprocess.cc, addrspace.cc; thread/thread.cc}
-Nous modélisons un Processus par un objet \texttt{AddrSpace}.
-Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, dans la version originale de nachos, les méthodes relatives, entre autres, à la restauration et la sauvegarde de l'état de la machine \texttt{MIPS} (valeur des registres).
 
-Partant de ce constat nous avons décidé d'étendre encore la sémantique de l'objet \texttt{addrSpace} en ajoutant la liste de threads actifs dans l'espace d'adressage, ainsi que les informations relatives aux jointures entre thread (join).
+\begin{lstlisting}
+Fichiers: userprog/userthread.cc, userprog/userprocess.cc, userprog/addrspace.cc, thread/thread.cc
+\end{lstlisting}
+Nous modélisons un processus par un objet \texttt{AddrSpace}.
+Les fonctionnalités rendues par un objet \texttt{AddrSpace} dépassent la simple gestion de la mémoire puisque l'on trouve encapsulé au sein de cette classe, les méthodes relatives, entre autres, à la restauration et la sauvegarde de l'état du processeur de la machine \texttt{MIPS}.
+Partant de ce constat nous avons décidé d'étendre encore la sémantique de l'objet \texttt{addrSpace} en ajoutant une liste des threads actifs dans l'espace d'adressage, ainsi que les informations relatives aux éventuels appels à la méthode \texttt{join} entre ces threads.
 
 Nous parlerons par la suite d'espace d'adressage au sens élargi décrit ci-dessus:
-Une entité décrivant à la fois un espace mémoire, l'état de la machine \texttt{MIPS} et les informations relatives aux fils d'exécution actifs, c'est à dire un processus.
+Une entité décrivant à la fois un espace mémoire, l'état de la machine \texttt{MIPS} et les informations relatives aux fils d'exécution actifs dans cet espace. Afin de faire le lien entre les différents threads d'un même processus/espace d'adressage nous donnons à chaque objet \texttt{thread} une référence vers un objet \texttt{addrspace}.
 
-Nous donnons à chaque objet \texttt{thread} une référence vers son espace d'adressage.
-
-Remarque: Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent d'un point de vue sémantique de déléguer à \texttt{addrspace}, les méthodes de gestion de la mémoire
-et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fil d'exécutions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des difficultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons abandonné ce modèle au profit de celui décrit plus haut.
+\begin{myRem}
+Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent de déléguer à \texttt{addrspace} les méthodes de gestion de la mémoire et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fil d'exécutions vivant dans cet espace. Malheureusement en faisant ce choix nous nous somme trouvé face à des difficultés dans la re-factorisation du code nachos original et pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons abandonné ce modèle au profit de celui décrit plus haut.
+\end{myRem}
 
 \subsubsection{Piles des threads}
 Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace} en blocs de pages, de taille \texttt{NumPagesPerStack}.
@@ -350,24 +359,27 @@ Un thread peut être attendu par plusieurs threads distincts.
 
 \subsubsection{Création d'un thread}
 Toute création de thread utilisateur s'effectue par l'appel système UserTHreadcreate
-depuis un thread en mode utilisateur qui résulte en un passage au niveau noyau
-via l'instruction assembleur syscal et le mécanisme de gestion d'exceptionimplémenté dans la méthode \texttt{ExceptionHandler} de la classe  \texttt{exception.cc}.
+qui déclenche un passage en mode noyau via l'instruction \texttt{syscal}.
+Le gestionnaire d'exception implémenté dans la méthode \texttt{ExceptionHandler} de la classe
+\texttt{exception.cc} appelle alors la méthode \texttt{do\_UserThreadCreate()}.
+L'initialisation du nouveau fil d'éxecution s'effectue en trois étapes.
 
-L'appel système UserThreadCreate mène donc à l'appel au niveau noyau de la méthode do\_UserThreadCreate(). Dans cette méthode on crée un nouvel objet thread $t$ (thread noyau propulseur), destiné à configurer et brancher la machine MIPS sur l'exécution d'une nouvelle fonction au sein de l'espace d'adressage du thread ayant effectué l'appel système UserThreadcreate.
+\begin{enumerate}
+\item Dans \texttt{do\_UserThreadCreate()}:
 
-On commence par récupérer la fonction utilisateur $f$ à exécuter et ses arguments $arg$ dans les registres 4 et 5 de la machine MIPS.
-On appelle ensuite la méthode t->Fork(StartUserthead, (f, arg)).
-Dans Fork, on initialise la ``partie noyau'' du thread propulseur $t$ de manière
-à ce qu'il exécute, lorsqu'il deviendra le thread courant, la méthode
-StartUserThread(f,arg). On donne à $t$ le même espace d'adressage que le
-thread courant (le thread ayant appelé UserThreadcreate). On met à jour
-la liste des thread de l'espace d'adressage, on cherche un emplacement
-libre dans l'espace d'adressage pour la pile du nouveau thread $t$.
+On crée un nouvel objet thread $t$ (thread noyau propulseur), destiné à configurer et brancher la machine \texttt{MIPS} sur l'exécution d'une nouvelle fonction $f$ au sein de l'espace d'adressage du thread/processus courant.
+On commence par récupérer la fonction utilisateur $f$ à exécuter et ses arguments $arg$ dans les registres $4$ et $5$ de la machine \texttt{MIPS}. On appelle ensuite la méthode \texttt{t->Fork(StartUserthead, (f, arg))}.
+
+\item Dans \texttt{fork}:
+On initialise la "partie noyau" du thread propulseur $t$ de manière
+à ce qu'il exécute, la méthode \texttt{StartUserThread(f,arg)}. On affecte à $t$ le même espace d'adressage que le thread courant. On met à jour la liste des thread de l'espace d'adressage, on cherche un emplacement
+libre dans l'espace d'adressage pour la pile en mode user du nouveau thread $t$.
 On place ensuite le thread $t$ dans la ready list du scheduler.
 
-Lorsque $t$ sera le thread courant il exécutera la méthode StartUserThread((f,arg))
-qui se chargera de configurer les registres de la machine MIPS pour l'exécution
-de la fonction utilisateur f(arg) et lancera la machine avec machine->Run(). 
+\item Lorsque $t$ devient le thread courant il exécute la méthode \texttt{StartUserThread((f,arg))}
+qui se charge de configurer les registres de la machine MIPS pour l'exécution
+de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{machine->Run()}. 
+\end{enumerate}
 
 \subsubsection{Création d'un processus}
 
