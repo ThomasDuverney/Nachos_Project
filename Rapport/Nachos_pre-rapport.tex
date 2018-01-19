@@ -34,8 +34,8 @@
 }
          
 % Pour XeTeX
-\XeTeXdefaultencoding utf-8
-\usepackage{fontspec}
+%\XeTeXdefaultencoding utf-8
+%\usepackage{fontspec}
 
 \newenvironment{absolutelynopagebreak}
   {\par\nobreak\vfil\penalty0\vfilneg
@@ -66,11 +66,11 @@
 
 
 \section{Fonctionnalités}
-Environnement utilisateur multi-processus avec espaces d'adressages séparés et virtualisation mémoire.
+Environnement utilisateur multi-processus avec espaces d'adressages et virtualisation mémoire.
 Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, Variables-conditions). Gestion des entrées-sorties (\texttt{GetInt}, \texttt{PutInt}, \texttt{GetChar}, \texttt{PutChar}, \texttt{GetString}, \texttt{Putstring}).
 Système de fichier. Protocole réseau sans connexion avec envoi fiable de données.
 Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \texttt{mkdir}, \texttt{rm},
-\texttt{touch}, \texttt{cat}, \texttt{messagerie} ...).
+\texttt{touch}, \texttt{cat}, \texttt{messagerie réseau instantanée} ...).
 
 
 \section{Appels système}
@@ -366,8 +366,7 @@ Un thread $t1$ ne peut faire un join que vers un thread $t2$ actif.
 Un thread peut être attendu par plusieurs threads distincts.
 
 \subsubsection{Création d'un thread}
-Toute création d'un thread utilisateur s'effectue par l'appel système
-\texttt{UserThreadCreate}
+La création d'un thread utilisateur s'effectue par un appel à \texttt{UserThreadCreate}
 qui déclenche un passage en mode noyau via l'instruction \texttt{syscall}.
 Le gestionnaire d'exception implémenté dans la méthode \texttt{ExceptionHandler} de la classe
 \texttt{exception.cc} appelle alors la méthode \texttt{do\_UserThreadCreate()}.
@@ -385,7 +384,9 @@ On initialise la "partie noyau" du thread propulseur $t$ de manière
 libre dans l'espace d'adressage pour la pile du nouveau thread $t$.
 On place ensuite le thread $t$ dans la \texttt{readyList} du scheduler.
 
-\item Lorsque $t$ devient le thread courant il exécute la méthode \texttt{StartUserThread(f,arg)}
+\item Lorsque $t$ devient le thread courant il exécute la méthode
+
+  \texttt{StartUserThread(f,arg)}
 qui se charge de configurer les registres de la machine \texttt{MIPS} pour l'exécution
 de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{machine->Run()}. 
 \end{enumerate}
@@ -438,30 +439,24 @@ Nous avons mis en place un protocole simple de transmission fiable de données (
   On appelle message, une séquence d'octets à transmettre sur le réseau.
 \end{myDef}
 L'envoi d'un message passe par l'envoi d'un ou plusieurs objets \texttt{mail} que l'on peut assimiler à un segment \texttt{TCP}. 
-
 Un mail est constitué d'un en-tête et d'un tableau d'octets contenant les données à envoyer.
 On distingue trois types de mail:
 \begin{itemize}
-\item[-]Donnée
+\item[-]Données
 \item[-]Acquittement
 \item[-]Fin de message
 \end{itemize}
-
-On stocke dans l'en-tête d'un mail la taille des données, le type de mail, un numéro de séquence, un
-numéro d'acquittement.
-
-La fiabilité de notre protocole, tout comme \texttt{TCP} s'appuie sur l'utilisation de numéros de séquences
-et de numéro d'acquittement.
+La fiabilité de notre protocole, tout comme \texttt{TCP} s'appuie sur l'utilisation de numéros de séquences et de numéro d'acquittement.
 
 \subsubsection{Numéro de séquence}
 Supposons que l'on initie un flux d'octet bidirectionnel entre un serveur \texttt{A} et un client \texttt{B}.
 Pour chaque direction de flux, tout octet du flux est identifié par un numéro de séquence unique. 
 Lorsque l'on envoie un mail, on joint dans l'en-tête du mail un numéro de séquence correspondant
-au numéro du premier octet des données envoyées dans ce mail. Le numéro de séquence initial est $0$.
+au numéro du premier octet des données envoyées dans ce mail. Le numéro de séquence initial d'un flux de donnée est $0$.
 
 \subsubsection{Numéro d'acquittement}
-La fiabilité de la transmission repose sur le fait que, pour chaque mail envoyé par $A$ à $B$, $B$ prévient $A$ qu'il a bien reçu le mail en lui renvoyant un mail d'acquittement.
-Un mail d'acquittement est un mail particulier, sans données, servant uniquement à transmettre un numéro d'acquittement correspondant numéro de séquence du prochain octet que $B$ s'attend a recevoir.
+La fiabilité de la transmission repose sur le fait que, pour chaque mail envoyé par $A$, $B$ prévient $A$ qu'il a bien reçu le mail en lui renvoyant un mail d'acquittement.
+Un mail d'acquittement est un mail particulier, sans données, servant uniquement à transmettre un numéro d'acquittement correspondant numéro de séquence du prochain octet que $B$ s'attend à recevoir.
 Avec le principe d'acquittement cumulatif, \texttt{A} n'a pas besoin de recevoir les acquittements de tous les paquets qu'il envoie. Si on envoie trois paquets p1, p2, p3 à \texttt{B} et que \texttt{B}
 acquitte p3, alors si \texttt{A} reçoit l'acquittement il sait que \texttt{B} a bien reçu p1, p2 et p3.
 
@@ -469,40 +464,47 @@ acquitte p3, alors si \texttt{A} reçoit l'acquittement il sait que \texttt{B} a
 Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP). A chaque envoi de paquet on déclenche un timer. A la "sonnerie" du timer, si on a pas reçu d'acquittement, on réemet le paquet considéré perdu. Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
 
 \subsubsection{Mise à jour des champs ACK et SEQ}
-Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement. Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. L'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination. On acquitte pas un acquittement. 
+Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement. Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d' acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. L'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination (on acquitte pas un acquittement). 
 
 \subsubsection{ Envoi et réception messages de tailles variables}
 Lors de l'envoi d'un message dépassant \texttt{maxMailSize} on découpe le message en plusieurs mails.
 L'émetteur termine l'envoi du message par un mail de type "Fin de message" contenant pour seules données
-la chaîne de caractères "fin". Une fois ce dernier mail acquitté, on est sûr que le message est bien arrivé.
+la chaîne de caractères "fin". Une fois ce dernier mail acquitté, $A$ est sûr que le message est bien arrivé.
 
-\section{Système de Fichier}
+\section{Système de Fichiers}
 
-Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les fichiers ouvert du système de fichier. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Les index dans le tableau servent de descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier. 
-De plus nous avons ajouté un attribut \texttt{bool isDirectory} à la classe \texttt{directoryentry}. Cet attribut nous permet de discerner dans un dossier, quelle entrée est un fichier ou un repertoire.
+Nous avons ajouté à l'objet \texttt{Filesys} un tableau
+
+\texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les descripteurs
+des fichiers ouverts dans le système de fichiers. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Lorsqu'un fichier est ouvert depuis un thread utilisateur on place, au niveau noyau, le descripteur du fichier "f" dans la première case libre du tableau \texttt{fileOpened} et l'appel à \texttt{Open} retourne l'indice de cette case au thread. On s'assure ensuite que le descripteur d'un même fichier ne se trouve jamais deux fois dans le tableau
+\texttt{fileopened}.
+
+Aussi, nous avons ajouté un attribut \texttt{bool isDirectory} à la classe
+
+\texttt{directoryentry}. Cet attribut nous permet de discerner dans un dossier, quelle entrée est un fichier ou un répertoire.
 
 \section{Organisation}
 Pour la quasi-totalité des étapes $1$ à $4$, nous avons travaillé sur un ordinateur commun.
-Lors des étapes $5$ et $6$ nous nous sommes scindés en trois sous-groupes, restant malgré tout en communication constante sur les décisions d'implémentation. En ce qui concerne la répartition temporelle des tâches, nous avons essayé de suivre le planing prévisionnel proposé. Nous avons rencontré des difficultés lors de l'étape $4$ et avons sans doute hésité trop longtemp à renoncer à un "mauvais" choix de conception évoqué dans la section "processus et threads" de ce rapport. Une fois la décision prise de revenir en arrière nous avons pu remettre notre projet sur une bonne voie.
+Lors des étapes $5$ et $6$ nous nous sommes scindés en trois sous-groupes, restant malgré tout en communication constante sur les décisions d'implémentation. En ce qui concerne la répartition temporelle des tâches, nous avons essayé de suivre le planning prévisionnel proposé. Nous avons rencontré des difficultés lors de l'étape $4$ et avons sans doute hésité trop longtemps à renoncer à un "mauvais" choix de conception évoqué dans la section "processus et threads" de ce rapport. Une fois la décision prise de revenir en arrière nous avons pu remettre notre projet sur une bonne voie.
 La forte implication de tous les membres du groupe dans le projet nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que nous avions tous une compréhension et vision homogène du fonctionnement de notre code et du système nachos. Nous avons pu ainsi adopter un point de vue critique vis à vis du code produit, n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs, à remettre en question des choix,
-suggérer des corrections de code, de style d'écriture, sans jamais rencontrer de conflit d'ego. Nous n'avons éprouvé aucunes difficultés à travailler en groupe, et n'avons rencontré, c'est assez rare pour le préciser, aucun conflit relationnel lors du déroulement de ce projet et ce même face aux difficultés techniques rencontrées.  
+suggérer des corrections de code, de style d'écriture. Nous n'avons éprouvé aucunes difficultés à travailler en groupe, et n'avons rencontré, c'est assez rare pour le préciser, aucune ombre de conflit relationnel lors du déroulement de ce projet.
 
 \section{Pistes d'amélliorations}
 Nous avons, d'une manière générale, pris le parti de choisir les conceptions les plus simples
-lors de la mise en oeuvre des fonctionnalités de notre système. Cela nous à permi d'aboutir
+lors de la mise en oeuvre des fonctionnalités de notre système. Cela nous à permis d'aboutir
 à un code fonctionnel, simple à comprendre et à maintenir et de nous familiariser avec nachos.
-Nous pourrions à présent rafiner nos implémentations et proposer des solutions plus perfectionnés/performantes.
-Nous estimons que dans l'état actuel du projet nous pourrions rapidement mettre en oeuvre les ammélioration suivantes:
-Bibliothèque d'entrées-sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler, ouverture concurente de fichiers, taille variables des fichiers.
-Nous ne pouvons pas encore executer de manière interractive des programmes utilisateurs depuis notre invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid).
+Nous pourrions à présent raffiner nos implémentations et proposer des solutions plus perfectionnés/performantes.
+Nous estimons que dans l'état actuel du projet nous pourrions rapidement mettre en oeuvre les amélioration suivantes:
+Bibliothèque d'entrées-sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler, ouverture concurrente de fichiers, taille variables des fichiers.
+Nous ne pouvons pas encore exécuter de manière interactive des programmes utilisateurs depuis notre invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid) ce qui serait aussi envisageable à court terme.
 
 \section{Conclusion}
-Nous avons le sentiment unanime d'avoir partagé une excellente expérience de travail collaboratif. Nous avons pris plaisir à confronter nos connaissance à un cas d'utilisation pratique et sommes très heureux d'avoir pu participer à ce projet. Nous tenons à remercier Vincent Danjean et Vania Marangozova pour leur support et leur bienveillance.
+Nous avons le sentiment unanime d'avoir partagé une excellente expérience de travail collaboratif. Nous avons pris plaisir à confronter nos connaissance à un cas d'utilisation pratique et sommes très heureux d'avoir pu participer à ce projet. Nous tenons à remercier Vincent Danjean et Vania Marangozova pour leur support et leur enseignement.
 \section{Annexe}
 
-\section{Tests}
+\subsection{Tests}
 
-\subsection{Entrées-Sorties}
+\subsubsection{Entrées-Sorties}
 \begin{itemize}
 \item[-] \texttt{Putchar\_0}: Écriture du caractère \texttt{'a'} sur la sortie standard.
 \item[-] \texttt{Putchar\_1}: Écriture du caractère \texttt{'a'} et \texttt{'b'} sur la sortie standard.
@@ -520,7 +522,7 @@ Nous avons le sentiment unanime d'avoir partagé une excellente expérience de t
   constante \texttt{MAX\_STRING\_SIZE(=100)} définie dans \texttt{system.h}.
 \end{itemize}
 
-\subsection{UserThreads}
+\subsubsection{UserThreads}
 \begin{itemize}
 \item[-] \texttt{UserThreadcreate\_0}: Lancement de \texttt{N} threads utilisateurs qui affichent chacun un entier passé en paramètre lors de leur
   création.
@@ -530,7 +532,7 @@ Nous avons le sentiment unanime d'avoir partagé une excellente expérience de t
   Le programme affiche l'identifiant des threads crées.
 \end{itemize}
 
-\subsection{Entrées-Sorties Multithread}
+\subsubsection{Entrées-Sorties Multithread}
 Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
 \begin{itemize}
 \item[-] \texttt{MultithreadGetChar\_0}: Création de plusieurs threads exécutant \texttt{GetChar}
@@ -548,13 +550,13 @@ Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
 \end{itemize}
 On reprends l'ensemble des tests sur les opérations d'entrées-sorties précédents en rendant l'exécution de chaque thread séquentielle par l'utilisation d'un mutex ou d'une sémaphore.
 
-\subsection{Lecteur-rédacteurs}
+\subsubsection{Lecteur-rédacteurs}
 
 Afin de vérifier le bon fonctionnement des variables-conditions et mutex
 au niveau utilisateur, nous avons implémenté une solution au problème des
 lecteur-rédacteurs.
 
-\subsection{ForkExec}
+\subsubsection{ForkExec}
 \begin{itemize}
 \item[-] \texttt{ForkExec\_0}: Crée un nouveau processus qui exécute le programme \texttt{PutInt\_0}.
 \item[-] \texttt{ForkExec\_1}: Crée un nouveau processus qui exécute le programme \texttt{PutChar\_0}.
@@ -564,7 +566,7 @@ lecteur-rédacteurs.
 \item[-] \texttt{ForkExec\_MultiThread\_1}: Crée un nouveau processus qui exécute le programme \texttt{ForkExec\_MultiThread\_0}.
 \end{itemize}
 Nous vérifions dans gdb les changements d'espace d'adressage, la libération de la mémoire lors de la terminaison d'un processus utilisateur.
-\subsection{Shell}
+\subsubsection{Shell}
 Nous avons implémenté un petit programme shell qui permet une utilisation interactive de notre système. Les commandes suivantes sont implémentées:
 \begin{itemize}
 \item[-] \texttt{exec}: prends en argument un nom de fichier de programme exécutable au format noff, crée un nouveau processus utilisateur qui exécute le programme.
