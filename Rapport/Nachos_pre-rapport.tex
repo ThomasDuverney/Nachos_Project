@@ -391,7 +391,7 @@ de la fonction utilisateur \texttt{f(arg)} et de lancer la machine avec \texttt{
 \end{enumerate}
 
 \subsubsection{Création d'un processus}
-La procédure de création d'un processus est similaire à celle d'un thread utilisateur, à la différence que l'on doit lire un exécutable au format \texttt{noff} pour initialiser un nouvel espace d'adressage et affecter cet espace au thread propulseur avant l' appel à \texttt{Fork} dans la méthode \texttt{do_UserProcessCreate}.
+La procédure de création d'un processus est similaire à celle d'un thread utilisateur, à la différence que l'on doit lire un exécutable au format \texttt{noff} pour initialiser un nouvel espace d'adressage et affecter cet espace au thread propulseur avant l' appel à \texttt{Fork} dans la méthode \texttt{do\_UserProcessCreate}.
 
 \subsubsection{Terminaison d'un thread et d'un processus}
 Les threads d'un processus ont une vie (et une mort) indépendante, sans aucune hiérarchie entre eux.
@@ -478,48 +478,26 @@ la chaîne de caractères "fin". Une fois ce dernier mail acquitté, on est sûr
 
 \section{Système de Fichier}
 
-\subsection{FileOpened}
-Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les fichiers ouvert du système de fichier. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Les index dans le tableau servent de descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier.
-
-\section{Currentdirectory}
-A l'initialisation du système de fichier, on place le repertoire courant à la racine du système de fichiers.
-
-\section{Chemins relatifs}
-Toutes les méthodes createDirectory, changeDir, Create,... acceptent les chemins relatifs.
-
-** FileHeaders
-La gestion des fichiers et répertoires sur le disque s'appuie sur les objets \texttt{fileHeader} qui mémorisent:
-\begin{itemize}
-\item[-] La taille du fichier en octet
-\item[-] Le nombre de secteurs de disques utilisés
-\item[-] Les indices des secteurs de disques.
-\end{itemize}
-Le fileHeader est un index pour accéder au contenu réel du fichier.
-un répertoire est vu comme un fichier particulier et possède aussi son file header.
- 
-* FreeMap
-
-\section{Is directory}
-Permet de discerner les fichiers des répertoire lorsqu'on parcourt les entrées d'un répertoire.
-Utilisé lors d'un change directory, et d'un remove (si le répertoire est vide ou pas).
+Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les fichiers ouvert du système de fichier. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Les index dans le tableau servent de descripteurs de fichiers fournis aux processus utilisateurs pour la lecture et l'écriture dans un fichier. 
+De plus nous avons ajouté un attribut \texttt{bool isDirectory} à la classe \texttt{directoryentry}. Cet attribut nous permet de discerner dans un dossier, quelle entrée est un fichier ou un repertoire.
 
 \section{Organisation}
-Pour les premières étapes nous avons travaillé sur un ordinateur commun.
-Cette approche basée sur une communication constante et une implication de tous les membres du groupe
-nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que
-nous avions tous une compréhension et vision homogène du fonctionnement de notre code. Nous
-avons adopté un point de vue critique vis à vis du code produit,
-n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs
-avant pendant et après l'écriture de nos fonctions. Nous n'avons éprouvé aucune difficultés de communication
-tant sur les aspects techniques que dans nos rapport au travail en général.
+Pour la quasi-totalité des étapes $1$ à $4$, nous avons travaillé sur un ordinateur commun.
+Lors des étapes $5$ et $6$ nous nous sommes scindés en trois sous-groupes, restant malgré tout en communication constante sur les décisions d'implémentation. En ce qui concerne la répartition temporelle des tâches, nous avons essayé de suivre le planing prévisionnel proposé. Nous avons rencontré des difficultés lors de l'étape $4$ et avons sans doute hésité trop longtemp à renoncer à un "mauvais" choix de conception évoqué dans la section "processus et threads" de ce rapport. Une fois la décision prise de revenir en arrière nous avons pu remettre notre projet sur une bonne voie.
+La forte implication de tous les membres du groupe dans le projet nous a permis d'échanger de manière constructive sur les choix d'implémentation, de s'assurer que nous avions tous une compréhension et vision homogène du fonctionnement de notre code et du système nachos. Nous avons pu ainsi adopter un point de vue critique vis à vis du code produit, n'hésitant pas à discuter en détail des points qui ne nous semblaient pas clairs, à remettre en question des choix,
+suggérer des corrections de code, de style d'écriture, sans jamais rencontrer de conflit d'ego. Nous n'avons éprouvé aucunes difficultés à travailler en groupe, et n'avons rencontré, c'est assez rare pour le préciser, aucun conflit relationnel lors du déroulement de ce projet et ce même face aux difficultés techniques rencontrées.  
 
 \section{Pistes d'amélliorations}
-Nous estimons que nous pourrions rapidement mettre en oeuvre les ammélioration suivantes:
+Nous avons, d'une manière générale, pris le parti de choisir les conceptions les plus simples
+lors de la mise en oeuvre des fonctionnalités de notre système. Cela nous à permi d'aboutir
+à un code fonctionnel, simple à comprendre et à maintenir et de nous familiariser avec nachos.
+Nous pourrions à présent rafiner nos implémentations et proposer des solutions plus perfectionnés/performantes.
+Nous estimons que dans l'état actuel du projet nous pourrions rapidement mettre en oeuvre les ammélioration suivantes:
+Bibliothèque d'entrées-sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler, ouverture concurente de fichiers, taille variables des fichiers.
+Nous ne pouvons pas encore executer de manière interractive des programmes utilisateurs depuis notre invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid).
 
-Bibliothèque d'entrées sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler,
-ouverture concurente de fichiers, taille variables des fichiers, taille maximum des fichiers.
-Nous ne pouvons pas encore executer de manière interractive des programmes utilisateurs depuis l'invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid).
-
+\section{Conclusion}
+Nous avons le sentiment unanime d'avoir partagé une excellente expérience de travail collaboratif. Nous avons pris plaisir à confronter nos connaissance à un cas d'utilisation pratique et sommes très heureux d'avoir pu participer à ce projet. Nous tenons à remercier Vincent Danjean et Vania Marangozova pour leur support et leur bienveillance.
 \section{Annexe}
 
 \section{Tests}
@@ -553,7 +531,7 @@ Nous ne pouvons pas encore executer de manière interractive des programmes util
 \end{itemize}
 
 \subsection{Entrées-Sorties Multithread}
- Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
+Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
 \begin{itemize}
 \item[-] \texttt{MultithreadGetChar\_0}: Création de plusieurs threads exécutant \texttt{GetChar}
   puis \texttt{Putchar}.
@@ -568,163 +546,39 @@ Nous ne pouvons pas encore executer de manière interractive des programmes util
 \item[-] \texttt{MultithreadGetString\_0}: Création de plusieurs threads exécutant
   \texttt{getString} puis \texttt{PutString}.
 \end{itemize}
-
-On reprends l'ensemble des tests sur les opérations d'entrées-sorties précédents en rendant l'exécution de chaque thread séquentielle par l'utilisation d'un mutex.
+On reprends l'ensemble des tests sur les opérations d'entrées-sorties précédents en rendant l'exécution de chaque thread séquentielle par l'utilisation d'un mutex ou d'une sémaphore.
 
 \subsection{Lecteur-rédacteurs}
 
-Nous avons implémenté un programme de test lecteur-rédacteurs pour vérifier le bon
-fonctionnement des variables conditions et mutex.
+Afin de vérifier le bon fonctionnement des variables-conditions et mutex
+au niveau utilisateur, nous avons implémenté une solution au problème des
+lecteur-rédacteurs.
 
-\begin{lstlisting}[columns=fixed,basicstyle=\small\ttfamily]
-#include "syscall.h"
-
-#define NB_ITERATIONS 3;
-#define NB_LECTEURS 3;
-#define NB_REDACTEURS 3;
-
-int nbLs;
-int nbLa;
-int enEcriture;
-int donnee = 0;
-Cond_t fileL;
-Cond_t fileR;
-Mutex_t mutex;
-
-void debut_redaction() {
-  MutexLock(mutex);
-  while(enEcriture || nbLa> 0) {
-    CondWait(fileR, mutex);
-  }
-  enEcriture = 1;
-  MutexUnlock(mutex);
-}
-
-void debut_lecture() {
-  MutexLock(mutex);
-  nbLs++;
-  while(enEcriture) {
-    CondWait(fileL, mutex);
-  }
-  nbLs--;
-  nbLa++;
-  MutexUnlock(mutex);
-}
-
-void fin_redaction() {
-  MutexLock(mutex);
-  enEcriture = 0;
-  if(nbLs == 0) {
-    CondSignal(fileR);
-  } else {
-    CondBroadCast(fileL);
-  }
-  MutexUnlock(mutex);
-}
-
-void fin_lecture(){
-  MutexLock(mutex);
-  nbLa--;
-  if(nbLa == 0){
-    CondSignal(fileR);
-  }
-  MutexUnlock(mutex);
-}
-
-void lecteur(void *args) {
-  int i= 0;
-  int valeur = 0;
-  int iter = NB_ITERATIONS;
-  int threadNumber = *(int *)args;
-  for(i=0 ; i<iter ; i++) {
-    debut_lecture();
-    valeur = donnee;
-    // sleep;
-
-    MutexLock(mutex);
-    PutString("Debut Lecture Thread: ");
-    PutInt(threadNumber);
-    PutChar('\n');
-    if (valeur != donnee) {
-      PutString("LECTURE INCOHERENTE !!!\n");
-    }
-    else {
-      PutString("lecture coherente\n");
-    }
-    MutexUnlock(mutex);
-    fin_lecture();
-  }
-
-  MutexLock(mutex);
-  PutString("Thread: ");
-  PutInt(threadNumber);
-  PutString(" Fin lecture\n");
-  MutexUnlock(mutex);
-  UserThreadExit();
-}
-
-void redacteur(void *args) {
-  int i, valeur;
-  int iter = NB_ITERATIONS;
-  int threadNumber = *(int *)args;
-
-  for (i=0; i < iter; i++) {
-    //sleep
-    MutexLock(mutex);
-    PutString("Debut Redaction Thread: ");
-    PutInt(threadNumber);
-    PutChar('\n');
-    MutexUnlock(mutex);
-    debut_redaction();
-    valeur = threadNumber;
-    donnee = valeur;
-    //sleep
-    MutexLock(mutex);
-    PutString("Thread: ");
-    PutInt(threadNumber);
-    PutChar('\n');
-    if (valeur != donnee)
-      PutString("REDACTION INCOHERENTE !!!\n");
-    else
-      PutString("redaction coherente......\n");
-    MutexUnlock(mutex);
-    fin_redaction();
-  }
-  PutString("fin redaction....\n");
-  UserThreadExit();
-}
-
-int main(){
-  int nbL = NB_LECTEURS;
-  int nbR = NB_REDACTEURS;
-  int tid[nbL + nbR];
-  int tab[nbL + nbR];
-  int i;
-
-  /* Initialisation des variables globales */
-  mutex = MutexCreate();
-  fileL = CondCreate();
-  fileR = CondCreate();
-  nbLs = 0;
-  nbLa = 0;
-  enEcriture = 0;
-
-  for (i=0; i<nbL+nbR; i++) {
-    tab[i] = i;
-    if(i<nbL) tid[i] = UserThreadCreate(lecteur,(void*) (tab+i));
-    else tid[i] = UserThreadCreate(redacteur,(void*) (tab+i));
-  }
-
-  for (i=0; i<nbL + nbR; i++) {
-    UserThreadJoin(tid[i]);
-  }
-
-  MutexDestroy(mutex);
-  CondDestroy(fileL);
-  CondDestroy(fileR);
-  return 0;
-}
-\end{lstlisting}
-
+\subsection{ForkExec}
+\begin{itemize}
+\item[-] \texttt{ForkExec\_0}: Crée un nouveau processus qui exécute le programme \texttt{PutInt\_0}.
+\item[-] \texttt{ForkExec\_1}: Crée un nouveau processus qui exécute le programme \texttt{PutChar\_0}.
+\item[-] \texttt{ForkExec\_2}: Crée un nouveau processus qui exécute le programme \texttt{ForkExec\_0}.
+\item[-] \texttt{ForkExec\_3}: Crée un nouveau processus qui exécute le programme \texttt{ForkExec\_0}.
+\item[-] \texttt{ForkExec\_MultiThread\_0}: Crée un nouveau processus qui exécute le programme \texttt{MultiThreadPutInt\_Mutex\_0}.
+\item[-] \texttt{ForkExec\_MultiThread\_1}: Crée un nouveau processus qui exécute le programme \texttt{ForkExec\_MultiThread\_0}.
+\end{itemize}
+Nous vérifions dans gdb les changements d'espace d'adressage, la libération de la mémoire lors de la terminaison d'un processus utilisateur.
+\subsection{Shell}
+Nous avons implémenté un petit programme shell qui permet une utilisation interactive de notre système. Les commandes suivantes sont implémentées:
+\begin{itemize}
+\item[-] \texttt{exec}: prends en argument un nom de fichier de programme exécutable au format noff, crée un nouveau processus utilisateur qui exécute le programme.
+\item[-] \texttt{cd}: change le répertoire courant vers un nouveau répertoire.
+\item[-] \texttt{ls}: liste le contenu du répertoire courant.
+\item[-] \texttt{mkdir}: crée un répertoire dont le nom est fourni en argument.
+\item[-] \texttt{cat}: affiche le contenu du fichier dont le nom est fourni en argument.
+\item[-] \texttt{rm}: supprime un répertoire ou un fichier.
+\item[-] \texttt{touch}: srée un nouveau fichier vide.
+\item[-] \texttt{chat}: initie une messagerie instantanée avec une autre machine
+  nachos connectée au réseau.
+\end{itemize}
+Nous avons testé le fonctionnement de notre système de fichier avec ce programme.
+nous avons pu établir une messagerie réseau instantanée entre deux machines pour vérifier le fonctionnement de notre protocole de transfert de données.
+Enfin nous avons pu exécuter les programmes de test précédent depuis le shell.
 \end{document}
 
