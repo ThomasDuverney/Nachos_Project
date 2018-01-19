@@ -1,6 +1,6 @@
 #include "syscall.h"
 
-#define NB 5
+#define NB 15
 
 /*
  * Création de plusieurs threads exécutant PutString.

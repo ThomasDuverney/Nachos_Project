@@ -1,0 +1,8 @@
+#include "syscall.h"
+
+int main(){
+	PutString("Lance le programme PutInt_0");
+	ForkExec("PutInt_0");
+	PutInt(666);
+	Exit(0);
+}

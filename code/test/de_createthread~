@@ -10,12 +10,12 @@
 unsigned int mutex;
 
 void g(void *arg) {
-  MutexLock(mutex);
+ 
   int j;
   for(j = 0; j < 10 ; j++){
     PutString("Je suis un thread \n");
   }
-  MutexUnlock(mutex);
+ 
 }
 
 
@@ -23,7 +23,7 @@ int main(){
   int tab[NB];
   int i;
   int tid[NB];
-  mutex = MutexCreate();
+ 
 
   for(i=0; i<NB; i++){
     tab[i] = i;
@@ -34,6 +34,5 @@ int main(){
     UserThreadJoin(tid[i]);
   }
 
-  MutexDestroy(mutex);
   return 0;
 }

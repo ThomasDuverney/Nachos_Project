@@ -11,7 +11,11 @@ int factorial(int n){
 
 int main() {
   int res = factorial(5);
+  PutString("  *Début du processus factorielle*\n");
+  PutString("  *");
   PutInt(res);
+  PutString("*");
   PutChar('\n');
+  PutString("  *Fin du processus factorielle*\n");
   return 0;
 }
