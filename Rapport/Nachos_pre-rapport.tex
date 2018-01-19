@@ -66,7 +66,7 @@
 
 
 \section{Fonctionnalités}
-Environnement utilisateur multi-processus avec espaces d'adressages et virtualisation mémoire.
+Environnement utilisateur multi-processus avec espaces d'adressages virtuels.
 Processus utilisateur multi-threadés avec primitives de synchronisation (Mutex, Semaphores, Variables-conditions). Gestion des entrées-sorties (\texttt{GetInt}, \texttt{PutInt}, \texttt{GetChar}, \texttt{PutChar}, \texttt{GetString}, \texttt{Putstring}).
 Système de fichier. Protocole réseau sans connexion avec envoi fiable de données.
 Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \texttt{mkdir}, \texttt{rm},
@@ -184,9 +184,9 @@ Utilisation interactive via un Shell (\texttt{exec}, \texttt{cd}, \texttt{ls}, \
 
 \subsubsection{\texttt{void SemWait(Sem\_t semaphoreId)}}
 \begin{itemize}
-\item[-]Sémantique: Le thread courant attend que la sémaphore ait une valeur suppérieure à $0$
+\item[-]Sémantique: Le thread courant attend que la sémaphore ait une valeur supérieure à $0$
   et la décrémente.
-\item[-]Précondition: "semaphoreId" est un identifiant de semaphore valide, initialisé dans le processus
+\item[-]Précondition: "semaphoreId" est un identifiant de sémaphore valide, initialisé dans le processus
   appellant par la méthode \texttt{SemCreate}.
 \end{itemize}
 
@@ -344,12 +344,12 @@ Nous avons décidé d'étendre la sémantique de l'objet \texttt{addrSpace} en a
 \end{myDef}
 Afin de faire le lien entre les différents threads d'un même processus/espace d'adressage nous donnons à chaque objet \texttt{thread} une référence vers un objet \texttt{Addrspace}.
 \begin{myRem}
-Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent de déléguer à \texttt{addrspace} les méthodes de gestion de la mémoire et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fils d'exécutions vivant dans cet espace. Pour un petit gain de cohérence avons introduit une trop grande complexité de mise en oeuvre. Nous avons donc abandonné ce modèle au profit de celui décrit plus haut.
+Lors de notre réflexion sur l'implémentation des processus utilisateur, il nous semblait plus cohérent de déléguer à \texttt{addrspace} les méthodes de gestion de la mémoire et de créer une classe \texttt{processus} regroupant d'un côté un espace d'adressage et de l'autre les informations relatives aux fils d'exécutions vivant dans cet espace. Pour un petit gain de cohérence nous avons introduit une trop grande complexité de mise en oeuvre. Nous avons donc abandonné ce modèle au profit de celui décrit plus haut.
 \end{myRem}
 
 \subsubsection{Piles des threads}
 Afin d'accueillir les piles de nouveaux threads on divise un espace d'adressage \texttt{addrSpace} en blocs de pages, de taille \texttt{NumPagesPerStack}.
-Dans chaque espace on mémorise l'état courant des emplacement de piles grâce à la bitmap \texttt{stackBitmap}. 
+Dans chaque espace on mémorise l'état courant des emplacements de piles grâce à la bitmap \texttt{stackBitmap}. 
 
 \subsubsection{Thread Join}
 Au sein d'un processus, un thread peut utiliser la méthode \texttt{UserThreadJoin} pour attendre la terminaison d'un autre thread.
@@ -401,7 +401,7 @@ Un processus se termine en même temps que son dernier fil d'exécution.
 L'absence de hiérarchie entre threads à l'intérieur d'un processus et entre processus simplifie
 l'implémentation des méthodes \texttt{do\_UserThreadCreate} et \texttt{do\_UserThreadExit}.
 
-Une terminaison d'un thread (utilisateur) se fait par l'appel système \texttt{UserThreadFinish} qui appelle \texttt{do\_UserThreadExit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle la méthode \texttt{finish} dans laquelle on met à jour la stackBitmap, la liste des threads de l'espace d'adressage, on décrémente le compteur des threads actifs sur le système. Le thread courant devient alors \texttt{threadTobeDestroyed} (ou éteint la machine si il était le dernier thread actif).
+La terminaison d'un thread utilisateur se fait par l'appel système \texttt{User}\hspace{0pt}\texttt{ThreadFinish} qui appelle \texttt{do\_UserThreadExit}. Le thread courant consulte la \texttt{joinMap}, réveille les thread en attente. Enfin on appelle la méthode \texttt{finish} dans laquelle on met à jour la \texttt{stackBitmap}, la liste des threads de l'espace d'adressage, on décrémente le compteur des threads actifs sur le système. Le thread courant devient alors \texttt{threadTobeDestroyed} (ou éteint la machine si il était le dernier thread actif).
 
 Au prochain appel de la méthode \texttt{run}, si le thread à détruire était le dernier thread d'un espace d'adressage, le scheduler appelle \texttt{do\_UserThreadExit} pour libérer les ressources et la mémoire associée au processus et détruit le thread propulseur.
 
@@ -409,7 +409,7 @@ Au prochain appel de la méthode \texttt{run}, si le thread à détruire était 
 Dans \texttt{Start.S}, lors de l'appel système \texttt{UserThreadCreate}, on place dans le registre $6$ de la machine \texttt{MIPS} l'adresse de l'instruction \texttt{UserThreadExit}.
 Lors de la création du nouveau thread au niveau noyau avec \texttt{do\_UserThreadcreate} on récupère
 cette adresse depuis \texttt{r6} et au moment de \texttt{Fork}, avant de brancher la machine \texttt{MIPS} sur
-le nouveau thread utilisateur, on place cette adresse dans le registre \texttt{RetAddrReg}. Ainsi au moment de terminer son exécution le \texttt{PC} sera branché sur UserThreadExit.
+le nouveau thread utilisateur, on place cette adresse dans le registre \texttt{RetAddrReg}. Ainsi au moment de terminer son exécution le \texttt{PC} sera branché sur \texttt{UserThreadExit}.
 
 \subsubsection{Mémoire virtuelle}
 La virtualisation de la mémoire des processus utilisateur est mise en oeuvre par une association entre numéro
@@ -418,21 +418,21 @@ Dans cette méthode on construit, à l'aide de la \texttt{bitmap} de l'objet \te
 On choisit ensuite aléatoirement un numéro de cadre dans cette table. La construction de cette table est coûteuse en temps d'exécution mais facilite la mise en oeuvre du tirage aléatoire.
 
 \subsection{Synchronisation}
-L'implémentation des primitives de synchronisation au niveau utilisateur s'appuie sur les structures de données noyau suivantes que l'on trouvera dans la classe \texttt{system.cc}:
+La gestion des primitives de synchronisation au niveau utilisateur s'appuie sur les structures de données noyau suivantes que l'on trouvera dans la classe \texttt{system.cc}:
 \begin{itemize}
 \item[-]\texttt{unsigned int mutexCounter}: Nombre total de mutex créés,
   sert d'indentifiant lors de l'initialisation d'un mutex au niveau utilisateur.
 \item[-]\texttt{std::map<int,Lock * > * mutexMap}: Association entre un identifiant de mutex
-  et un objet Lock.
+  et un objet \texttt{Lock}.
 \item[-]\texttt{unsigned int semCounter}: Nombre total de sémaphores créées,
   sert d'identifiant lors de l'initialisation d'une sémaphores au niveau utilisateur.
 \item[-]\texttt{std::map<int,Semaphore * > * semMap}: Association entre un identifiant de sémaphore
-  et un objet Semaphore.
+  et un objet \texttt{Semaphore}.
 \item[-]\texttt{unsigned int condCounter}: Nombre total de variables conditions crées, sert
   d'identifiant lors de l'initialisation d'une variable condition utilisateur.
-\item[-]\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et un objet Condition.
+\item[-]\texttt{std::map<int,Condition * > * condMap}: Association entre l'identifiant d'une variable condition et un objet \texttt{Condition}.
 \end{itemize}
-nous avons ajouté à la "classe" usersynch.cc un ensemble de méthodes pour la création des objets mutex, sémaphores, variables-condition et la mise à jour des structures au niveau noyau servant de support à la synchronisation dans les processus utilisateurs.
+nous avons ajouté au fichier \texttt{usersynch.cc} un ensemble de méthodes pour la création des objets mutex, sémaphores, variables-condition et la mise à jour des structures au niveau noyau servant de support à la synchronisation dans les processus utilisateurs.
 
 \subsection{Réseau}
 Nous avons mis en place un protocole simple de transmission fiable de données (sans perte de d'information), qui s'inspire du mécanisme d'acquittement cumulatif de \texttt{TCP} et de la notion de flux d'octet.
@@ -462,7 +462,7 @@ Avec le principe d'acquittement cumulatif, \texttt{A} n'a pas besoin de recevoir
 acquitte p3, alors si \texttt{A} reçoit l'acquittement il sait que \texttt{B} a bien reçu p1, p2 et p3.
 
 \subsubsection{Timer de réemission}
-Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP). A chaque envoi de paquet (à l'exception des paquet d'acquittements) on déclenche un timer. A la "sonnerie" du timer, si on a pas reçu d'acquittement, on réemet le paquet considéré perdu. Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
+Chaque mail, avant d'être envoyé, est encapsulé dans un paquet au niveau de la couche réseau (semblable à IP). A chaque envoi de paquet (à l'exception des paquet d'acquittements) on déclenche un timer. A la "sonnerie" du timer, si on a pas reçu d'acquittement, on réémet le paquet considéré perdu. Il se peut aussi que les données arrivent mais que l'acquittement se perde, le résultat est le même. 
 
 \subsubsection{Mise à jour des champs ACK et SEQ}
 Lors d'échanges de paquets entre \texttt{A} et \texttt{B} on incrémente les valeurs des champs séquence et acquittement. Pour simplifier notre protocole on exige que les envois de données se fassent dans l'ordre. Le numéro d'acquittement correspond au dernier octet reçu + $1$. Le numéro de séquence correspond à l'indice du premier octet du paquet envoyé. L'émetteur d'un acquittement ne sait pas si celui-ci est bien arrivé à destination (on acquitte pas un acquittement). 
@@ -474,15 +474,12 @@ la chaîne de caractères "FIN". Une fois ce dernier mail acquitté, $A$ est sû
 
 \section{Système de Fichiers}
 
-Nous avons ajouté à l'objet \texttt{Filesys} un tableau
-
-\texttt{fileDescriptor* fileOpened[NBFILEOPENED]} qui mémorise les descripteurs
-des fichiers ouverts dans le système de fichiers. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Lorsqu'un fichier est ouvert depuis un thread utilisateur on place, au niveau noyau, le descripteur du fichier "f" dans la première case libre du tableau \texttt{fileOpened} et l'appel à \texttt{Open} retourne l'indice de cette case au thread. On s'assure ensuite que le descripteur d'un même fichier ne se trouve jamais deux fois dans le tableau
+Nous avons ajouté à l'objet \texttt{Filesys} un tableau \texttt{file}\hspace{0pt}\texttt{Descriptor*}\hspace{0pt}
+\texttt{ file}\hspace{0pt}\texttt{Opened}\hspace{0pt}\texttt{[NBFILEOPENED]} qui mémorise les descripteurs des fichiers ouverts dans le système de fichiers. Ce tableau est utilisé pour garantir l'accès exclusif d'un fichier à un unique thread sur tout le système. Lorsqu'un fichier est ouvert depuis un thread utilisateur on place, au niveau noyau, le descripteur du fichier "f" dans la première case libre du tableau \texttt{fileOpened} et l'appel à \texttt{Open} retourne l'indice de cette case au thread. On s'assure ensuite que le descripteur d'un même fichier ne se trouve jamais deux fois dans le tableau
 \texttt{fileopened}.
 
 Aussi, nous avons ajouté un attribut \texttt{bool isDirectory} à la classe
-
-\texttt{DirectoryEntry}. Cet attribut nous permet de discerner dans un dossier, quelle entrée est un fichier ou un répertoire.
+\texttt{Directory}\hspace{0pt}\texttt{Entry}. Cet attribut nous permet de discerner dans un dossier, quelle entrée est un fichier ou un répertoire.
 
 \section{Organisation}
 Pour la quasi-totalité des étapes $1$ à $4$, nous avons travaillé sur un ordinateur commun.
@@ -494,13 +491,13 @@ suggérer des corrections de code, de style d'écriture. Nous n'avons éprouvé 
 Nous avons, d'une manière générale, pris le parti de choisir les conceptions les plus simples
 lors de la mise en oeuvre des fonctionnalités de notre système. Cela nous à permis d'aboutir
 à un code fonctionnel, simple à comprendre et à maintenir et de nous familiariser avec nachos.
-Nous pourrions à présent raffiner nos implémentations et proposer des solutions plus perfectionnés/performantes.
+Nous pourrions à présent raffiner nos implémentations et proposer des solutions plus perfectionnées/performantes.
 Nous estimons que dans l'état actuel du projet nous pourrions rapidement mettre en oeuvre les amélioration suivantes:
 Bibliothèque d'entrées-sorties bufferisées, allocateur mémoire, nouvelles politiques pour le scheduler, ouverture concurrente de fichiers, taille variables des fichiers.
 Nous ne pouvons pas encore exécuter de manière interactive des programmes utilisateurs depuis notre invite de commande. Il nous faudrait pour cela implémenter un minimum de communication inter-processus (Signaux, waitPid) ce qui serait aussi envisageable à court terme.
 
 \section{Conclusion}
-Nous avons le sentiment unanime d'avoir partagé une excellente expérience de travail collaboratif. Nous avons pris plaisir à confronter nos connaissance à un cas d'utilisation pratique et sommes très heureux d'avoir pu participer à ce projet. Nous tenons à remercier Vincent Danjean et Vania Marangozova pour leur support et leur enseignement.
+Nous avons le sentiment unanime d'avoir partagé une excellente expérience de travail collaboratif. Nous avons pris plaisir à confronter nos connaissances à un cas d'utilisation pratique et sommes très heureux d'avoir pu participer à ce projet. Nous tenons à remercier Vincent Danjean et Vania Marangozova pour leur support et leur enseignement.
 \section{Annexe}
 
 \subsection{Tests}
@@ -517,7 +514,7 @@ Nous avons le sentiment unanime d'avoir partagé une excellente expérience de t
   Lecture d'un entier depuis l'entrée standard.
   Écriture de cet entier sur la sortie standard.
 \item[-] \texttt{GetString\_0}: Lecture d'une chaîne de moins de \texttt{20} caractères depuis l'entrée standard, affichage de cette chaîne sur la sortie standard.
-\item[-] \texttt{PutString\_0}: Affichage de la chaîne de caractère \texttt{"ABCDEFGHIJklmnopqrstuvwxyz"}.
+\item[-] \texttt{PutString\_0}: Affichage de la chaîne de caractère \texttt{"ABCDEF}\hspace{0pt}\texttt{GHIJklmnop}\hspace{0pt}\texttt{qrstuvwxyz"}.
 \item[-] \texttt{PutString\_1}: Affichage de la chaîne \texttt{"ABCDEFGH"} et \texttt{"ijklmnopqrstuvwxyz"}.
 \item[-] \texttt{PutString\_2}:   Affichage d'une chaîne de taille supérieure à la
   constante \texttt{MAX\_STRING\_SIZE(=100)} définie dans \texttt{system.h}.
@@ -547,7 +544,7 @@ Avec les tests suivants, on vérifie le bon fonctionnement de synchconsole.
 \item[-] \texttt{MultithreadGetInt\_0}: Création de plusieurs threads exécutant \texttt{GetInt} puis  \texttt{PutInt}
   puis \texttt{PutInt} pour afficher l'entier saisi.
 \item[-] \texttt{MultithreadGetString\_0}: Création de plusieurs threads exécutant
-  \texttt{getString} puis \texttt{PutString}.
+  \texttt{get}\hspace{0pt}\texttt{String} puis \texttt{PutString}.
 \end{itemize}
 On reprend l'ensemble des tests précédents sur les opérations d'entrées-sorties en rendant l'exécution de chaque thread séquentielle par l'utilisation d'un mutex ou d'une sémaphore.
 
@@ -572,11 +569,11 @@ Nous avons implémenté un petit programme shell qui permet une utilisation inte
 \begin{itemize}
 \item[-] \texttt{exec}: prends en argument un nom de fichier de programme exécutable au format noff, crée un nouveau processus utilisateur qui exécute le programme.
 \item[-] \texttt{cd}: change le répertoire courant vers un nouveau répertoire.
-\item[-] \texttt{ls}: liste le contenu du répertoire courant.
+\item[-] \texttt{ls}: liste le contenu du répertoire courant si il n'y a pas d'argument, sinon liste le contenu du répertoire en argument.
 \item[-] \texttt{mkdir}: crée un répertoire dont le nom est fourni en argument.
 \item[-] \texttt{cat}: affiche le contenu du fichier dont le nom est fourni en argument.
-\item[-] \texttt{rm}: supprime un répertoire ou un fichier.
-\item[-] \texttt{touch}: srée un nouveau fichier vide.
+\item[-] \texttt{rm}: supprime un répertoire ou un fichier fourni en argument.
+\item[-] \texttt{touch}: crée un nouveau fichier vide dont le nom est fourni en argument.
 \item[-] \texttt{chat}: initie une messagerie instantanée avec une autre machine
   nachos connectée au réseau.
 \end{itemize}
