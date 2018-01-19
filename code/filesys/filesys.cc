@@ -501,7 +501,8 @@ FileSystem::Remove(const char *name)
 
     if(fileOpened[i] != NULL && fileOpened[i]->sector == sector){
         printf("Couldn't remove this file, opened in a process\n");
-    }
+    	return FALSE;
+}
 
     fileHdr = new FileHeader;
     fileHdr->FetchFrom(sector);

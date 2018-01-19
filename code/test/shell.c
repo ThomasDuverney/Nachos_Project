@@ -77,7 +77,7 @@ void chat(){
     char cmd[100];
     int boxFrom, addrTo, boxTo;
 
-    PutString("Sur quelle boite souhaitez-vous écoutez ? ");
+    PutString("Sur quelle boite souhaitez-vous écouter ? ");
     GetInt(&boxFrom);
     PutString("\nA quelle adresse souhaitez-vous tchatter ? ");
     GetInt(&addrTo);
@@ -123,9 +123,9 @@ int main (){
                 i++;
             } else if(j >= MAXLENGTHCMD -1){
                 break;
-            } else {
-                cmdline[index_cmdline][j] = '\0';
             }
+            cmdline[index_cmdline][j] = '\0';
+            
             index_cmdline++;
         }
 
@@ -247,7 +247,6 @@ int main (){
         } /* fin if index_cmdline > 0 */
         
     } /* fin while(1) */
-
 
     return 0;
 }
